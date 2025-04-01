@@ -1,10 +1,19 @@
 {
-    "workbench.colorCustomizations": {
-        "activityBar.background": "#ffae52",
-        "titleBar.activeBackground": "#f1a042",
-        "titleBar.activeForeground": "#ffffff",
-        "titleBar.inactiveBackground": "#d3772cb9",
-        "titleBar.inactiveForeground": "#ffffff99",
-        
-    }
+  "workbench.colorCustomizations": {
+    "activityBar.background": "#ffae52",
+    "titleBar.activeBackground": "#f1a042",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#d3772cb9",
+    "titleBar.inactiveForeground": "#ffffff99"
+  },
+
+  "javascript.preferences.quoteStyle": "double",
+  "typescript.preferences.quoteStyle": "double",
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true,
+  "editor.tabSize": 2,
+  "editor.rulers": [80]
 }
