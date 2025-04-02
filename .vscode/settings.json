@@ -15,5 +15,10 @@
   "editor.formatOnSave": true,
   "editor.formatOnPaste": true,
   "editor.tabSize": 2,
-  "editor.rulers": [80]
+  "editor.rulers": [
+    80
+  ],
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }
