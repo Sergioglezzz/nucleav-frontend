@@ -69,54 +69,64 @@ const theme = extendTheme({
 
         // 🔲 BACKGROUND GENERAL (body) solo en modo claro
         background: {
-          body: '#f5f5f5', // color de fondo de la app en modo claro
+          body: '#f5f5f3', // color de fondo de la app en modo claro
         },
       },
     },
 
     dark: {
       palette: {
-        // 🎨 PRIMARY en modo oscuro
+        // 🎨 PRIMARY en modo oscuro (naranja pastel)
         primary: {
-          solidBg: '#ffbc62',
-          solidColor: '#000000',
+          solidBg: '#ffbc62',        // Fondo sólido del botón
+          solidColor: '#000000',     // Texto oscuro legible
           solidHoverBg: '#e69224',
           solidActiveBg: '#d17600',
 
-          softColor: '#ffbc62',
-          softBg: '#2a1c00',
+          softColor: '#ffbc62',      // Texto en soft
+          softBg: '#2a1c00',         // Fondo suave relacionado con el naranja
           softHoverBg: '#3a2800',
 
           plainColor: '#ffbc62',
           outlinedBorder: '#ffbc62',
         },
 
-        // 🎨 SECONDARY en modo oscuro
+        // 🎨 SECONDARY (opcional, en estilo apagado)
         secondary: {
-          solidBg: '#a78bfa',
-          solidColor: '#0f172a',
-          solidHoverBg: '#8b5cf6',
-          solidActiveBg: '#7c3aed',
+          solidBg: '#1a1c20',         // fondo casi neutro (más oscuro que el navbar)
+          solidColor: '#f6f7f8',      // texto claro
+          solidHoverBg: '#2b2e34',
+          solidActiveBg: '#373a41',
 
-          softColor: '#c4b5fd',
-          softBg: '#2e1065',
-          softHoverBg: '#3b0764',
+          softColor: '#c4c4cc',
+          softBg: '#202227',
+          softHoverBg: '#2a2d33',
 
-          plainColor: '#c084fc',
-          outlinedBorder: '#a78bfa',
+          plainColor: '#bcbcc6',
+          outlinedBorder: '#2a2d33',
         },
 
-        // 🧊 NAVBAR en modo oscuro
+        // 🧊 NAVBAR — fondo transparente con blur
         navbar: {
-          bg: 'rgba(37, 36, 47, 0.7)', // navbar oscuro transparente
+          bg: 'rgba(15, 18, 20, 0.6)', // 0f1214 con transparencia para efecto glass
         },
 
-        // 🔲 BACKGROUND GENERAL en modo oscuro
+        // 🔲 BACKGROUND GENERAL
         background: {
-          body: '#25242f', // fondo general del body
+          body: '#0f1214', // fondo global de la app
         },
+
+        // ✍️ TEXTO
+        text: {
+          primary: '#f6f7f8',  // texto principal
+          secondary: '#a1a1aa', // texto más suave o deshabilitado
+        },
+
+        // 📏 LÍNEAS Y DIVISORES
+        divider: '#2c2f36',
       },
-    },
+    }
+
   },
 
   // 🔤 TIPOGRAFÍA GENERAL

@@ -1,9 +1,10 @@
 "use client";
 
-import { Box, Button, Card, Typography } from "@mui/joy";
+import { Box, Button, Typography, Stack } from "@mui/joy";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-
+import Image from "next/image";
+import heroImage from "../../public/hero.png"; // Asegúrate de tener una imagen aquí
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -12,32 +13,52 @@ export default function WelcomePage() {
     <>
       <Navbar />
 
-      {/* Contenido principal */}
+      {/* Contenido principal responsivo */}
       <Box
         sx={{
           display: "flex",
-          flexDirection: "column",
+          flexDirection: { xs: "column", md: "row" },
           alignItems: "center",
           justifyContent: "center",
           height: "100vh",
-          textAlign: "center",
-          pt: 8,
+          px: 4,
+          gap: 4,
         }}
       >
-        <Card variant="solid" sx={{ padding: 4, width: "90%", maxWidth: 400 }}>
-          <Typography level="h2" sx={{ marginBottom: 1 }}>
+        {/* Sección de texto y botones */}
+        <Box
+          sx={{
+            flex: 1,
+            textAlign: { xs: "center", md: "left" },
+            maxWidth: 500,
+          }}
+        >
+          <Typography level="h1" fontSize="3xl" fontWeight="lg" mb={2}>
             Bienvenido a Nucleav
           </Typography>
-          <Typography level="body-md" sx={{ marginBottom: 3 }}>
-            Gestiona recursos humanos y materiales en la industria audiovisual
+          <Typography level="body-lg" mb={3}>
+            Plataforma inteligente para gestionar recursos humanos y materiales en la industria audiovisual.
           </Typography>
-          <Button color="primary" variant="solid" onClick={() => router.push("/login")} sx={{ marginBottom: 1 }}>
-            Iniciar Sesión
-          </Button>
-          <Button color="neutral" onClick={() => router.push("/register")} variant="soft">
-            Registrarse
-          </Button>
-        </Card>
+
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent={{ xs: "center", md: "flex-start" }}>
+            <Button color="primary" onClick={() => router.push("/login")}>
+              Iniciar Sesión
+            </Button>
+            <Button variant="soft" color="neutral" onClick={() => router.push("/register")}>
+              Registrarse
+            </Button>
+          </Stack>
+        </Box>
+
+        {/* Imagen o animación */}
+        <Box sx={{ flex: 1, display: "flex", justifyContent: "center" }}>
+          <Image
+            src={heroImage}
+            alt="Ilustración de bienvenida"
+            style={{ maxWidth: "100%", height: "auto" }}
+            priority
+          />
+        </Box>
       </Box>
     </>
   );
