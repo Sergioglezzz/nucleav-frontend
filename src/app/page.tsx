@@ -55,7 +55,7 @@ export default function WelcomePage() {
           <Image
             src={heroImage}
             alt="Ilustración de bienvenida"
-            style={{ maxWidth: "100%", height: "auto" }}
+            style={{ width: "100%", maxWidth: 800, height: "auto" }}
             priority
           />
         </Box>

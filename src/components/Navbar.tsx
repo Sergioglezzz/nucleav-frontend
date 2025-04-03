@@ -1,5 +1,5 @@
 'use client'
-import { Stack, Typography, IconButton, Link, useTheme } from '@mui/joy'
+import { Stack, IconButton, Link, useTheme } from '@mui/joy'
 import MenuIcon from '@mui/icons-material/Menu'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
