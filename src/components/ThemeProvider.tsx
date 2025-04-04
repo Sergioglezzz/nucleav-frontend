@@ -6,7 +6,7 @@ import theme from '../lib/theme'
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   return (
-    <CssVarsProvider theme={theme} defaultMode="system" disableNestedContext>
+    <CssVarsProvider theme={theme} defaultMode="dark" disableNestedContext>
       <BodyBackgroundSync />
       {children}
     </CssVarsProvider>

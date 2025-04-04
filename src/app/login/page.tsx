@@ -86,8 +86,30 @@ export default function LoginPage() {
 
           {/* Formulario */}
           <Box component="form" noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Input type="text" name="username" placeholder="Nombre de usuario" required variant="soft" />
-            <Input type="password" name="password" placeholder="Contraseña" required variant="soft" />
+            <Input type="email" name="email" placeholder="Email" required variant="soft" sx={{
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }} />
+            <Input type="password" name="password" placeholder="Contraseña" required variant="soft" sx={{
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+              "& input:-webkit-autofill": {
+                WebkitBoxShadow: "0 0 0 1000px var(--joy-palette-background-body) inset",
+                WebkitTextFillColor: "inherit", // Mantiene el color del texto normal
+              },
+            }} />
             <Button type="submit" fullWidth variant="solid">
               Iniciar Sesión
             </Button>
@@ -96,16 +118,25 @@ export default function LoginPage() {
           {/* Links */}
           <Typography level="body-sm" mt={2} textAlign="center">
             ¿No tienes cuenta?{" "}
-            <Link underline="hover" onClick={() => router.push("/register")}>
+            <Link
+              color="primary"
+              underline="hover"
+              onClick={() => router.push("/register")}
+            >
               Regístrate
             </Link>
           </Typography>
 
           <Typography level="body-xs" mt={1} textAlign="center">
-            <Link underline="hover" onClick={() => router.push("/forgot-password")}>
+            <Link
+              color="primary"
+              underline="hover"
+              onClick={() => router.push("/forgot-password")}
+            >
               ¿Olvidaste tu contraseña?
             </Link>
           </Typography>
+
         </Card>
 
 
