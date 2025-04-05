@@ -7,7 +7,7 @@ import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import { useRouter } from "next/navigation";
 import { useColorScheme } from '@mui/joy/styles'
 import { motion } from "framer-motion";
-import heroImage from "../../../public/hero.png";
+import heroImage from "../../../public/hero3.png";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 
 export default function LoginPage() {
@@ -28,21 +28,45 @@ export default function LoginPage() {
         <IconButton
           variant="soft"
           onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
+          sx={{ mt: 1 }}
         >
           {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
         </IconButton>
       </Stack>
+
+      {/* Texto principal */}
+      <Typography
+        level="h1"
+        textAlign="center"
+        fontWeight="lg"
+        sx={{
+          mt: { xs: 4, md: 10 },
+          mb: { xs: 1, md: 4 },
+        }}
+      >
+        ¡Listos para trabajar juntos!
+      </Typography>
 
       {/* Contenido principal: Card + Imagen */}
       <Stack
         direction={{ xs: "column", md: "row" }}
         alignItems="center"
         justifyContent="center"
-        flexGrow={1}
+        mt={4}
+
+        //        flexGrow={1}
         gap={4}
       >
         {/* Login Card */}
-        <Card sx={{ p: 4, width: "100%", maxWidth: 400, position: "relative" }}>
+        <Card sx={{
+          p: 4,
+          flexBasis: { xs: "100%", md: "400px" }, // ancho base
+          flexShrink: 0,
+          flexGrow: 0,
+          width: "100%",
+          maxWidth: "400px",
+          position: "relative",
+        }}>
           {/* Botón de retroceso - ahora a la izquierda */}
           <IconButton
             variant="plain"
@@ -144,10 +168,14 @@ export default function LoginPage() {
         {/* Imagen a la derecha */}
         <Box
           sx={{
+            flexBasis: { xs: "100%", md: "50%" },
+            flexShrink: 0,
+            flexGrow: 0,
             width: "100%",
-            maxWidth: 400,
+            maxWidth: { xs: "400px", md: "1000px" },
             display: "flex",
             justifyContent: "center",
+            alignItems: "center",
           }}
         >
           <motion.div
@@ -157,12 +185,12 @@ export default function LoginPage() {
               duration: 4,
               ease: "easeInOut",
             }}
-            style={{ width: "100%" }}
+            style={{ width: "100%", height: "auto" }}
           >
             <Image
               src={heroImage}
               alt="Ilustración de bienvenida"
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: "100%", height: "auto", objectFit: "contain", }}
               priority
             />
           </motion.div>

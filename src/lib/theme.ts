@@ -64,7 +64,7 @@ const theme = extendTheme({
 
         // 🧊 NAVBAR — fondo con transparencia (modificable aquí)
         navbar: {
-          bg: 'rgba(255, 255, 255, 0.85)', // navbar fondo claro con glass
+          bg: 'rgba(255, 255, 255, 0.5)', // navbar fondo claro con glass
         },
 
         // 🔲 BACKGROUND GENERAL (body) solo en modo claro
@@ -108,7 +108,7 @@ const theme = extendTheme({
 
         // 🧊 NAVBAR — fondo transparente con blur
         navbar: {
-          bg: 'rgba(15, 18, 20, 0.6)', // 0f1214 con transparencia para efecto glass
+          bg: 'rgba(15, 18, 20, 0.5)', // 0f1214 con transparencia para efecto glass
         },
 
         // 🔲 BACKGROUND GENERAL

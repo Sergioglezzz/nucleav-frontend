@@ -49,7 +49,7 @@ export default function Navbar() {
         </IconButton>
 
         {/* Menú hamburguesa (opcional) */}
-        <IconButton variant="solid" sx={{ display: { xs: 'flex', sm: 'none' } }}>
+        <IconButton variant="soft" sx={{ display: { xs: 'flex', sm: 'none' } }}>
           <MenuIcon />
         </IconButton>
       </Stack>
