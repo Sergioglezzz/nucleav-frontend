@@ -9,10 +9,16 @@ import { useColorScheme } from '@mui/joy/styles'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { useEffect, useState } from 'react';
 
 export default function RegisterPage() {
   const router = useRouter();
   const { mode, setMode } = useColorScheme();
+  const [mounted, setMounted] = useState(false);
+  
+    useEffect(() => {
+      setMounted(true);
+    }, []);
 
   return (
     <Stack
@@ -74,22 +80,17 @@ export default function RegisterPage() {
 
           {/* Logo centrado */}
           <Stack direction="row" justifyContent="center" sx={{ my: 1 }} >
-            {mode === "light" ? (
+            {mounted ? (
               <Image
-                src="/Logo-nucleav-light.png"
-                alt="NucleAV Logo Light"
+                src={mode === 'light' ? '/Logo-nucleav-light.png' : '/Logo-nucleav-dark.png'}
+                alt="NucleAV Logo"
                 width={160}
                 height={50}
                 priority
               />
             ) : (
-              <Image
-                src="/Logo-nucleav-dark.png"
-                alt="NucleAV Logo Dark"
-                width={170}
-                height={50}
-                priority
-              />
+              // Placeholder mientras no se monta para evitar saltos
+              <Box sx={{ width: 160, height: 50 }} />
             )}
           </Stack>
 
