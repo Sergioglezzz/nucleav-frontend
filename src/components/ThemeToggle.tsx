@@ -9,7 +9,9 @@ export default function ThemeToggle() {
   const { mode, setMode } = useColorScheme();
 
   const toggleTheme = () => {
-    setMode(mode === 'dark' ? 'light' : 'dark');
+    const newMode = mode === 'dark' ? 'light' : 'dark';
+    setMode(newMode);
+    localStorage.setItem('theme-mode', newMode); // 👈 Guardar el nuevo modo
   };
 
   return (

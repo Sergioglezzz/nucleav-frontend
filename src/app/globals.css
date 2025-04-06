@@ -8,6 +8,11 @@ html,
 body {
   max-width: 100vw;
   overflow-x: hidden;
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--joy-palette-background-body);
+  color: var(--joy-palette-text-primary);
 }
 
 body {

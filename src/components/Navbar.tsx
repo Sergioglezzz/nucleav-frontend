@@ -1,14 +1,20 @@
 'use client'
-import { Stack, IconButton, Link, useTheme } from '@mui/joy'
+import { Stack, IconButton, Link, useTheme, Box } from '@mui/joy'
 import MenuIcon from '@mui/icons-material/Menu'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
+import { useEffect, useState } from 'react';
 
 export default function Navbar() {
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <Stack
@@ -31,10 +37,17 @@ export default function Navbar() {
     >
       {/* LOGO */}
       <Link href="/" underline="none" color="neutral" sx={{ pt: 1 }}>
-        {mode === 'light' ? (
-          <Image src="/Logo-nucleav-light.png" alt="NucleAV Logo Light" width={110} height={110} priority />
+        {mounted ? (
+          <Image
+            src={mode === 'light' ? '/Logo-nucleav-light.png' : '/Logo-nucleav-dark.png'}
+            alt="NucleAV Logo"
+            width={100}
+            height={30}
+            priority
+          />
         ) : (
-          <Image src="/Logo-nucleav-dark.png" alt="NucleAV Logo Dark" width={110} height={110} priority />
+          // Placeholder mientras no se monta para evitar saltos
+          <Box sx={{ width: 100, height: 30 }} />
         )}
       </Link>
 

@@ -86,21 +86,21 @@ export default function LoginPage() {
           </IconButton>
 
           {/* Logo centrado */}
-          <Stack direction="row" justifyContent="center" sx={{ my: -7 }}>
+          <Stack direction="row" justifyContent="center" sx={{ my: 1}} >
             {mode === "light" ? (
               <Image
                 src="/Logo-nucleav-light.png"
                 alt="NucleAV Logo Light"
-                width={200}
-                height={200}
+                width={160}
+                height={50}
                 priority
               />
             ) : (
               <Image
                 src="/Logo-nucleav-dark.png"
                 alt="NucleAV Logo Dark"
-                width={200}
-                height={200}
+                  width={170}
+                  height={55}
                 priority
               />
             )}
