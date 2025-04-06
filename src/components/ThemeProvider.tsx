@@ -1,6 +1,6 @@
 'use client'
 
-import { CssVarsProvider, useColorScheme, useTheme } from '@mui/joy/styles'
+import { CssVarsProvider} from '@mui/joy/styles'
 // import { useEffect } from 'react'
 import theme from '../lib/theme'
 

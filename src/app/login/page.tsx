@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Card, Typography, Input, Link, Stack, IconButton, Skeleton } from "@mui/joy";
+import { Box, Button, Card, Typography, Input, Link, Stack, IconButton } from "@mui/joy";
 import Image from "next/image";
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
