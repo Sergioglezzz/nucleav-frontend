@@ -40,8 +40,8 @@ export default function LoginPage() {
         textAlign="center"
         fontWeight="lg"
         sx={{
-          mt: { xs: 4, md: 10 },
-          mb: { xs: 1, md: 4 },
+          mt: { xs: 4, md: 4 },
+          mb: { xs: 1, md: 2 },
         }}
       >
         ¡Listos para trabajar juntos!
@@ -53,8 +53,6 @@ export default function LoginPage() {
         alignItems="center"
         justifyContent="center"
         mt={4}
-
-        //        flexGrow={1}
         gap={4}
       >
         {/* Login Card */}
@@ -71,7 +69,7 @@ export default function LoginPage() {
           <IconButton
             variant="plain"
             size="sm"
-            onClick={() => router.back()}
+            onClick={() => router.push("/")}
             sx={{
               position: "absolute",
               top: 8,
@@ -146,6 +144,7 @@ export default function LoginPage() {
               color="primary"
               underline="hover"
               onClick={() => router.push("/register")}
+              sx={{ color: '#ffbc62' }}
             >
               Regístrate
             </Link>
@@ -156,6 +155,7 @@ export default function LoginPage() {
               color="primary"
               underline="hover"
               onClick={() => router.push("/forgot-password")}
+              sx={{ color: '#ffbc62' }}
             >
               ¿Olvidaste tu contraseña?
             </Link>
@@ -168,11 +168,9 @@ export default function LoginPage() {
         {/* Imagen a la derecha */}
         <Box
           sx={{
-            flexBasis: { xs: "100%", md: "50%" },
-            flexShrink: 0,
-            flexGrow: 0,
+            flex: 1,
             width: "100%",
-            maxWidth: { xs: "400px", md: "1000px" },
+            maxWidth: 500,
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
