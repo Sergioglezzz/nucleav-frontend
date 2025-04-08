@@ -16,9 +16,24 @@ export default function LoginPage() {
   const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = useState(false);
 
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Hardcodeo del login
+    if (email === 'admin@admin.com' && password === 'Admin1234') {
+      localStorage.setItem('isAuthenticated', 'true'); // ✅ Guardamos autenticación fake
+      router.push('/dashboard'); // ✅ Redirigimos al dashboard
+    } else {
+      alert('Credenciales incorrectas.'); // Puedes reemplazar por un mejor toast después
+    }
+  };
 
   return (
     <Stack
@@ -102,37 +117,38 @@ export default function LoginPage() {
                 priority
               />
             ) : (
-              // Placeholder mientras no se monta para evitar saltos
               <Box sx={{ width: 160, height: 50 }} />
             )}
           </Stack>
 
           {/* Formulario */}
-          <Box component="form" noValidate sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-            <Input type="email" name="email" placeholder="Email" required variant="soft" sx={{
-              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-              "&:hover": {
-                borderColor: "primary.solidBg",
-              },
-              "&:focus-within": {
-                borderColor: "primary.solidBg",
-                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
-              },
-            }} />
-            <Input type="password" name="password" placeholder="Contraseña" required variant="soft" sx={{
-              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-              "&:hover": {
-                borderColor: "primary.solidBg",
-              },
-              "&:focus-within": {
-                borderColor: "primary.solidBg",
-                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
-              },
-              "& input:-webkit-autofill": {
-                WebkitBoxShadow: "0 0 0 1000px var(--joy-palette-background-body) inset",
-                WebkitTextFillColor: "inherit", // Mantiene el color del texto normal
-              },
-            }} />
+          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Input type="email" name="email" placeholder="Email" required variant="soft" value={email}
+              onChange={(e) => setEmail(e.target.value)} sx={{
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                },
+              }} />
+            <Input type="password" name="password" placeholder="Contraseña" required variant="soft" value={password}
+              onChange={(e) => setPassword(e.target.value)} sx={{
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                },
+                "& input:-webkit-autofill": {
+                  WebkitBoxShadow: "0 0 0 1000px var(--joy-palette-background-body) inset",
+                  WebkitTextFillColor: "inherit", // Mantiene el color del texto normal
+                },
+              }} />
             <Button type="submit" fullWidth variant="solid">
               Iniciar Sesión
             </Button>
