@@ -14,12 +14,14 @@
     "@mui/icons-material": "^7.0.1",
     "@mui/joy": "^5.0.0-beta.52",
     "axios": "^1.8.4",
+    "formik": "^2.4.6",
     "framer-motion": "^12.6.3",
     "frontend": "file:",
     "next": "15.2.4",
     "next-auth": "^4.24.11",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

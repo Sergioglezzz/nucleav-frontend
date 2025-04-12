@@ -10,6 +10,8 @@ import { motion } from "framer-motion";
 import heroImage from "../../../public/hero3.png";
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useEffect, useState } from 'react';
+import axios from 'axios';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,17 +25,26 @@ export default function LoginPage() {
     setMounted(true);
   }, []);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    // Hardcodeo del login
-    if (email === 'admin@admin.com' && password === 'Admin1234') {
-      localStorage.setItem('isAuthenticated', 'true'); // ✅ Guardamos autenticación fake
-      router.push('/dashboard'); // ✅ Redirigimos al dashboard
-    } else {
-      alert('Credenciales incorrectas.'); // Puedes reemplazar por un mejor toast después
+    try {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/login`, {
+        email,
+        password,
+      });
+
+      const { token } = response.data; // Asumimos que el backend devuelve un token
+
+      localStorage.setItem('token', token); // Guardamos token de sesión
+      localStorage.setItem('isAuthenticated', 'true'); // Opcional, flag simple
+      router.push('/dashboard'); // Redirigir al dashboard
+    } catch (error) {
+      console.error('Error en login:', error);
+      alert('Credenciales incorrectas o usuario no existe.');
     }
   };
+
 
   return (
     <Stack

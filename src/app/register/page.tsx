@@ -1,15 +1,30 @@
 "use client";
 
-import { Box, Button, Card, Input, Typography, Link, Stack, IconButton, Grid } from "@mui/joy";
+import { Box, Button, Card, Input, Typography, Link, Stack, IconButton, Grid, alertClasses } from "@mui/joy";
 import { motion } from "framer-motion";
 import heroImage from "../../../public/hero4.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useColorScheme } from '@mui/joy/styles'
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
+import { useColorScheme } from '@mui/joy/styles';
+import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
+import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useEffect, useState } from 'react';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import axios from 'axios';
+
+const validationSchema = Yup.object({
+  name: Yup.string().required('* Obligatorio'),
+  lastname: Yup.string().required('* Obligatorio'),
+  username: Yup.string().required('* Obligatorio'),
+  phone: Yup.string().required('* Obligatorio'),
+  email: Yup.string().email('Email inválido').required('* Obligatorio'),
+  password: Yup.string().min(6, 'Mínimo 6 caracteres').required('* Obligatorio'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password')], 'Las contraseñas deben coincidir')
+    .required('Confirmación requerida'),
+});
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,6 +35,24 @@ export default function RegisterPage() {
       setMounted(true);
     }, []);
 
+  const handleSubmit = async (values: any) => {
+    try {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/users`, {
+        name: values.name,
+        lastname: values.lastname,
+        username: values.username,
+        phone: values.phone,
+        email: values.email,
+        password: values.password,
+        role: 'user',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('Error en el registro:', error);
+      alert('Error en el registro. Por favor, inténtalo de nuevo.');
+    }
+  };
+
   return (
     <Stack
       sx={{
@@ -29,7 +62,7 @@ export default function RegisterPage() {
       }}
       direction="column"
     >
-      {/* Botón de cambiar tema arriba a la derecha */}
+      {/* Botón de cambiar tema */}
       <Stack direction="row" justifyContent="flex-end">
         <IconButton
           variant="soft"
@@ -94,83 +127,179 @@ export default function RegisterPage() {
             )}
           </Stack>
 
-          {/* Formulario de Registro */}
-          <Grid
-            container
-            spacing={2}
-            component="form"
-            noValidate
+          {/* Formik Form */}
+          <Formik
+            initialValues={{
+              name: '',
+              lastname: '',
+              username: '',
+              phone: '',
+              email: '',
+              password: '',
+              confirmPassword: '',
+            }}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
           >
-            {/* Columna 1 */}
-            <Grid xs={12} md={6}>
-              <Stack gap={2}>
-                <Input
-                  name="name"
-                  placeholder="Nombre"
-                  required
-                  variant="soft"
-                />
-                <Input
-                  name="lastname"
-                  placeholder="Apellidos"
-                  required
-                  variant="soft"
-                />
-                <Input
-                  name="username"
-                  placeholder="Nombre de usuario"
-                  required
-                  variant="soft"
-                />
-                <Input
-                  name="phone"
-                  placeholder="Teléfono"
-                  required
-                  variant="soft"
-                />
-              </Stack>
-            </Grid>
+            {({ errors, touched, handleChange, handleBlur }) => (
+              <Form>
+                <Grid container spacing={2}>
+                  {/* Columna 1 */}
+                  <Grid xs={12} md={6}>
+                    <Stack gap={2}>
+                      {/* Nombre */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.name && errors.name && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.name}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="name"
+                          placeholder="Nombre"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.name && !!errors.name}
+                        />
+                      </Stack>
 
-            {/* Columna 2 */}
-            <Grid xs={12} md={6}>
-              <Stack gap={2}>
-                <Input
-                  type="email"
-                  name="email"
-                  placeholder="Correo electrónico"
-                  required
-                  variant="soft"
-                />
-                <Input
-                  type="password"
-                  name="password"
-                  placeholder="Contraseña"
-                  required
-                  variant="soft"
-                />
-                <Input
-                  type="password"
-                  name="confirmPassword"
-                  placeholder="Repetir contraseña"
-                  required
-                  variant="soft"
-                />
-              </Stack>
-            </Grid>
+                      {/* Apellidos */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.lastname && errors.lastname && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.lastname}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="lastname"
+                          placeholder="Apellidos"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.lastname && !!errors.lastname}
+                        />
+                      </Stack>
 
-            {/* Botón de registro */}
-            <Grid xs={12}>
-              <Button
-                type="submit"
-                fullWidth
-                variant="solid"
-                color="primary"
-                sx={{ mt: 2 }}
-              >
-                Registrarse
-              </Button>
-            </Grid>
-          </Grid>
+                      {/* Nombre de usuario */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.username && errors.username && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.username}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="username"
+                          placeholder="Nombre de usuario"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.username && !!errors.username}
+                        />
+                      </Stack>
+
+                      {/* Teléfono */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.phone && errors.phone && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.phone}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="phone"
+                          placeholder="Teléfono"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.phone && !!errors.phone}
+                        />
+                      </Stack>
+                    </Stack>
+                  </Grid>
+
+                  {/* Columna 2 */}
+                  <Grid xs={12} md={6}>
+                    <Stack gap={2}>
+                      {/* Correo electrónico */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.email && errors.email && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.email}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="email"
+                          type="email"
+                          placeholder="Correo electrónico"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.email && !!errors.email}
+                        />
+                      </Stack>
+
+                      {/* Contraseña */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.password && errors.password && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.password}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="password"
+                          type="password"
+                          placeholder="Contraseña"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.password && !!errors.password}
+                        />
+                      </Stack>
+
+                      {/* Confirmar contraseña */}
+                      <Stack direction="column">
+                        <Box sx={{ minHeight: 20, mt: "-6px", ml: 1 }}>
+                          {touched.confirmPassword && errors.confirmPassword && (
+                            <Typography level="body-xs" color="danger">
+                              {errors.confirmPassword}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Input
+                          name="confirmPassword"
+                          type="password"
+                          placeholder="Repetir contraseña"
+                          variant="soft"
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          error={touched.confirmPassword && !!errors.confirmPassword}
+                        />
+                      </Stack>
+                    </Stack>
+                  </Grid>
+
+                  {/* Botón */}
+                  <Grid xs={12}>
+                    <Button type="submit" fullWidth variant="solid" color="primary" sx={{ mt: 2 }}>
+                      Registrarse
+                    </Button>
+                  </Grid>
+                </Grid>
+              </Form>
+            )}
+          </Formik>
 
           {/* Link a login */}
           <Typography level="body-sm" mt={2} textAlign="center">
