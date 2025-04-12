@@ -1,5 +1,5 @@
 'use client'
-import { Stack, IconButton, Link, useTheme, Box } from '@mui/joy'
+import { Stack, IconButton, useTheme, Box } from '@mui/joy'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import { useColorScheme } from '@mui/joy/styles'
@@ -35,18 +35,18 @@ export default function NavbarWelcome() {
       }}
     >
       {/* LOGO */}
-        {mounted ? (
-          <Image
-            src={mode === 'light' ? '/Logo-nucleav-light.png' : '/Logo-nucleav-dark.png'}
-            alt="NucleAV Logo"
-            width={100}
-            height={30}
-            priority
-          />
-        ) : (
-          // Placeholder mientras no se monta para evitar saltos
-          <Box sx={{ width: 100, height: 30 }} />
-        )}
+      {mounted ? (
+        <Image
+          src={mode === 'light' ? '/Logo-nucleav-light.png' : '/Logo-nucleav-dark.png'}
+          alt="NucleAV Logo"
+          width={100}
+          height={30}
+          priority
+        />
+      ) : (
+        // Placeholder mientras no se monta para evitar saltos
+        <Box sx={{ width: 100, height: 30 }} />
+      )}
 
       {/* ACCIONES */}
       <Stack direction="row" alignItems="center" gap={1.5}>
