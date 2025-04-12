@@ -1,13 +1,12 @@
 'use client'
 import { Stack, IconButton, Link, useTheme, Box } from '@mui/joy'
-import MenuIcon from '@mui/icons-material/Menu'
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
 
-export default function Navbar() {
+export default function NavbarWelcome() {
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
   const [mounted, setMounted] = useState(false);
@@ -36,7 +35,6 @@ export default function Navbar() {
       }}
     >
       {/* LOGO */}
-      <Link href="/dashboard" underline="none" color="neutral" sx={{ pt: 0.5 }}>
         {mounted ? (
           <Image
             src={mode === 'light' ? '/Logo-nucleav-light.png' : '/Logo-nucleav-dark.png'}
@@ -49,7 +47,6 @@ export default function Navbar() {
           // Placeholder mientras no se monta para evitar saltos
           <Box sx={{ width: 100, height: 30 }} />
         )}
-      </Link>
 
       {/* ACCIONES */}
       <Stack direction="row" alignItems="center" gap={1.5}>
@@ -59,11 +56,6 @@ export default function Navbar() {
           onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
         >
           {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-        </IconButton>
-
-        {/* Menú hamburguesa (opcional) */}
-        <IconButton variant="soft" sx={{ display: { xs: 'flex', sm: 'none' } }}>
-          <MenuIcon />
         </IconButton>
       </Stack>
     </Stack>

@@ -2,7 +2,7 @@
 
 import { Box, Button, Typography, Stack } from "@mui/joy";
 import { useRouter } from "next/navigation";
-import Navbar from "@/components/Navbar";
+import NavbarWelcome from "@/components/NavbarWelcome";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import heroImage from "../../public/hero.png";
@@ -12,7 +12,7 @@ export default function WelcomePage() {
 
   return (
     <>
-      <Navbar />
+      <NavbarWelcome />
 
       {/* Contenido principal responsivo */}
       <Box

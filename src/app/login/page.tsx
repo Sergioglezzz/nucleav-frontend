@@ -144,10 +144,6 @@ export default function LoginPage() {
                   borderColor: "primary.solidBg",
                   boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
                 },
-                "& input:-webkit-autofill": {
-                  WebkitBoxShadow: "0 0 0 1000px var(--joy-palette-background-body) inset",
-                  WebkitTextFillColor: "inherit", // Mantiene el color del texto normal
-                },
               }} />
             <Button type="submit" fullWidth variant="solid">
               Iniciar Sesión
