@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Card, Input, Typography, Link, Stack, IconButton, Grid, alertClasses } from "@mui/joy";
+import { Box, Button, Card, Input, Typography, Link, Stack, IconButton, Grid } from "@mui/joy";
 import { motion } from "framer-motion";
 import heroImage from "../../../public/hero4.png";
 import Image from "next/image";
@@ -10,9 +10,19 @@ import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useEffect, useState } from 'react';
-import { Formik, Form, Field, ErrorMessage } from 'formik';
+import { Formik, Form } from 'formik';
 import * as Yup from 'yup';
 import axios from 'axios';
+
+interface RegisterFormValues {
+  name: string;
+  lastname: string;
+  username: string;
+  phone: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 const validationSchema = Yup.object({
   name: Yup.string().required('* Obligatorio'),
@@ -35,7 +45,7 @@ export default function RegisterPage() {
       setMounted(true);
     }, []);
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: RegisterFormValues) => {
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/users`, {
         name: values.name,
