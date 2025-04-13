@@ -173,6 +173,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.name && !!errors.name}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -192,6 +202,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.lastname && !!errors.lastname}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -211,6 +231,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.username && !!errors.username}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -230,6 +260,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.phone && !!errors.phone}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
                     </Stack>
@@ -255,6 +295,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.email && !!errors.email}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -275,6 +325,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.password && !!errors.password}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
 
@@ -295,6 +355,16 @@ export default function RegisterPage() {
                           onChange={handleChange}
                           onBlur={handleBlur}
                           error={touched.confirmPassword && !!errors.confirmPassword}
+                          sx={{
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       </Stack>
                     </Stack>

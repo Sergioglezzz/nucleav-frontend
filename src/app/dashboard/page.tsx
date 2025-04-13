@@ -1,37 +1,39 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import ColumnLayout from '@/components/ColumnLayout';
-import { List, ListItem, ListItemButton, ListItemContent, Typography, Card } from '@mui/joy';
-import { useEffect, useState } from 'react';
-import { api } from '@/utils/api'; // Asegúrate de tener este cliente axios configurado
+import { api } from '@/utils/api'; // Asegúrate que api tiene baseURL correcto
+import { Typography, Card, List, ListItem, ListItemButton, ListItemContent, CircularProgress, Alert } from '@mui/joy';
 
 interface User {
   id: number;
+  name: string;
+  lastname: string;
   username: string;
   email: string;
   role: string;
+  phone?: string;
 }
 
 export default function DashboardPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Simulamos una petición de usuarios
     const fetchUsers = async () => {
       try {
-        const res = await api.get('/users'); // API real
+        const res = await api.get<User[]>('/v1/users');
         setUsers(res.data);
       } catch (error) {
         console.error('Error fetching users', error);
-        // Carga unos usuarios dummy de ejemplo:
-        setUsers([
-          { id: 1, username: 'john', email: 'john@example.com', role: 'admin' },
-          { id: 2, username: 'sara', email: 'sara@example.com', role: 'user' },
-          { id: 3, username: 'mike', email: 'mike@example.com', role: 'user' },
-        ]);
+        setError('Error al cargar los usuarios.');
+      } finally {
+        setLoading(false);
       }
     };
+
 
     fetchUsers();
   }, []);
@@ -44,21 +46,27 @@ export default function DashboardPage() {
           Usuarios registrados
         </Typography>
 
-        <Card variant="outlined" sx={{ p: 2 }}>
-          <List>
-            {users.map((user) => (
-              <ListItem key={user.id}>
-                <ListItemButton>
-                  <ListItemContent>
-                    <Typography level="body-md">
-                      <b>ID:</b> {user.id} - <b>Username:</b> {user.username} - <b>Email:</b> {user.email} - <b>Rol:</b> {user.role}
-                    </Typography>
-                  </ListItemContent>
-                </ListItemButton>
-              </ListItem>
-            ))}
-          </List>
-        </Card>
+        {loading ? (
+          <CircularProgress size="lg" />
+        ) : error ? (
+          <Alert color="danger">{error}</Alert>
+        ) : (
+          <Card variant="outlined" sx={{ p: 2 }}>
+            <List>
+              {users.map((user) => (
+                <ListItem key={user.id}>
+                  <ListItemButton>
+                    <ListItemContent>
+                      <Typography level="body-md">
+                        <b>ID:</b> {user.id} - <b>Username:</b> {user.username} - <b>Email:</b> {user.email} - <b>Rol:</b> {user.role}
+                      </Typography>
+                    </ListItemContent>
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </List>
+          </Card>
+        )}
       </ColumnLayout>
     </>
   );
