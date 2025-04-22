@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "../components/ThemeProvider";
 import ThemeScript from "@/components/ThemeScript";
+import CustomSessionProvider from "@/components/SessionProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +34,9 @@ export default function RootLayout({
         <ThemeScript />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider>{children}</ThemeProvider>
+        <CustomSessionProvider>
+          <ThemeProvider>{children}</ThemeProvider>
+        </CustomSessionProvider>
       </body>
     </html>
   );

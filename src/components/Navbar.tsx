@@ -1,16 +1,32 @@
 'use client'
-import { Stack, IconButton, Link, useTheme, Box } from '@mui/joy'
+import {
+  Stack,
+  IconButton,
+  Link,
+  useTheme,
+  Box,
+  Typography,
+  Avatar,
+  Divider,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
+  Tooltip,
+  ListDivider,
+} from '@mui/joy'
 import MenuIcon from '@mui/icons-material/Menu'
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
 import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-// import router from "next/router";
 import ExitModal from "./ExitModal";
+import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
   const { mode, setMode } = useColorScheme()
@@ -28,6 +44,11 @@ export default function Navbar() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const { data: session } = useSession();
+  const user = session?.user;
+
+
 
   return (
     <Stack
@@ -66,6 +87,21 @@ export default function Navbar() {
 
       {/* ACCIONES */}
       <Stack direction="row" alignItems="center" gap={1.5}>
+        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+          Proyectos
+        </Typography>
+        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+          Red
+        </Typography>
+        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+          Material
+        </Typography>
+        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+          Empresa
+        </Typography>
+        <Divider orientation="vertical" inset="none" />
+
+
         {/* Modo oscuro */}
         <IconButton
           variant="plain"
@@ -74,13 +110,54 @@ export default function Navbar() {
           {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
         </IconButton>
 
-        <IconButton variant="plain" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-          <SettingsIcon />
-        </IconButton>
-        {/* Logout */}
-        <IconButton variant="plain" onClick={() => setExitModalOpen(true)} sx={{ display: { xs: 'none', sm: 'flex' } }}>
-          <LogoutIcon />
-        </IconButton>
+       
+          <Dropdown>
+            <Tooltip title={user?.name} placement="bottom-end" variant="soft">
+              <MenuButton
+                slots={{ root: IconButton }}
+                slotProps={{ root: { variant: 'plain', size: 'sm' } }}
+              >
+                <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
+
+              </MenuButton>
+            </Tooltip>
+            <Menu placement="bottom-end" sx={{ minWidth: 220 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1 }}>
+                <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
+
+                <Box>
+                  <Typography level="body-md" fontWeight="md">
+                    {user?.name}
+                  </Typography>
+                  <Typography level="body-sm" color="neutral">
+                    {user?.email}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <ListDivider />
+
+              <MenuItem>
+                <SettingsIcon fontSize="small" />
+                Configuración
+              </MenuItem>
+              <MenuItem onClick={() => alert("Aún no implementado 😅")}>
+                <HelpOutlineIcon fontSize="small" />
+                Ayuda
+              </MenuItem>
+
+              <ListDivider />
+
+              <MenuItem onClick={() => setExitModalOpen(true)} color="neutral">
+                <LogoutIcon fontSize="small" />
+                Cerrar sesión
+              </MenuItem>
+            </Menu>
+          </Dropdown>
+        
+
+
+
         {/* Menú hamburguesa (opcional) */}
         <IconButton variant="soft" sx={{ display: { xs: 'flex', sm: 'none' } }}>
           <MenuIcon />
