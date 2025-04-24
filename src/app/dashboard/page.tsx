@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from "next-auth/react";
 import Navbar from '@/components/Navbar';
 import ColumnLayout from '@/components/ColumnLayout';
-import { api } from '@/utils/api'; // Asegúrate que api tiene baseURL correcto
+import { api } from '@/utils/api';
 import { Typography, Card, List, ListItem, ListItemButton, ListItemContent, CircularProgress, Alert } from '@mui/joy';
 
 interface User {
@@ -20,11 +21,19 @@ export default function DashboardPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: session, status } = useSession();
+
 
   useEffect(() => {
     const fetchUsers = async () => {
+      if (!session?.accessToken) return;
+
       try {
-        const res = await api.get<User[]>('/v1/users');
+        const res = await api.get<User[]>('/v1/users', {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
         setUsers(res.data);
       } catch (error) {
         console.error('Error fetching users', error);
@@ -34,9 +43,14 @@ export default function DashboardPage() {
       }
     };
 
+    if (status === "authenticated") {
+      fetchUsers();
+    }
+  }, [session, status]);
 
-    fetchUsers();
-  }, []);
+  if (status === "loading") {
+    return <CircularProgress size="lg" />;
+  }
 
   return (
     <>

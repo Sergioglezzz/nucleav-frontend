@@ -24,31 +24,28 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import ExitModal from "./ExitModal";
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function Navbar() {
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
-  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [exitModalOpen, setExitModalOpen] = useState(false);
 
   const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('token');
-    router.push('/');
+    signOut({ callbackUrl: '/' });
   };
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
+  if (status === "loading") return null;
+
   const user = session?.user;
-
-
 
   return (
     <Stack
@@ -110,51 +107,51 @@ export default function Navbar() {
           {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
         </IconButton>
 
-       
-          <Dropdown>
-            <Tooltip title={user?.name} placement="bottom-end" variant="soft">
-              <MenuButton
-                slots={{ root: IconButton }}
-                slotProps={{ root: { variant: 'plain', size: 'sm' } }}
-              >
-                <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
 
-              </MenuButton>
-            </Tooltip>
-            <Menu placement="bottom-end" sx={{ minWidth: 220 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1 }}>
-                <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
+        <Dropdown>
+          <Tooltip title={user?.name} placement="bottom-end" variant="soft">
+            <MenuButton
+              slots={{ root: IconButton }}
+              slotProps={{ root: { variant: 'plain', size: 'sm' } }}
+            >
+              <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
 
-                <Box>
-                  <Typography level="body-md" fontWeight="md">
-                    {user?.name}
-                  </Typography>
-                  <Typography level="body-sm" color="neutral">
-                    {user?.email}
-                  </Typography>
-                </Box>
+            </MenuButton>
+          </Tooltip>
+          <Menu placement="bottom-end" sx={{ minWidth: 220 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1 }}>
+              <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
+
+              <Box>
+                <Typography level="body-md" fontWeight="md">
+                  {user?.name}
+                </Typography>
+                <Typography level="body-sm" color="neutral">
+                  {user?.email}
+                </Typography>
               </Box>
+            </Box>
 
-              <ListDivider />
+            <ListDivider />
 
-              <MenuItem>
-                <SettingsIcon fontSize="small" />
-                Configuración
-              </MenuItem>
-              <MenuItem onClick={() => alert("Aún no implementado 😅")}>
-                <HelpOutlineIcon fontSize="small" />
-                Ayuda
-              </MenuItem>
+            <MenuItem>
+              <SettingsIcon fontSize="small" />
+              Configuración
+            </MenuItem>
+            <MenuItem onClick={() => alert("Aún no implementado 😅")}>
+              <HelpOutlineIcon fontSize="small" />
+              Ayuda
+            </MenuItem>
 
-              <ListDivider />
+            <ListDivider />
 
-              <MenuItem onClick={() => setExitModalOpen(true)} color="neutral">
-                <LogoutIcon fontSize="small" />
-                Cerrar sesión
-              </MenuItem>
-            </Menu>
-          </Dropdown>
-        
+            <MenuItem onClick={() => setExitModalOpen(true)} color="neutral">
+              <LogoutIcon fontSize="small" />
+              Cerrar sesión
+            </MenuItem>
+          </Menu>
+        </Dropdown>
+
 
 
 

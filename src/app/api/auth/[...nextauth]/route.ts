@@ -1,63 +1,78 @@
-// /app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'text' },
-        password: { label: 'Contraseña', type: 'password' },
+        email: { label: "Email", type: "text" },
+        password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: credentials?.email,
-              password: credentials?.password,
-            }),
-          });
+      authorize: async (credentials) => {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/login`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+        });
 
-          const data = await res.json();
+        const data = await res.json();
 
-          if (!res.ok) throw new Error(data.message || 'Login fallido');
-
+        if (res.ok && data.access_token) {
           return {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: data.user.role,
-            image: data.user.profile_image_url || null,
+            id: data.user_id || "default-id", // Replace with actual user ID from API response
+            role: data.user_role || "user",  // Replace with actual role from API response
+            accessToken: data.access_token,
           };
-        } catch (error) {
-          console.error('Login error:', error);
-          return null;
         }
+
+        return null;
       },
+
     }),
   ],
   pages: {
-    signIn: '/login', // Tu página de login personalizada
-  },
-  callbacks: {
-    async session({ session, token }) {
-      session.user.id = token.id;
-      session.user.role = token.role;
-      return session;
-    },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-        token.role = user.role;
-      }
-      return token;
-    },
+    signIn: "/login",
   },
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      // Al hacer login, guardar el token
+      if (user?.accessToken) {
+        token.accessToken = user.accessToken;
+
+        // Obtener datos del usuario desde /auth/me
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`, {
+          headers: {
+            Authorization: `Bearer ${user.accessToken}`,
+          },
+        });
+
+        if (res.ok) {
+          const userData = await res.json();
+          token.id = userData.id;
+          token.role = userData.role;
+          token.name = userData.name;
+          token.email = userData.email;
+          token.image = userData.profile_image_url ?? null;
+        }
+      }
+
+      return token;
+    },
+    async session({ session, token }) {
+      session.accessToken = token.accessToken;
+      session.user = {
+        id: token.id,
+        role: token.role,
+        name: token.name,
+        email: token.email,
+        image: token.image,
+      };
+      return session;
+    },
   },
   secret: process.env.NEXTAUTH_SECRET,
 });
