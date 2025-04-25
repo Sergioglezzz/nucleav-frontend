@@ -40,14 +40,14 @@ export default function RegisterPage() {
   const router = useRouter();
   const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = useState(false);
-  
-    useEffect(() => {
-      setMounted(true);
-    }, []);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSubmit = async (values: RegisterFormValues) => {
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/users`, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/auth/register`, {
         name: values.name,
         lastname: values.lastname,
         username: values.username,
