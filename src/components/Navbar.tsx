@@ -26,12 +26,16 @@ import Image from 'next/image'
 import { useEffect, useState } from 'react';
 import ExitModal from "./ExitModal";
 import { signOut, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+
 
 export default function Navbar() {
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
   const [mounted, setMounted] = useState(false);
   const [exitModalOpen, setExitModalOpen] = useState(false);
+
+  const router = useRouter();
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
@@ -118,10 +122,28 @@ export default function Navbar() {
 
             </MenuButton>
           </Tooltip>
-          <Menu placement="bottom-end" sx={{ minWidth: 220 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1 }}>
+          <Menu placement="bottom-end" sx={{
+            minWidth: 220,
+            bgcolor: 'background.body',
+            border: '1px solid',
+            borderColor: 'divider',
+            borderRadius: 'md',
+            boxShadow: 'md',
+            p: 1
+          }}>
+            <MenuItem
+              onClick={() => router.push('/profile')}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                mb: 0.3,
+                py: 0.5,
+                px: 2,
+                borderRadius: 'md',
+              }}
+            >
               <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
-
               <Box>
                 <Typography level="body-md" fontWeight="md">
                   {user?.name}
@@ -130,7 +152,8 @@ export default function Navbar() {
                   {user?.email}
                 </Typography>
               </Box>
-            </Box>
+            </MenuItem>
+
 
             <ListDivider />
 
@@ -151,9 +174,6 @@ export default function Navbar() {
             </MenuItem>
           </Menu>
         </Dropdown>
-
-
-
 
         {/* Menú hamburguesa (opcional) */}
         <IconButton variant="soft" sx={{ display: { xs: 'flex', sm: 'none' } }}>
