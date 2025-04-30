@@ -1,10 +1,15 @@
 "use client"
 
-import { Avatar, Box, Button, Card, CardContent, Chip, Divider, Grid, Typography, AspectRatio } from "@mui/joy"
+import { Avatar, Box, Button, Card, CardContent, Chip, Tooltip, Divider, Grid, Typography, AspectRatio, IconButton, Skeleton } from "@mui/joy"
 import { Edit, Favorite, Comment, Share } from "@mui/icons-material"
+import { useColorScheme } from '@mui/joy/styles';
 import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
-import HeaderDark from "../../../public/header3.jpg"
+import HeaderDark from "../../../public/header1.jpg"
+import HeaderLight from "../../../public/header3.jpg"
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from "react";
 
 export default function ProfilePage() {
   // Datos de usuario (simulados)
@@ -16,6 +21,18 @@ export default function ProfilePage() {
     bio: "Diseñador de interfaces con 5 años de experiencia. Especializado en crear experiencias de usuario intuitivas y atractivas. Amante del minimalismo y la funcionalidad.",
     avatar: "https://i.pravatar.cc/300",
   }
+
+  const userInitial = user.fullName?.[0]?.toUpperCase() || '?';
+
+  const router = useRouter();
+  const { mode } = useColorScheme();
+  const [mounted, setMounted] = useState(false);
+
+  const backgroundHeader = mode === 'dark' ? HeaderDark.src : HeaderLight.src;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Datos de portfolio (simulados)
   const portfolioItems = [
@@ -60,37 +77,96 @@ export default function ProfilePage() {
         <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
           <Card variant="outlined" sx={{ overflow: "visible", position: "relative" }}>
             {/* Cabecera */}
-            <Box
-              sx={{
-                height: { xs: 120, sm: 150 },
-                bgcolor: "#ffbc62",
-                borderTopLeftRadius: "12px",
-                borderTopRightRadius: "12px",
-                backgroundImage: `url(${HeaderDark.src})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            />
+            {!mounted ? (
+              <Skeleton
+                variant="rectangular"
+                animation="wave"
+                sx={{
+                  height: { xs: 120, sm: 150 },
+                  borderRadius: "12px",
+                  mb: -2, // si necesitas solapar un poco con el avatar
+                }}
+              />
+            ) : (
+              <Box
+                sx={{
+                  height: { xs: 120, sm: 150 },
+                  borderRadius: "12px",
+                  backgroundImage: `url(${backgroundHeader})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  position: "relative",
+                  transition: 'background-image 0.3s ease-in-out',
+                }}
+              >
+                <IconButton
+                  variant="soft"
+                  size="sm"
+                  color="neutral"
+                  sx={{
+                    position: "absolute",
+                    top: 25,
+                    left: 25,
+                    padding: "6px",
+                    borderRadius: "50%",
+                    backdropFilter: "blur(4px)",
+                    backgroundColor: "rgba(255, 255, 255, 0.12)",
+                  }}
+                  onClick={() => router.back()}
+                >
+                  <ArrowBackIosIcon fontSize="small" sx={{ marginRight: -1 }} />
+                </IconButton>
+              </Box>
+            )}
+
 
             <CardContent sx={{ pt: 0 }}>
               {/* Contenedor principal con avatar y botón editar */}
               <Box sx={{ display: "flex", justifyContent: "space-between", mt: { xs: -6, sm: -8 } }}>
                 {/* Avatar */}
                 <Avatar
-                  src={user.avatar}
                   alt={user.username}
+                  variant="solid"
                   sx={{
                     width: { xs: 80, sm: 120 },
                     height: { xs: 80, sm: 120 },
-                    border: "4px solid white",
+                    fontSize: 'xl2',
+                    bgcolor: 'neutral.softBg',
+                    color: 'text.primary',
+                    border: '4px solid',
+                    borderColor: 'background.body',
                     ml: 2,
                   }}
-                />
+                >
+                  {userInitial}
+                </Avatar>
 
                 {/* Botón editar perfil */}
-                <Button startDecorator={<Edit />} color="primary" variant="solid" sx={{ alignSelf: "flex-end", mb: 2 }}>
-                  Editar perfil
-                </Button>
+                <Tooltip title="Editar perfil" placement="top" variant="soft">
+                  <Button
+                    startDecorator={<Edit sx={{ color: "#ffbc62", ml: { xs: 1, sm: 0 } }} />}
+                    color="neutral"
+                    variant="outlined"
+                    onClick={() => router.push("/profile/edit")}
+                    sx={{
+                      alignSelf: { xs: "center", sm: "flex-end" },
+                      mt: { xs: 6, sm: 0 },
+                      mb: { xs: -1, sm: 2 },
+                      width: { xs: 40, sm: 'auto' },
+                      height: { xs: 40, sm: 'auto' },
+                      px: { xs: 0, sm: 2.5 },
+                      minWidth: { xs: 'unset', sm: 'auto' },
+                      justifyContent: 'center',
+                      borderRadius: { xs: '50%', sm: 24 },
+                    }}
+                  >
+                    {/* Texto oculto en xs */}
+                    <Box sx={{ display: { xs: "none", sm: "block" } }}>
+                      Editar perfil
+                    </Box>
+                  </Button>
+                </Tooltip>
+
               </Box>
 
               {/* Información del usuario */}
