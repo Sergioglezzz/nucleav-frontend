@@ -75,7 +75,13 @@ export default function ProfilePage() {
       <Navbar />
       <ColumnLayout>
         <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
-          <Card variant="outlined" sx={{ overflow: "visible", position: "relative" }}>
+          <Card variant="outlined" sx={{
+            overflow: "visible",
+            position: "relative",
+            mx: { xs: -3, sm: 0 },
+            mt: -2,
+            width: { xs: 'calc(100% + 46px)', sm: 'auto' },
+          }}>
             {/* Cabecera */}
             {!mounted ? (
               <Skeleton
@@ -84,7 +90,7 @@ export default function ProfilePage() {
                 sx={{
                   height: { xs: 120, sm: 150 },
                   borderRadius: "12px",
-                  mb: -2, // si necesitas solapar un poco con el avatar
+                  mb: -2,
                 }}
               />
             ) : (
@@ -105,8 +111,8 @@ export default function ProfilePage() {
                   color="neutral"
                   sx={{
                     position: "absolute",
-                    top: 25,
-                    left: 25,
+                    top: 8,
+                    left: 12,
                     padding: "6px",
                     borderRadius: "50%",
                     backdropFilter: "blur(4px)",
@@ -118,7 +124,6 @@ export default function ProfilePage() {
                 </IconButton>
               </Box>
             )}
-
 
             <CardContent sx={{ pt: 0 }}>
               {/* Contenedor principal con avatar y botón editar */}
