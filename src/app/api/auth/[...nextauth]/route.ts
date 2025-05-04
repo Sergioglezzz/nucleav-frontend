@@ -18,16 +18,20 @@ const handler = NextAuth({
 
         const data = await res.json();
 
-        if (res.ok && data.access_token) {
+        if (res.ok && data.accessToken) {
           return {
-            id: data.user_id || "default-id", // Replace with actual user ID from API response
-            role: data.user_role || "user",  // Replace with actual role from API response
-            accessToken: data.access_token,
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role,
+            image: data.user.profile_image_url,
+            accessToken: data.accessToken,
           };
         }
 
         return null;
       },
+
 
     }),
   ],
@@ -39,7 +43,6 @@ const handler = NextAuth({
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Al hacer login, guardar el token
       if (user?.accessToken) {
         token.accessToken = user.accessToken;
 
