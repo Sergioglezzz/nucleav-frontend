@@ -27,6 +27,19 @@ import { useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useSession } from "next-auth/react"
+import Image from "next/image";
+
+interface User {
+  id: number;
+  name: string;
+  lastname: string;
+  username: string;
+  email: string;
+  profession: string | null;
+  role: string;
+  profile_image_url: string | null;
+  bio: string | null;
+}
 
 export default function ProfilePage() {
   const router = useRouter()
@@ -35,7 +48,7 @@ export default function ProfilePage() {
 
   const backgroundHeader = mode === "dark" ? HeaderDark.src : HeaderLight.src
 
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { data: session, status } = useSession()
@@ -44,8 +57,8 @@ export default function ProfilePage() {
     const fetchUser = async () => {
       if (!session?.user?.id) {
         if (status !== "loading") {
-          setLoading(false)
-          setError("No se ha encontrado información de sesión")
+          setLoading(false);
+          setError("No se ha encontrado información de sesión");
         }
         return
       }
@@ -56,12 +69,16 @@ export default function ProfilePage() {
             Authorization: `Bearer ${session.accessToken}`,
           },
         })
-        setUser(res.data)
-        setError(null)
-      } catch (error: any) {
-        setError(error.response?.data?.message || "Error al cargar los datos del usuario")
+        setUser(res.data);
+        setError(null);
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          setError(error.response?.data?.message || "Error al cargar los datos del usuario");
+        } else {
+          setError("Error inesperado");
+        }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
@@ -298,8 +315,8 @@ export default function ProfilePage() {
                           <Skeleton variant="text" animation="wave" sx={{ width: "80%", height: 24 }} />
                         ) : (
                           <Typography level="body-md" fontWeight="md">
-                              {user?.name && user?.lastname
-                                ? `${user.name} ${user.lastname}`
+                            {user?.name && user?.lastname
+                              ? `${user.name} ${user.lastname}`
                               : "Sin nombre completo"}
                           </Typography>
                         )}
@@ -391,7 +408,13 @@ export default function ProfilePage() {
                     <Grid key={item.id} xs={12} sm={6} md={6}>
                       <Card variant="outlined">
                         <AspectRatio ratio="16/9">
-                          <img src={item.src || "/placeholder.svg"} alt={item.title} style={{ objectFit: "cover" }} />
+                          <Image
+                            src={item.src || "/placeholder.svg"}
+                            alt={item.title}
+                            fill
+                            style={{ objectFit: "cover" }}
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                          />
                           {item.type === "video" && (
                             <Box
                               sx={{
