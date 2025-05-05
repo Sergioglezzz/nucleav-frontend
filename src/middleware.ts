@@ -12,5 +12,7 @@ export const config = {
     '/proyectos/:path*',
     '/materiales/:path*',
     '/equipo/:path*',
+    '/profile',
+    '/profile/edit',
   ],
 };
