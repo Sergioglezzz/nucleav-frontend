@@ -26,6 +26,7 @@ import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
 import { useEffect, useState } from "react"
 import { signIn } from "next-auth/react"
 import { Email, Lock, Visibility, VisibilityOff, CheckCircle, Error, Info, Warning, Close } from "@mui/icons-material"
+import ClientOnly from "@/components/ClientOnly"
 
 // Tipos para las notificaciones
 type NotificationType = "success" | "error" | "info" | "warning"
@@ -40,7 +41,6 @@ export default function LoginPage() {
   const router = useRouter()
   const { mode, setMode } = useColorScheme()
   const [mounted, setMounted] = useState(false)
-  const [systemMode, setSystemMode] = useState<"light" | "dark">("light")
 
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -56,33 +56,11 @@ export default function LoginPage() {
     type: "info",
   })
 
-  // Detectar el modo del sistema y establecer el tema inicial
   useEffect(() => {
-    // Verificar si hay una preferencia guardada en localStorage
-    const savedMode = localStorage.getItem("theme-mode") as "light" | "dark" | null
-
-    if (savedMode) {
-      // Si hay una preferencia guardada, usarla
-      setMode(savedMode)
-      setSystemMode(savedMode)
-    } else {
-      // Si no hay preferencia guardada, detectar la preferencia del sistema
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-      const initialMode = prefersDark ? "dark" : "light"
-      setMode(initialMode)
-      setSystemMode(initialMode)
-      localStorage.setItem("theme-mode", initialMode)
-    }
-
     setMounted(true)
-  }, [setMode])
-
-  // Función para cambiar el tema y guardar la preferencia
-  const handleToggleMode = () => {
-    const newMode = mode === "dark" ? "light" : "dark"
-    setMode(newMode)
-    localStorage.setItem("theme-mode", newMode)
-  }
+    // Marcar el body como cargado por Joy UI
+    document.body.classList.add("joy-loaded")
+  }, [])
 
   // Función para mostrar notificaciones
   const showNotification = (message: string, type: NotificationType = "info") => {
@@ -182,7 +160,7 @@ export default function LoginPage() {
         showNotification("¡Inicio de sesión exitoso!", "success")
         setTimeout(() => {
           router.push("/dashboard")
-        }, 1500)
+        }, 800)
       } else {
         // Mostrar mensaje de error específico según el error
         if (result?.error === "CredentialsSignin") {
@@ -204,27 +182,40 @@ export default function LoginPage() {
     setShowPassword(!showPassword)
   }
 
-  // Determinar el modo actual para usar en estilos
-  const currentMode = mounted ? mode : systemMode
+  // Función para cambiar el tema
+  const handleToggleMode = () => {
+    const newMode = mode === "dark" ? "light" : "dark"
+    setMode(newMode)
+    localStorage.setItem("theme-mode", newMode)
 
-  // Aplicar estilos condicionales basados en el modo actual
-  const backgroundStyle = {
-    background:
-      currentMode === "dark"
-        ? "linear-gradient(145deg, #1a1a1a 0%, #121212 100%)"
-        : "linear-gradient(145deg, #f5f5f5 0%, #ffffff 100%)",
+    // Actualizar clases para estilos inmediatos
+    if (newMode === "dark") {
+      document.documentElement.classList.add("dark-theme")
+      document.body.classList.add("dark-theme")
+    } else {
+      document.documentElement.classList.remove("dark-theme")
+      document.body.classList.remove("dark-theme")
+    }
   }
 
-  // No renderizar el contenido hasta que el componente esté montado
+  // Determinar el estilo de fondo basado en el tema actual
+  const backgroundStyle = {
+    background:
+      mode === "dark"
+        ? "linear-gradient(145deg, #0f1214 0%, #1a1a1a 100%)"
+        : "linear-gradient(145deg, #f5f5f3 0%, #ffffff 100%)",
+  }
+
+  // Si no está montado, mostrar un indicador de carga con el fondo correcto
   if (!mounted) {
     return (
       <Box
         sx={{
-          ...backgroundStyle,
           minHeight: "100vh",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
+          backgroundColor: "var(--joy-palette-background-body)",
         }}
       >
         <CircularProgress size="lg" />
@@ -258,7 +249,7 @@ export default function LoginPage() {
             },
           }}
         >
-          {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
+          <ClientOnly>{mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}</ClientOnly>
         </IconButton>
       </Stack>
 
@@ -300,9 +291,7 @@ export default function LoginPage() {
             "&:hover": {
               transform: "translateY(-5px)",
               boxShadow: "xl",
-              transition: 1,
             },
-
             overflow: "visible",
             "&::before": {
               content: '""',

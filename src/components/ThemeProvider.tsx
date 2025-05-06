@@ -1,28 +1,74 @@
-'use client'
+"use client"
 
-import { CssVarsProvider} from '@mui/joy/styles'
-// import { useEffect } from 'react'
-import theme from '../lib/theme'
+import type React from "react"
 
+import { CssVarsProvider, useColorScheme } from "@mui/joy/styles"
+import { useEffect, useState } from "react"
+import theme from "../lib/theme"
+import { CircularProgress, Box } from "@mui/joy"
+
+// Componente para sincronizar el fondo del body con el tema
+function BodyBackgroundSync() {
+  const { mode } = useColorScheme()
+
+  useEffect(() => {
+    // Actualizar clases y estilos cuando cambia el modo
+    if (mode === "dark") {
+      document.documentElement.classList.add("dark-theme")
+      document.body.classList.add("dark-theme")
+      document.body.style.backgroundColor = theme.colorSchemes.dark.palette.background.body
+      document.body.style.color = theme.colorSchemes.dark.palette.text.primary
+    } else {
+      document.documentElement.classList.remove("dark-theme")
+      document.body.classList.remove("dark-theme")
+      document.body.style.backgroundColor = theme.colorSchemes.light.palette.background.body
+      document.body.style.color = theme.colorSchemes.light.palette.text.primary
+    }
+
+    // Guardar el modo en localStorage
+    localStorage.setItem("theme-mode", mode || "light")
+  }, [mode])
+
+  return null
+}
+
+// Componente principal ThemeProvider
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+
+  // Detectar cuando el componente está montado
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
-    <CssVarsProvider theme={theme} defaultMode="system"
-      attribute="data-color-scheme" disableNestedContext>
-      {/* <BodyBackgroundSync /> */}
-      {children}
+    <CssVarsProvider
+      theme={theme}
+      defaultMode="system"
+      attribute="data-color-scheme"
+      disableNestedContext
+      modeStorageKey="theme-mode"
+    >
+      <BodyBackgroundSync />
+
+      {!mounted ? (
+        // Mostrar un indicador de carga mientras se monta el componente
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: "100vh",
+            backgroundColor: "var(--joy-palette-background-body)",
+            color: "var(--joy-palette-text-primary)",
+          }}
+        >
+          <CircularProgress size="lg" />
+        </Box>
+      ) : (
+        // Renderizar los hijos una vez montado
+        children
+      )}
     </CssVarsProvider>
   )
 }
-
-// function BodyBackgroundSync() {
-//   const theme = useTheme()
-//   const { mode } = useColorScheme()
-
-//   useEffect(() => {
-//     const color = theme.vars.palette.background.body
-//     document.body.style.backgroundColor = color
-//     document.body.style.color = theme.vars.palette.text.primary ?? '#fff'
-//   }, [theme, mode])
-
-//   return null
-// }
