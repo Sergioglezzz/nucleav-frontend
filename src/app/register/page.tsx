@@ -6,8 +6,8 @@ import heroImage from "../../../public/hero4.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useColorScheme } from '@mui/joy/styles';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded';
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded';
+import ClientOnly from "@/components/ClientOnly"
+import ThemeToggleButton from "@/components/ThemeToggleButton"
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useEffect, useState } from 'react';
 import { Formik, Form } from 'formik';
@@ -38,6 +38,7 @@ const validationSchema = Yup.object({
 
 export default function RegisterPage() {
   const router = useRouter();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode, setMode } = useColorScheme();
   const [mounted, setMounted] = useState(false);
 
@@ -74,13 +75,11 @@ export default function RegisterPage() {
     >
       {/* Botón de cambiar tema */}
       <Stack direction="row" justifyContent="flex-end">
-        <IconButton
-          variant="soft"
-          onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-          sx={{ mt: 1 }}
-        >
-          {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-        </IconButton>
+        <Box>
+          <ClientOnly>
+            <ThemeToggleButton />
+          </ClientOnly>
+        </Box>
       </Stack>
       {/* Texto principal */}
       <Typography

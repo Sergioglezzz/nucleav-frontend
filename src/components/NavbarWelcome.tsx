@@ -1,12 +1,13 @@
 'use client'
-import { Stack, IconButton, useTheme, Box } from '@mui/joy'
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
+import { Stack, useTheme, Box } from '@mui/joy'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
+import ClientOnly from "./ClientOnly"
+import ThemeToggleButton from "./ThemeToggleButton"
 
 export default function NavbarWelcome() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
   const [mounted, setMounted] = useState(false);
@@ -51,12 +52,11 @@ export default function NavbarWelcome() {
       {/* ACCIONES */}
       <Stack direction="row" alignItems="center" gap={1.5}>
         {/* Modo oscuro */}
-        <IconButton
-          variant="soft"
-          onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-        >
-          {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-        </IconButton>
+        <Box sx={{ mb: 1 }}>
+          <ClientOnly>
+            <ThemeToggleButton />
+          </ClientOnly>
+        </Box>
       </Stack>
     </Stack>
   )

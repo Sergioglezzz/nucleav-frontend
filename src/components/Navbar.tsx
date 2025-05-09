@@ -15,11 +15,8 @@ import {
   Tooltip,
   ListDivider,
 } from '@mui/joy'
-import MenuIcon from '@mui/icons-material/Menu'
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
-import DarkModeRoundedIcon from '@mui/icons-material/DarkModeRounded'
-import LightModeRoundedIcon from '@mui/icons-material/LightModeRounded'
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
@@ -27,9 +24,12 @@ import { useEffect, useState } from 'react';
 import ExitModal from "./ExitModal";
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import ClientOnly from "./ClientOnly"
+import ThemeToggleButton from "./ThemeToggleButton"
 
 
 export default function Navbar() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
   const [mounted, setMounted] = useState(false);
@@ -104,12 +104,11 @@ export default function Navbar() {
 
 
         {/* Modo oscuro */}
-        <IconButton
-          variant="plain"
-          onClick={() => setMode(mode === 'dark' ? 'light' : 'dark')}
-        >
-          {mode === 'dark' ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
-        </IconButton>
+        <Stack alignItems={'center'} justifyContent="center" sx={{ mb: 1 }}>
+          <ClientOnly>
+            <ThemeToggleButton />
+          </ClientOnly>
+        </Stack>
 
 
         <Dropdown>
@@ -174,11 +173,6 @@ export default function Navbar() {
             </MenuItem>
           </Menu>
         </Dropdown>
-
-        {/* Menú hamburguesa (opcional) */}
-        <IconButton variant="soft" sx={{ display: { xs: 'flex', sm: 'none' } }}>
-          <MenuIcon />
-        </IconButton>
       </Stack>
       {/* Modal de Logout */}
       <ExitModal

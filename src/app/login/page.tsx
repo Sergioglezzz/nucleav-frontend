@@ -16,8 +16,7 @@ import {
   Snackbar,
 } from "@mui/joy"
 import Image from "next/image"
-import DarkModeRoundedIcon from "@mui/icons-material/DarkModeRounded"
-import LightModeRoundedIcon from "@mui/icons-material/LightModeRounded"
+import ThemeToggleButton from "@/components/ThemeToggleButton"
 import { useRouter } from "next/navigation"
 import { useColorScheme } from "@mui/joy/styles"
 import { motion } from "framer-motion"
@@ -39,6 +38,7 @@ interface NotificationState {
 
 export default function LoginPage() {
   const router = useRouter()
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode, setMode } = useColorScheme()
   const [mounted, setMounted] = useState(false)
 
@@ -183,20 +183,20 @@ export default function LoginPage() {
   }
 
   // Función para cambiar el tema
-  const handleToggleMode = () => {
-    const newMode = mode === "dark" ? "light" : "dark"
-    setMode(newMode)
-    localStorage.setItem("theme-mode", newMode)
+  // const handleToggleMode = () => {
+  //   const newMode = mode === "dark" ? "light" : "dark"
+  //   setMode(newMode)
+  //   localStorage.setItem("theme-mode", newMode)
 
-    // Actualizar clases para estilos inmediatos
-    if (newMode === "dark") {
-      document.documentElement.classList.add("dark-theme")
-      document.body.classList.add("dark-theme")
-    } else {
-      document.documentElement.classList.remove("dark-theme")
-      document.body.classList.remove("dark-theme")
-    }
-  }
+  //   // Actualizar clases para estilos inmediatos
+  //   if (newMode === "dark") {
+  //     document.documentElement.classList.add("dark-theme")
+  //     document.body.classList.add("dark-theme")
+  //   } else {
+  //     document.documentElement.classList.remove("dark-theme")
+  //     document.body.classList.remove("dark-theme")
+  //   }
+  // }
 
   // Determinar el estilo de fondo basado en el tema actual
   const backgroundStyle = {
@@ -236,21 +236,11 @@ export default function LoginPage() {
     >
       {/* Botón de cambiar tema arriba a la derecha */}
       <Stack direction="row" justifyContent="flex-end">
-        <IconButton
-          variant="soft"
-          onClick={handleToggleMode}
-          sx={{
-            mt: 1,
-            borderRadius: "50%",
-            boxShadow: "sm",
-            transition: "transform 0.2s",
-            "&:hover": {
-              transform: "scale(1.05)",
-            },
-          }}
-        >
-          <ClientOnly>{mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}</ClientOnly>
-        </IconButton>
+        <Box>
+          <ClientOnly>
+            <ThemeToggleButton />
+          </ClientOnly>
+        </Box>
       </Stack>
 
       {/* Texto principal */}
