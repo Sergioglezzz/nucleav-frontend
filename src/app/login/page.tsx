@@ -182,30 +182,6 @@ export default function LoginPage() {
     setShowPassword(!showPassword)
   }
 
-  // Función para cambiar el tema
-  // const handleToggleMode = () => {
-  //   const newMode = mode === "dark" ? "light" : "dark"
-  //   setMode(newMode)
-  //   localStorage.setItem("theme-mode", newMode)
-
-  //   // Actualizar clases para estilos inmediatos
-  //   if (newMode === "dark") {
-  //     document.documentElement.classList.add("dark-theme")
-  //     document.body.classList.add("dark-theme")
-  //   } else {
-  //     document.documentElement.classList.remove("dark-theme")
-  //     document.body.classList.remove("dark-theme")
-  //   }
-  // }
-
-  // Determinar el estilo de fondo basado en el tema actual
-  const backgroundStyle = {
-    background:
-      mode === "dark"
-        ? "linear-gradient(145deg, #0f1214 0%, #1a1a1a 100%)"
-        : "linear-gradient(145deg, #f5f5f3 0%, #ffffff 100%)",
-  }
-
   // Si no está montado, mostrar un indicador de carga con el fondo correcto
   if (!mounted) {
     return (
@@ -229,7 +205,8 @@ export default function LoginPage() {
         minHeight: "100vh",
         px: 2,
         py: 2,
-        ...backgroundStyle,
+        bgcolor: "background.body", // usa el color del tema
+        color: "text.primary",
         transition: "background 0.3s ease",
       }}
       direction="column"
