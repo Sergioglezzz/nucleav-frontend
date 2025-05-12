@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useSession } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import axios from "axios"
 import {
   Box,
@@ -42,6 +42,7 @@ import {
   Mail,
   Badge,
 } from "@mui/icons-material"
+import DeleteUserModal from "./DeleteUserModal"
 import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
@@ -78,6 +79,7 @@ export default function ProfileEditPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [openChangePasswordModal, setOpenChangePasswordModal] = useState(false)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // Estado para el contador de caracteres de la bio
   const [bioCharCount, setBioCharCount] = useState(0)
@@ -195,7 +197,6 @@ export default function ProfileEditPage() {
     setSuccessMessage(null)
 
     try {
-
       // Usar PATCH en lugar de PUT para actualizar solo los campos modificados
       const response = await axios.patch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/users/${session.user.id}`,
@@ -224,6 +225,29 @@ export default function ProfileEditPage() {
       setSaving(false)
     }
   }
+
+  const handleDeleteUser = async () => {
+    if (!session?.user?.id) return
+
+    try {
+      setDeleting(true)
+
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/users/${session.user.id}`, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      })
+
+      // Cerrar sesión y redirigir al home
+      await signOut({ callbackUrl: "/" })
+    } catch (error) {
+      console.error("Error al eliminar el usuario", error)
+      setError("No se pudo eliminar la cuenta. Inténtalo de nuevo.")
+    } finally {
+      setDeleting(false)
+      setOpenDeleteModal(false)
+    }
+  }  
 
   // Cancelar edición
   const handleCancel = () => {
@@ -706,7 +730,7 @@ export default function ProfileEditPage() {
       <Modal open={openChangePasswordModal} onClose={() => setOpenChangePasswordModal(false)}>
         <Sheet
           sx={{
-            maxWidth: 400,
+            width: { xs: "90%", sm: 400 },
             mx: "auto",
             my: "20vh",
             p: 3,
@@ -728,30 +752,12 @@ export default function ProfileEditPage() {
           </Stack>
         </Sheet>
       </Modal>
-      <Modal open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
-        <Sheet
-          sx={{
-            maxWidth: 400,
-            mx: "auto",
-            my: "30vh",
-            p: 3,
-            borderRadius: "md",
-            boxShadow: "lg",
-          }}
-        >
-          <Typography level="h4" sx={{ mb: 2 }}>
-            ¿Eliminar cuenta?
-          </Typography>
-          <Typography level="body-sm" sx={{ mb: 3 }}>
-            Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar tu cuenta?
-          </Typography>
-          <Stack direction="row" justifyContent="flex-end" gap={1}>
-            <Button variant="plain" onClick={() => setOpenDeleteModal(false)}>Cancelar</Button>
-            <Button variant="solid" color="danger">Eliminar</Button>
-          </Stack>
-        </Sheet>
-      </Modal>
-
+      <DeleteUserModal
+        open={openDeleteModal}
+        onClose={() => setOpenDeleteModal(false)}
+        onConfirm={handleDeleteUser}
+        loading={deleting}
+      />
     </>
   )
 

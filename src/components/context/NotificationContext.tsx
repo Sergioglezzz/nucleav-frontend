@@ -71,7 +71,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     <NotificationContext.Provider value={{ showNotification }}>
       {children}
       <Snackbar
-        variant="soft"
+        variant="outlined"
         color={getColor()}
         open={notification.open}
         onClose={handleClose}
@@ -83,7 +83,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
             <Close />
           </IconButton>
         }
-        sx={{ position: "fixed", zIndex: 9999, minWidth: 300, maxWidth: 500 }}
+        sx={{ width: { xs: "90%", sm: " 100%" }, position: "fixed", zIndex: 9999, minWidth: 300, maxWidth: 500 }}
       >
         <Typography>{notification.message}</Typography>
       </Snackbar>
