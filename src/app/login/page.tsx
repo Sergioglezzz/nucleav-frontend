@@ -205,7 +205,7 @@ export default function LoginPage() {
         minHeight: "100vh",
         px: 2,
         py: 2,
-        bgcolor: "background.body", // usa el color del tema
+        bgcolor: "background.body",
         color: "text.primary",
         transition: "background 0.3s ease",
       }}
@@ -254,24 +254,7 @@ export default function LoginPage() {
             position: "relative",
             boxShadow: "lg",
             borderRadius: "xl",
-            transition: "transform 0.3s, box-shadow 0.3s",
-            "&:hover": {
-              transform: "translateY(-5px)",
-              boxShadow: "xl",
-            },
             overflow: "visible",
-            "&::before": {
-              content: '""',
-              position: "absolute",
-              top: -2,
-              left: -2,
-              right: -2,
-              bottom: -2,
-              background: "linear-gradient(45deg, #ffbc62, transparent, #ffbc62)",
-              zIndex: -1,
-              borderRadius: "calc(var(--Card-radius) + 2px)",
-              opacity: 0.4,
-            },
           }}
         >
           {/* Botón de retroceso - ahora a la izquierda */}
@@ -341,11 +324,13 @@ export default function LoginPage() {
                 error={!!emailError}
                 startDecorator={<Email />}
                 sx={{
-                  "--Input-focusedThickness": "2px",
-                  "--Input-focusedHighlight": "var(--joy-palette-primary-500)",
-                  transition: "transform 0.2s",
+                  "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                  "&:hover": {
+                    borderColor: "primary.solidBg",
+                  },
                   "&:focus-within": {
-                    transform: "translateY(-2px)",
+                    borderColor: "primary.solidBg",
+                    boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
                   },
                 }}
               />
@@ -383,11 +368,13 @@ export default function LoginPage() {
                   </IconButton>
                 }
                 sx={{
-                  "--Input-focusedThickness": "2px",
-                  "--Input-focusedHighlight": "var(--joy-palette-primary-500)",
-                  transition: "transform 0.2s",
+                  "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                  "&:hover": {
+                    borderColor: "primary.solidBg",
+                  },
                   "&:focus-within": {
-                    transform: "translateY(-2px)",
+                    borderColor: "primary.solidBg",
+                    boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
                   },
                 }}
               />
@@ -475,6 +462,8 @@ export default function LoginPage() {
                 transition: "color 0.2s",
                 "&:hover": {
                   color: "#ff9b44",
+                  bgcolor: "transparent",
+                  textDecoration: "underline",
                 },
               }}
             >

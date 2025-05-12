@@ -25,7 +25,7 @@ export default function WelcomePage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const timeout = setTimeout(() => setMounted(true), 300) // opcional: retardo para evitar flash rápido
+    const timeout = setTimeout(() => setMounted(true), 100) // opcional: retardo para evitar flash rápido
     return () => clearTimeout(timeout)
   }, [])
 
