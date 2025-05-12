@@ -1,22 +1,15 @@
 "use client"
 
-import { Box, Button, Typography, Stack, CircularProgress, Snackbar, IconButton } from "@mui/joy"
+import { Box, Button, Typography, Stack, CircularProgress } from "@mui/joy"
 import { useRouter } from "next/navigation"
 import NavbarWelcome from "@/components/NavbarWelcome"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import heroImage from "../../public/hero.png"
 import { useEffect, useState } from "react"
-import { Login, PersonAdd, CheckCircle, Error, Info, Warning, Close } from "@mui/icons-material"
+import { Login, PersonAdd } from "@mui/icons-material"
+import { useNotification } from "@/components/context/NotificationContext"
 
-// Tipos para las notificaciones
-type NotificationType = "success" | "error" | "info" | "warning"
-
-interface NotificationState {
-  open: boolean
-  message: string
-  type: NotificationType
-}
 
 export default function WelcomePage() {
   const router = useRouter()
@@ -29,59 +22,7 @@ export default function WelcomePage() {
     return () => clearTimeout(timeout)
   }, [])
 
-  // Estado para la notificación
-  const [notification, setNotification] = useState<NotificationState>({
-    open: false,
-    message: "",
-    type: "info",
-  })
-
-  // Función para mostrar notificaciones
-  const showNotification = (message: string, type: NotificationType = "info") => {
-    setNotification({
-      open: true,
-      message,
-      type,
-    })
-  }
-
-  // Función para cerrar la notificación
-  const handleCloseNotification = () => {
-    setNotification((prev) => ({
-      ...prev,
-      open: false,
-    }))
-  }
-
-  // Obtener el icono según el tipo de notificación
-  const getNotificationIcon = () => {
-    switch (notification.type) {
-      case "success":
-        return <CheckCircle />
-      case "error":
-        return <Error />
-      case "warning":
-        return <Warning />
-      case "info":
-      default:
-        return <Info />
-    }
-  }
-
-  // Obtener el color según el tipo de notificación
-  const getNotificationColor = () => {
-    switch (notification.type) {
-      case "success":
-        return "success"
-      case "error":
-        return "danger"
-      case "warning":
-        return "warning"
-      case "info":
-      default:
-        return "primary"
-    }
-  }
+  const { showNotification } = useNotification()
 
   const handleLoginClick = async () => {
     setLoadingLogin(true)
@@ -101,7 +42,7 @@ export default function WelcomePage() {
     setLoadingRegister(true)
     try {
       // Simular una carga
-      await new Promise((resolve) => setTimeout(resolve, 800))
+      await new Promise((resolve) => setTimeout(resolve, 300))
       router.push("/register")
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
@@ -363,33 +304,6 @@ export default function WelcomePage() {
           </Box>
         </>
       )}
-
-      {/* Contenido principal */}
-
-
-      {/* Snackbar para notificaciones */}
-      <Snackbar
-        variant="soft"
-        color={getNotificationColor()}
-        open={notification.open}
-        onClose={handleCloseNotification}
-        autoHideDuration={5000}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        startDecorator={getNotificationIcon()}
-        endDecorator={
-          <IconButton variant="plain" size="sm" color={getNotificationColor()} onClick={handleCloseNotification}>
-            <Close />
-          </IconButton>
-        }
-        sx={{
-          position: "fixed",
-          zIndex: 9999,
-          minWidth: 300,
-          maxWidth: 500,
-        }}
-      >
-        <Typography>{notification.message}</Typography>
-      </Snackbar>
     </>
   )
 }

@@ -13,7 +13,6 @@ import {
   IconButton,
   Divider,
   CircularProgress,
-  Snackbar,
 } from "@mui/joy"
 import Image from "next/image"
 import ThemeToggleButton from "@/components/ThemeToggleButton"
@@ -24,17 +23,10 @@ import heroImage from "../../../public/hero3.png"
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
 import { useEffect, useState } from "react"
 import { signIn } from "next-auth/react"
-import { Email, Lock, Visibility, VisibilityOff, CheckCircle, Error, Info, Warning, Close } from "@mui/icons-material"
+import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material"
 import ClientOnly from "@/components/ClientOnly"
+import { useNotification } from "@/components/context/NotificationContext"
 
-// Tipos para las notificaciones
-type NotificationType = "success" | "error" | "info" | "warning"
-
-interface NotificationState {
-  open: boolean
-  message: string
-  type: NotificationType
-}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -49,12 +41,7 @@ export default function LoginPage() {
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
 
-  // Estado para la notificación
-  const [notification, setNotification] = useState<NotificationState>({
-    open: false,
-    message: "",
-    type: "info",
-  })
+  const { showNotification } = useNotification()
 
   useEffect(() => {
     setMounted(true)
@@ -62,52 +49,6 @@ export default function LoginPage() {
     document.body.classList.add("joy-loaded")
   }, [])
 
-  // Función para mostrar notificaciones
-  const showNotification = (message: string, type: NotificationType = "info") => {
-    setNotification({
-      open: true,
-      message,
-      type,
-    })
-  }
-
-  // Función para cerrar la notificación
-  const handleCloseNotification = () => {
-    setNotification((prev) => ({
-      ...prev,
-      open: false,
-    }))
-  }
-
-  // Obtener el icono según el tipo de notificación
-  const getNotificationIcon = () => {
-    switch (notification.type) {
-      case "success":
-        return <CheckCircle />
-      case "error":
-        return <Error />
-      case "warning":
-        return <Warning />
-      case "info":
-      default:
-        return <Info />
-    }
-  }
-
-  // Obtener el color según el tipo de notificación
-  const getNotificationColor = () => {
-    switch (notification.type) {
-      case "success":
-        return "success"
-      case "error":
-        return "danger"
-      case "warning":
-        return "warning"
-      case "info":
-      default:
-        return "primary"
-    }
-  }
 
   // Validar email
   const validateEmail = (email: string): boolean => {
@@ -506,30 +447,6 @@ export default function LoginPage() {
           </motion.div>
         </Box>
       </Stack>
-
-      {/* Snackbar para notificaciones */}
-      <Snackbar
-        variant="soft"
-        color={getNotificationColor()}
-        open={notification.open}
-        onClose={handleCloseNotification}
-        autoHideDuration={5000}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-        startDecorator={getNotificationIcon()}
-        endDecorator={
-          <IconButton variant="plain" size="sm" color={getNotificationColor()} onClick={handleCloseNotification}>
-            <Close />
-          </IconButton>
-        }
-        sx={{
-          position: "fixed",
-          zIndex: 9999,
-          minWidth: 300,
-          maxWidth: 500,
-        }}
-      >
-        <Typography>{notification.message}</Typography>
-      </Snackbar>
     </Stack>
   )
 }
