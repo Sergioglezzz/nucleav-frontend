@@ -23,6 +23,11 @@ import {
   Divider,
   Chip,
   Alert,
+  Menu,
+  MenuItem,
+  Dropdown,
+  MenuButton,
+  Modal,
 } from "@mui/joy"
 import {
   Edit,
@@ -41,6 +46,7 @@ import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 
 interface User {
   id: number
@@ -70,6 +76,8 @@ export default function ProfileEditPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [openChangePasswordModal, setOpenChangePasswordModal] = useState(false)
+  const [openDeleteModal, setOpenDeleteModal] = useState(false)
 
   // Estado para el contador de caracteres de la bio
   const [bioCharCount, setBioCharCount] = useState(0)
@@ -286,6 +294,7 @@ export default function ProfileEditPage() {
                 mb: 3,
                 mx: { xs: -3.5, sm: 0 },
                 overflow: "visible",
+                position: "relative",
               }}
             >
               <CardContent sx={{ p: 3 }}>
@@ -315,6 +324,39 @@ export default function ProfileEditPage() {
                       Personaliza cómo aparecerá tu información de perfil.
                     </Typography>
                   </Box>
+                  <Dropdown>
+                    <MenuButton
+                      slots={{ root: IconButton }}
+                      slotProps={{
+                        root: {
+                          variant: "plain",
+                          color: "neutral",
+                          size: "sm",
+                          sx: { position: "absolute", top: 8, right: 8 },
+                        },
+                      }}
+                    >
+                      <MoreVertIcon />
+                    </MenuButton>
+                    <Menu placement="bottom-end" sx={{
+                      minWidth: 220,
+                      bgcolor: 'background.body',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                      borderRadius: 'md',
+                      boxShadow: 'md',
+                      p: 1,
+                      zIndex: 999,
+                    }}>
+                      <MenuItem onClick={() => setOpenChangePasswordModal(true)}>
+                        Cambiar contraseña
+                      </MenuItem>
+                      <MenuItem color="danger" onClick={() => setOpenDeleteModal(true)}>
+                        Eliminar cuenta
+                      </MenuItem>
+                    </Menu>
+                  </Dropdown>
+
                 </Stack>
 
                 <Box
@@ -661,6 +703,56 @@ export default function ProfileEditPage() {
           </form>
         </Box>
       </ColumnLayout>
+      <Modal open={openChangePasswordModal} onClose={() => setOpenChangePasswordModal(false)}>
+        <Sheet
+          sx={{
+            maxWidth: 400,
+            mx: "auto",
+            my: "20vh",
+            p: 3,
+            borderRadius: "md",
+            boxShadow: "lg",
+          }}
+        >
+          <Typography level="h4" sx={{ mb: 2 }}>
+            Cambiar contraseña
+          </Typography>
+          <Stack gap={2}>
+            <Input type="password" placeholder="Contraseña actual" />
+            <Input type="password" placeholder="Nueva contraseña" />
+            <Input type="password" placeholder="Repetir nueva contraseña" />
+          </Stack>
+          <Stack direction="row" justifyContent="flex-end" gap={1} mt={3}>
+            <Button variant="plain" onClick={() => setOpenChangePasswordModal(false)}>Cancelar</Button>
+            <Button variant="solid" color="primary">Guardar</Button>
+          </Stack>
+        </Sheet>
+      </Modal>
+      <Modal open={openDeleteModal} onClose={() => setOpenDeleteModal(false)}>
+        <Sheet
+          sx={{
+            maxWidth: 400,
+            mx: "auto",
+            my: "30vh",
+            p: 3,
+            borderRadius: "md",
+            boxShadow: "lg",
+          }}
+        >
+          <Typography level="h4" sx={{ mb: 2 }}>
+            ¿Eliminar cuenta?
+          </Typography>
+          <Typography level="body-sm" sx={{ mb: 3 }}>
+            Esta acción no se puede deshacer. ¿Estás seguro de que quieres eliminar tu cuenta?
+          </Typography>
+          <Stack direction="row" justifyContent="flex-end" gap={1}>
+            <Button variant="plain" onClick={() => setOpenDeleteModal(false)}>Cancelar</Button>
+            <Button variant="solid" color="danger">Eliminar</Button>
+          </Stack>
+        </Sheet>
+      </Modal>
+
     </>
   )
+
 }
