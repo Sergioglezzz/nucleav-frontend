@@ -37,6 +37,7 @@ import {
   ArrowUpward,
   ArrowDownward,
 } from "@mui/icons-material"
+import ThemeTransitionWrapper from "@/components/ThemeTransitionWrapper"
 
 interface User {
   id: number
@@ -193,291 +194,294 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Navbar />
-      <ColumnLayout>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography level="h2">Usuarios registrados</Typography>
-          <Badge badgeContent={filteredUsers.length} color="primary">
-            <Chip variant="soft" color="primary" startDecorator={<Person />} size="lg">
-              Total de usuarios
-            </Chip>
-          </Badge>
-        </Box>
+      <ThemeTransitionWrapper>
 
-        {/* Barra de herramientas */}
-        <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              gap: 2,
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Box sx={{ display: "flex", gap: 2, width: { xs: "100%", sm: "auto" } }}>
-              <Input
-                placeholder="Buscar usuarios..."
-                startDecorator={<Search />}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                sx={{ width: { xs: "100%", sm: 250 } }}
-              />
-              <Select
-                placeholder="Filtrar por rol"
-                startDecorator={<FilterList />}
-                value={roleFilter}
-                onChange={(_, value) => setRoleFilter(value as string)}
-                sx={{ width: { xs: "100%", sm: 180 } }}
-              >
-                <Option value="all">Todos los roles</Option>
-                <Option value="admin">Admin</Option>
-                <Option value="moderator">Moderador</Option>
-                <Option value="user">Usuario</Option>
-              </Select>
-            </Box>
-            <Box sx={{ display: "flex", gap: 2 }}>
-              <Tooltip title="Actualizar lista">
-                <IconButton variant="soft" color="primary" onClick={fetchUsers} disabled={loading}>
-                  <Refresh />
-                </IconButton>
-              </Tooltip>
-              <Button
-                variant="solid"
-                color="primary"
-                startDecorator={<Person />}
-                onClick={() => router.push("/users/new")}
-              >
-                Nuevo usuario
-              </Button>
-            </Box>
+        <Navbar />
+        <ColumnLayout>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Typography level="h2">Usuarios registrados</Typography>
+            <Badge badgeContent={filteredUsers.length} color="primary">
+              <Chip variant="soft" color="primary" startDecorator={<Person />} size="lg">
+                Total de usuarios
+              </Chip>
+            </Badge>
           </Box>
-        </Card>
 
-        {/* Tabla de usuarios */}
-        {loading ? (
-          <Card variant="outlined">
-            <Box sx={{ p: 2 }}>
-              <Skeleton variant="text" level="h4" sx={{ width: "30%", mb: 2 }} />
-              <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
-              {[...Array(5)].map((_, index) => (
-                <Skeleton key={index} variant="rectangular" width="100%" height={60} sx={{ mb: 1 }} />
-              ))}
-            </Box>
-          </Card>
-        ) : error ? (
-          <Alert
-            color="danger"
-            variant="soft"
-            sx={{ mb: 2 }}
-            endDecorator={
-              <Button variant="soft" color="danger" size="sm" onClick={fetchUsers}>
-                Reintentar
-              </Button>
-            }
-          >
-            {error}
-          </Alert>
-        ) : (
-          <Card variant="outlined" sx={{ overflow: "auto" }}>
-            {filteredUsers.length === 0 ? (
-              <Box sx={{ p: 4, textAlign: "center" }}>
-                <Typography level="body-lg" sx={{ mb: 2 }}>
-                  No se encontraron usuarios con los criterios de búsqueda.
-                </Typography>
-                <Button
-                  variant="outlined"
-                  color="neutral"
-                  onClick={() => {
-                    setSearchQuery("")
-                    setRoleFilter("all")
-                  }}
+          {/* Barra de herramientas */}
+          <Card variant="outlined" sx={{ p: 2, mb: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                gap: 2,
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Box sx={{ display: "flex", gap: 2, width: { xs: "100%", sm: "auto" } }}>
+                <Input
+                  placeholder="Buscar usuarios..."
+                  startDecorator={<Search />}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  sx={{ width: { xs: "100%", sm: 250 } }}
+                />
+                <Select
+                  placeholder="Filtrar por rol"
+                  startDecorator={<FilterList />}
+                  value={roleFilter}
+                  onChange={(_, value) => setRoleFilter(value as string)}
+                  sx={{ width: { xs: "100%", sm: 180 } }}
                 >
-                  Limpiar filtros
+                  <Option value="all">Todos los roles</Option>
+                  <Option value="admin">Admin</Option>
+                  <Option value="moderator">Moderador</Option>
+                  <Option value="user">Usuario</Option>
+                </Select>
+              </Box>
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <Tooltip title="Actualizar lista">
+                  <IconButton variant="soft" color="primary" onClick={fetchUsers} disabled={loading}>
+                    <Refresh />
+                  </IconButton>
+                </Tooltip>
+                <Button
+                  variant="solid"
+                  color="primary"
+                  startDecorator={<Person />}
+                  onClick={() => router.push("/users/new")}
+                >
+                  Nuevo usuario
                 </Button>
               </Box>
-            ) : (
-              <Box sx={{ minWidth: 800, overflowX: "auto" }}>
-
-                <Table
-                  hoverRow
-                  sx={{
-                    "& th": { textAlign: "left", fontWeight: "bold" },
-                    "& td": { py: 1.5 },
-                    "--TableCell-headBackground": "var(--joy-palette-background-level1)",
-                    "--Table-headerUnderlineThickness": "1px",
-                    "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
-                  }}
-                >
-                  <thead>
-                    <tr>
-                      <th style={{ width: 50 }}>#</th>
-                      <th style={{ width: 200 }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            "&:hover": { color: "primary.main" },
-                          }}
-                          onClick={() => handleSort("name")}
-                        >
-                          Usuario
-                          {sortField === "name" &&
-                            (sortDirection === "asc" ? (
-                              <ArrowUpward fontSize="small" />
-                            ) : (
-                              <ArrowDownward fontSize="small" />
-                            ))}
-                        </Box>
-                      </th>
-                      <th>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            "&:hover": { color: "primary.main" },
-                          }}
-                          onClick={() => handleSort("username")}
-                        >
-                          Username
-                          {sortField === "username" &&
-                            (sortDirection === "asc" ? (
-                              <ArrowUpward fontSize="small" />
-                            ) : (
-                              <ArrowDownward fontSize="small" />
-                            ))}
-                        </Box>
-                      </th>
-                      <th>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            "&:hover": { color: "primary.main" },
-                          }}
-                          onClick={() => handleSort("email")}
-                        >
-                          Email
-                          {sortField === "email" &&
-                            (sortDirection === "asc" ? (
-                              <ArrowUpward fontSize="small" />
-                            ) : (
-                              <ArrowDownward fontSize="small" />
-                            ))}
-                        </Box>
-                      </th>
-                      <th>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            cursor: "pointer",
-                            userSelect: "none",
-                            "&:hover": { color: "primary.main" },
-                          }}
-                          onClick={() => handleSort("role")}
-                        >
-                          Rol
-                          {sortField === "role" &&
-                            (sortDirection === "asc" ? (
-                              <ArrowUpward fontSize="small" />
-                            ) : (
-                              <ArrowDownward fontSize="small" />
-                            ))}
-                        </Box>
-                      </th>
-                      <th style={{ width: 120, textAlign: "center" }}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.id}</td>
-                        <td>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                            <Avatar variant="soft" color={getRoleColor(user.role)} size="sm">
-                              {getUserInitials(user.name, user.lastname)}
-                            </Avatar>
-                            <Box>
-                              <Typography level="body-sm" fontWeight="lg">
-                                {user.name} {user.lastname}
-                              </Typography>
-                              {user.phone && (
-                                <Typography level="body-xs" color="neutral">
-                                  {user.phone}
-                                </Typography>
-                              )}
-                            </Box>
-                          </Box>
-                        </td>
-                        <td>
-                          <Typography level="body-sm">@{user.username}</Typography>
-                        </td>
-                        <td>
-                          <Typography level="body-sm">{user.email}</Typography>
-                        </td>
-                        <td>
-                          <Chip
-                            variant="soft"
-                            color={getRoleColor(user.role)}
-                            size="sm"
-                            startDecorator={getRoleIcon(user.role)}
-                          >
-                            {user.role}
-                          </Chip>
-                        </td>
-                        <td>
-                          <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                            <Tooltip title="Editar usuario">
-                              <IconButton
-                                variant="plain"
-                                color="neutral"
-                                size="sm"
-                                onClick={() => router.push(`/users/${user.id}/edit`)}
-                              >
-                                <Edit />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Eliminar usuario">
-                              <IconButton
-                                variant="plain"
-                                color="danger"
-                                size="sm"
-                                onClick={() => {
-                                  // Aquí iría la lógica para eliminar
-                                  alert(`Eliminar usuario ${user.id}`)
-                                }}
-                              >
-                                <Delete />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Más opciones">
-                              <IconButton
-                                variant="plain"
-                                color="neutral"
-                                size="sm"
-                                onClick={() => router.push(`/users/${user.id}`)}
-                              >
-                                <MoreVert />
-                              </IconButton>
-                            </Tooltip>
-                          </Box>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </Box>
-            )}
+            </Box>
           </Card>
-        )}
-      </ColumnLayout>
+
+          {/* Tabla de usuarios */}
+          {loading ? (
+            <Card variant="outlined">
+              <Box sx={{ p: 2 }}>
+                <Skeleton variant="text" level="h4" sx={{ width: "30%", mb: 2 }} />
+                <Skeleton variant="rectangular" width="100%" height={40} sx={{ mb: 1 }} />
+                {[...Array(5)].map((_, index) => (
+                  <Skeleton key={index} variant="rectangular" width="100%" height={60} sx={{ mb: 1 }} />
+                ))}
+              </Box>
+            </Card>
+          ) : error ? (
+            <Alert
+              color="danger"
+              variant="soft"
+              sx={{ mb: 2 }}
+              endDecorator={
+                <Button variant="soft" color="danger" size="sm" onClick={fetchUsers}>
+                  Reintentar
+                </Button>
+              }
+            >
+              {error}
+            </Alert>
+          ) : (
+            <Card variant="outlined" sx={{ overflow: "auto" }}>
+              {filteredUsers.length === 0 ? (
+                <Box sx={{ p: 4, textAlign: "center" }}>
+                  <Typography level="body-lg" sx={{ mb: 2 }}>
+                    No se encontraron usuarios con los criterios de búsqueda.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="neutral"
+                    onClick={() => {
+                      setSearchQuery("")
+                      setRoleFilter("all")
+                    }}
+                  >
+                    Limpiar filtros
+                  </Button>
+                </Box>
+              ) : (
+                <Box sx={{ minWidth: 800, overflowX: "auto" }}>
+
+                  <Table
+                    hoverRow
+                    sx={{
+                      "& th": { textAlign: "left", fontWeight: "bold" },
+                      "& td": { py: 1.5 },
+                      "--TableCell-headBackground": "var(--joy-palette-background-level1)",
+                      "--Table-headerUnderlineThickness": "1px",
+                      "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
+                    }}
+                  >
+                    <thead>
+                      <tr>
+                        <th style={{ width: 50 }}>#</th>
+                        <th style={{ width: 200 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              "&:hover": { color: "primary.main" },
+                            }}
+                            onClick={() => handleSort("name")}
+                          >
+                            Usuario
+                            {sortField === "name" &&
+                              (sortDirection === "asc" ? (
+                                <ArrowUpward fontSize="small" />
+                              ) : (
+                                <ArrowDownward fontSize="small" />
+                              ))}
+                          </Box>
+                        </th>
+                        <th>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              "&:hover": { color: "primary.main" },
+                            }}
+                            onClick={() => handleSort("username")}
+                          >
+                            Username
+                            {sortField === "username" &&
+                              (sortDirection === "asc" ? (
+                                <ArrowUpward fontSize="small" />
+                              ) : (
+                                <ArrowDownward fontSize="small" />
+                              ))}
+                          </Box>
+                        </th>
+                        <th>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              "&:hover": { color: "primary.main" },
+                            }}
+                            onClick={() => handleSort("email")}
+                          >
+                            Email
+                            {sortField === "email" &&
+                              (sortDirection === "asc" ? (
+                                <ArrowUpward fontSize="small" />
+                              ) : (
+                                <ArrowDownward fontSize="small" />
+                              ))}
+                          </Box>
+                        </th>
+                        <th>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              cursor: "pointer",
+                              userSelect: "none",
+                              "&:hover": { color: "primary.main" },
+                            }}
+                            onClick={() => handleSort("role")}
+                          >
+                            Rol
+                            {sortField === "role" &&
+                              (sortDirection === "asc" ? (
+                                <ArrowUpward fontSize="small" />
+                              ) : (
+                                <ArrowDownward fontSize="small" />
+                              ))}
+                          </Box>
+                        </th>
+                        <th style={{ width: 120, textAlign: "center" }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredUsers.map((user) => (
+                        <tr key={user.id}>
+                          <td>{user.id}</td>
+                          <td>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                              <Avatar variant="soft" color={getRoleColor(user.role)} size="sm">
+                                {getUserInitials(user.name, user.lastname)}
+                              </Avatar>
+                              <Box>
+                                <Typography level="body-sm" fontWeight="lg">
+                                  {user.name} {user.lastname}
+                                </Typography>
+                                {user.phone && (
+                                  <Typography level="body-xs" color="neutral">
+                                    {user.phone}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </td>
+                          <td>
+                            <Typography level="body-sm">@{user.username}</Typography>
+                          </td>
+                          <td>
+                            <Typography level="body-sm">{user.email}</Typography>
+                          </td>
+                          <td>
+                            <Chip
+                              variant="soft"
+                              color={getRoleColor(user.role)}
+                              size="sm"
+                              startDecorator={getRoleIcon(user.role)}
+                            >
+                              {user.role}
+                            </Chip>
+                          </td>
+                          <td>
+                            <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                              <Tooltip title="Editar usuario">
+                                <IconButton
+                                  variant="plain"
+                                  color="neutral"
+                                  size="sm"
+                                  onClick={() => router.push(`/users/${user.id}/edit`)}
+                                >
+                                  <Edit />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Eliminar usuario">
+                                <IconButton
+                                  variant="plain"
+                                  color="danger"
+                                  size="sm"
+                                  onClick={() => {
+                                    // Aquí iría la lógica para eliminar
+                                    alert(`Eliminar usuario ${user.id}`)
+                                  }}
+                                >
+                                  <Delete />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Más opciones">
+                                <IconButton
+                                  variant="plain"
+                                  color="neutral"
+                                  size="sm"
+                                  onClick={() => router.push(`/users/${user.id}`)}
+                                >
+                                  <MoreVert />
+                                </IconButton>
+                              </Tooltip>
+                            </Box>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Box>
+              )}
+            </Card>
+          )}
+        </ColumnLayout>
+      </ThemeTransitionWrapper>
     </>
   )
 }

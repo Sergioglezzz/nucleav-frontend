@@ -16,13 +16,9 @@ function BodyBackgroundSync() {
     if (mode === "dark") {
       document.documentElement.classList.add("dark-theme")
       document.body.classList.add("dark-theme")
-      document.body.style.backgroundColor = theme.colorSchemes.dark.palette.background.body
-      document.body.style.color = theme.colorSchemes.dark.palette.text.primary
     } else {
       document.documentElement.classList.remove("dark-theme")
       document.body.classList.remove("dark-theme")
-      document.body.style.backgroundColor = theme.colorSchemes.light.palette.background.body
-      document.body.style.color = theme.colorSchemes.light.palette.text.primary
     }
 
     // Guardar el modo en localStorage

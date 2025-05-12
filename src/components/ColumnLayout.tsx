@@ -11,6 +11,7 @@ export default function ColumnLayout({ children }: { children: React.ReactNode }
       sx={{
         minHeight: '100vh',
         backgroundColor: 'background.body',
+        bgcolor: "transparent",
         overflowY: "auto",
         pt: `${NAVBAR_HEIGHT}px`,
       }}
