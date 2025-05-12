@@ -17,6 +17,21 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/index.html",
+        destination: "/",
+        permanent: true,
+      },
+      {
+        source: "/index.php",
+        destination: "/",
+        permanent: true,
+      },
+    ];
+  },
+  trailingSlash: false,
 };
 
 export default nextConfig;
