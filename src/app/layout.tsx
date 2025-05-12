@@ -17,9 +17,45 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NucleAV",
-  description: "Plataforma para gestión audiovisual",
+  title: {
+    default: "NucleAV | Plataforma de Gestión Audiovisual",
+    template: "%s | NucleAV",
+  },
+  description: "Gestiona eventos, materiales y personal en el sector audiovisual con NucleAV. Optimiza tu logística con una plataforma moderna y eficiente.",
+  metadataBase: new URL("https://www.nucleav.com"),
+  authors: [{ name: "Sergioglezzz", url: "https://www.nucleav.com" }],
+  keywords: [
+    "NucleAV",
+    "gestión audiovisual",
+    "eventos audiovisuales",
+    "material audiovisual",
+    "bolos",
+    "producción audiovisual",
+    "logística audiovisual",
+    "tecnología audiovisual",
+    "plataforma de gestión",
+  ],
+  alternates: {
+    canonical: "https://www.nucleav.com",
+  },
+  openGraph: {
+    title: "NucleAV | Plataforma de Gestión Audiovisual",
+    description: "La plataforma definitiva para gestionar recursos humanos y materiales en la industria audiovisual.",
+    url: "https://www.nucleav.com",
+    siteName: "NucleAV",
+    type: "website",
+    locale: "es_ES",
+    images: [
+      {
+        url: "https://www.nucleav.com/og-image.jpg", // asegúrate de tener esta imagen
+        width: 1200,
+        height: 630,
+        alt: "NucleAV - Gestión Audiovisual",
+      },
+    ],
+  },
 };
+// alternates: { canonical: "/" },
 
 export default function RootLayout({
   children,

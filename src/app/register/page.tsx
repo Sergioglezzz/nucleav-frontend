@@ -44,7 +44,7 @@ const validationSchema = Yup.object({
   email: Yup.string().required("El email es obligatorio").email("Formato de email inválido"),
   password: Yup.string()
     .required("La contraseña es obligatoria")
-    .min(8, "La contraseña debe tener al menos 8 caracteres")
+    .min(6, "La contraseña debe tener al menos 6 caracteres")
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
       "La contraseña debe contener al menos una letra mayúscula, una minúscula, un número y un carácter especial",
