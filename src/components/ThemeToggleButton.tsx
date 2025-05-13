@@ -21,15 +21,15 @@ export default function ThemeToggleButton() {
       variant="soft"
       size="sm"
       onClick={toggleMode}
-      sx={{
-        mt: 1,
-        borderRadius: "50%",
-        boxShadow: "sm",
-        transition: "transform 0.2s",
-        "&:hover": {
-          transform: "scale(1.05)",
-        },
-      }}
+    // sx={{
+    //   mt: 1,
+    //   borderRadius: "50%",
+    //   boxShadow: "sm",
+    //   transition: "transform 0.2s",
+    //   "&:hover": {
+    //     transform: "scale(1.05)",
+    //   },
+    // }}
     >
       {mode === "dark" ? <LightModeRoundedIcon /> : <DarkModeRoundedIcon />}
     </IconButton>
