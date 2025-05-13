@@ -19,16 +19,12 @@ import {
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import HomeIcon from "@mui/icons-material/Home"
 import {
-  FolderSpecial as ProjectIcon,
-  People as NetworkIcon,
-  Inventory as MaterialIcon,
-  Business as CompanyIcon,
   Settings,
   Notifications,
 } from "@mui/icons-material"
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
+import { navigationItems } from "@/utils/Navigation"
 
 
 interface DrawerMenuProps {
@@ -49,14 +45,6 @@ export default function DrawerMenu({ open, onClose }: DrawerMenuProps) {
   useEffect(() => {
     setMounted(true)
   }, [])
-
-  const navigationItems = [
-    { name: "Inicio", path: "/dashboard", icon: <HomeIcon /> },
-    { name: "Proyectos", path: "/proyectos", icon: <ProjectIcon /> },
-    { name: "Red", path: "/red", icon: <NetworkIcon /> },
-    { name: "Material", path: "/material", icon: <MaterialIcon /> },
-    { name: "Empresa", path: "/empresa", icon: <CompanyIcon /> },
-  ]
 
   return (
     <Drawer
@@ -198,7 +186,7 @@ export default function DrawerMenu({ open, onClose }: DrawerMenuProps) {
                           },
                         }}
                       >
-                        {item.icon}
+                        {<item.icon />}
                       </ListItemDecorator>
                       <ListItemContent>
                         <Typography level="title-sm">{item.name}</Typography>

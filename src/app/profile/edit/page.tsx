@@ -43,7 +43,6 @@ import {
   Badge,
 } from "@mui/icons-material"
 import DeleteUserModal from "./DeleteUserModal"
-import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos"
@@ -276,7 +275,6 @@ export default function ProfileEditPage() {
 
   return (
     <>
-      <Navbar />
       <ColumnLayout>
         <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
           {/* Mensajes de error o éxito */}

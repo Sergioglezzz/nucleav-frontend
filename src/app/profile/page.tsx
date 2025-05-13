@@ -18,7 +18,6 @@ import {
 } from "@mui/joy"
 import { Edit, Favorite, Comment, Share, Person, Work, Description } from "@mui/icons-material"
 import { useColorScheme } from "@mui/joy/styles"
-import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import HeaderDark from "../../../public/header1.jpg"
 import HeaderLight from "../../../public/header3.jpg"
@@ -131,7 +130,6 @@ export default function ProfilePage() {
 
   return (
     <>
-      <Navbar />
       <ColumnLayout>
         <Box sx={{ maxWidth: 800, mx: "auto", p: 2 }}>
           {error && (

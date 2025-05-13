@@ -1,9 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import { api } from "@/utils/api"
 import {
@@ -66,34 +65,35 @@ export default function DashboardPage() {
   const router = useRouter()
 
   // Función para obtener los usuarios
-  const fetchUsers = async () => {
-    if (!session?.accessToken) return
+  const fetchUsers = useCallback(async () => {
+    if (!session?.accessToken) return;
 
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
 
     try {
       const res = await api.get<User[]>("/v1/users", {
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
         },
-      })
-      setUsers(res.data)
-      setFilteredUsers(res.data)
+      });
+      setUsers(res.data);
+      setFilteredUsers(res.data);
     } catch (error) {
-      console.error("Error fetching users", error)
-      setError("Error al cargar los usuarios.")
+      console.error("Error fetching users", error);
+      setError("Error al cargar los usuarios.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  }, [session?.accessToken]);
 
   // Cargar usuarios cuando la sesión esté autenticada
   useEffect(() => {
     if (status === "authenticated") {
-      fetchUsers()
+      fetchUsers();
     }
-  }, [session, status])
+  }, [status, fetchUsers]);
+  
 
   // Filtrar y ordenar usuarios
   useEffect(() => {
@@ -182,7 +182,6 @@ export default function DashboardPage() {
   if (status === "loading") {
     return (
       <>
-        <Navbar />
         <ColumnLayout>
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
             <CircularProgress size="lg" />
@@ -195,8 +194,6 @@ export default function DashboardPage() {
   return (
     <>
       <ThemeTransitionWrapper>
-
-        <Navbar />
         <ColumnLayout>
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
             <Typography level="h2">Usuarios registrados</Typography>

@@ -14,41 +14,37 @@ import {
   MenuItem,
   Tooltip,
   ListDivider,
-  // Drawer,
-  // List,
-  // ListItem,
 } from '@mui/joy'
 import SettingsIcon from '@mui/icons-material/Settings';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'; import LogoutIcon from '@mui/icons-material/Logout';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline'
 import { useColorScheme } from '@mui/joy/styles'
 import Image from 'next/image'
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ExitModal from "./ExitModal";
 import { signOut, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ClientOnly from "./ClientOnly"
 import ThemeToggleButton from "./ThemeToggleButton"
 import DrawerMenu from "./DrawerMenu";
+import { navigationItems } from "@/utils/Navigation"
+import { usePathname } from "next/navigation"
+
 
 
 export default function Navbar() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { mode, setMode } = useColorScheme()
   const theme = useTheme()
-  const [mounted, setMounted] = useState(false);
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const router = useRouter();
+  const pathname = usePathname()
 
   const handleLogout = () => {
     signOut({ callbackUrl: '/' });
   };
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const { data: session, status } = useSession();
 
@@ -78,94 +74,73 @@ export default function Navbar() {
         }}
       >
         <Box>
-          {mounted && (
-            <>
-              {/* XS: logo como botón para abrir el drawer */}
-              <IconButton
-                onClick={() => setDrawerOpen(true)}
-                sx={{ display: { xs: "flex", sm: "none" }, p: 0.5, pl: 1 }}
-              >
-                <Image
-                  src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
-                  alt="NucleAV Logo"
-                  width={100}
-                  height={30}
-                  priority
-                  style={{
-                    filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
-                  }}
-                />
-                <ArrowForwardIosIcon sx={{ fontSize: 18, mt: 0.3, color: "#ffbc62", ml: 0.5, pr: 0.5 }} />
-              </IconButton>
+          <>
+            {/* XS: logo como botón para abrir el drawer */}
+            <IconButton
+              onClick={() => setDrawerOpen(true)}
+              sx={{ display: { xs: "flex", sm: "none" }, p: 0.5, pl: 1 }}
+            >
+              <Image
+                src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
+                alt="NucleAV Logo"
+                width={100}
+                height={30}
+                priority
+                style={{
+                  filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
+                }}
+              />
+              <ArrowForwardIosIcon sx={{ fontSize: 18, mt: 0.3, color: "#ffbc62", ml: 0.5, pr: 0.5 }} />
+            </IconButton>
 
-              {/* SM+: logo como link */}
-              <Link
-                href="/dashboard"
-                underline="none"
-                color="neutral"
-                sx={{ display: { xs: "none", sm: "flex" }, p: 0.5, pl: 1 }}
-              >
-                <Image
-                  src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
-                  alt="NucleAV Logo"
-                  width={100}
-                  height={30}
-                  priority
-                  style={{
-                    filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
-                  }}
-                />
-              </Link>
-            </>
-          )}
+            {/* SM+: logo como link */}
+            <Link
+              href="/dashboard"
+              underline="none"
+              color="neutral"
+              sx={{ display: { xs: "none", sm: "flex" }, p: 0.5, pl: 1 }}
+            >
+              <Image
+                src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
+                alt="NucleAV Logo"
+                width={100}
+                height={30}
+                priority
+                style={{
+                  filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
+                }}
+              />
+            </Link>
+          </>
         </Box>
-
 
         {/* ACCIONES */}
         <Stack direction="row" alignItems="center" gap={2}>
-          <Link
-            href="/proyectos"
-            underline="none"
-            level="body-sm"
-            fontWeight="lg"
-            color="neutral"
-            sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
-          >
-            Proyectos
-          </Link>
-
-          <Link
-            href="/red"
-            underline="none"
-            level="body-sm"
-            fontWeight="lg"
-            color="neutral"
-            sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
-          >
-            Red
-          </Link>
-
-          <Link
-            href="/material"
-            underline="none"
-            level="body-sm"
-            fontWeight="lg"
-            color="neutral"
-            sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
-          >
-            Material
-          </Link>
-
-          <Link
-            href="/empresa"
-            underline="none"
-            level="body-sm"
-            fontWeight="lg"
-            color="neutral"
-            sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
-          >
-            Empresa
-          </Link>
+          {navigationItems.map(({ name, path }) => {
+            const isActive = pathname === path
+            return (
+              <Link
+                key={path}
+                href={path}
+                underline="none"
+                level="body-sm"
+                fontWeight="lg"
+                color="neutral"
+                sx={{
+                  display: { xs: "none", sm: "flex" },
+                  cursor: "pointer",
+                  mx: 0.5,
+                  transition: "color 0.2s",
+                  color: isActive ? "#ffbc62" : undefined,
+                  "&:hover": {
+                    color: "#ffbc62",
+                  },
+                }}
+              >
+                {name}
+              </Link>
+            )
+          })}
 
           <Divider orientation="vertical" inset="none" sx={{ display: { xs: 'none', sm: 'block' } }} />
 

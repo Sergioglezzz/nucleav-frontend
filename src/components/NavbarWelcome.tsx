@@ -55,7 +55,7 @@ export default function NavbarWelcome() {
       {/* ACCIONES */}
       <Stack direction="row" alignItems="center" gap={1.5}>
         {/* Modo oscuro */}
-        <Box sx={{ mb: 1 }}>
+        <Box >
           <ClientOnly>
             <ThemeToggleButton />
           </ClientOnly>
