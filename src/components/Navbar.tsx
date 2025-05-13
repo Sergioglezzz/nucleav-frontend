@@ -87,21 +87,52 @@ export default function Navbar() {
       </Link>
 
       {/* ACCIONES */}
-      <Stack direction="row" alignItems="center" gap={1.5}>
-        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
+      <Stack direction="row" alignItems="center" gap={2}>
+        <Link
+          href="/proyectos"
+          underline="none"
+          level="body-sm"
+          fontWeight="lg"
+          color="neutral"
+          sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
+        >
           Proyectos
-        </Typography>
-        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-          Red
-        </Typography>
-        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-          Material
-        </Typography>
-        <Typography level="body-sm" fontWeight="lg" sx={{ display: { xs: 'none', sm: 'flex' } }}>
-          Empresa
-        </Typography>
-        <Divider orientation="vertical" inset="none" />
+        </Link>
 
+        <Link
+          href="/red"
+          underline="none"
+          level="body-sm"
+          fontWeight="lg"
+          color="neutral"
+          sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
+        >
+          Red
+        </Link>
+
+        <Link
+          href="/material"
+          underline="none"
+          level="body-sm"
+          fontWeight="lg"
+          color="neutral"
+          sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
+        >
+          Material
+        </Link>
+
+        <Link
+          href="/empresa"
+          underline="none"
+          level="body-sm"
+          fontWeight="lg"
+          color="neutral"
+          sx={{ display: { xs: 'none', sm: 'flex' }, cursor: 'pointer', mx: 0.5 }}
+        >
+          Empresa
+        </Link>
+
+        <Divider orientation="vertical" inset="none" />
 
         {/* Modo oscuro */}
         <Stack alignItems={'center'} justifyContent="center" sx={{ mb: 1 }}>
@@ -152,7 +183,6 @@ export default function Navbar() {
                 </Typography>
               </Box>
             </MenuItem>
-
 
             <ListDivider />
 

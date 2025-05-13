@@ -9,10 +9,10 @@ export default withAuth({
 export const config = {
   matcher: [
     '/dashboard',
+    '/profile/:path*',
     '/proyectos/:path*',
-    '/materiales/:path*',
-    '/equipo/:path*',
-    '/profile',
-    '/profile/edit',
+    '/red/:path*',
+    '/material/:path*',
+    '/empresa/:path*',
   ],
 };
