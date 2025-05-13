@@ -83,7 +83,7 @@ export default function Navbar() {
               {/* XS: logo como botón para abrir el drawer */}
               <IconButton
                 onClick={() => setDrawerOpen(true)}
-                sx={{ display: { xs: "flex", sm: "none" }, p: 0 }}
+                sx={{ display: { xs: "flex", sm: "none" }, p: 0.5, pl: 1 }}
               >
                 <Image
                   src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
@@ -95,7 +95,7 @@ export default function Navbar() {
                     filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
                   }}
                 />
-                <ArrowForwardIosIcon sx={{ fontSize: 15, mt: 0.3, color: "#ffbc62", ml: -0.4 }} />
+                <ArrowForwardIosIcon sx={{ fontSize: 18, mt: 0.3, color: "#ffbc62", ml: 0.5, pr: 0.5 }} />
               </IconButton>
 
               {/* SM+: logo como link */}
@@ -103,7 +103,7 @@ export default function Navbar() {
                 href="/dashboard"
                 underline="none"
                 color="neutral"
-                sx={{ display: { xs: "none", sm: "flex" }, pt: 0.5 }}
+                sx={{ display: { xs: "none", sm: "flex" }, p: 0.5, pl: 1 }}
               >
                 <Image
                   src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
@@ -176,15 +176,27 @@ export default function Navbar() {
             </ClientOnly>
           </Stack>
 
-
           <Dropdown>
             <Tooltip title={user?.name} placement="bottom-end" variant="soft">
               <MenuButton
                 slots={{ root: IconButton }}
-                slotProps={{ root: { variant: 'plain', size: 'sm' } }}
+                slotProps={{
+                  root: {
+                    variant: 'plain',
+                    size: 'sm',
+                    sx: {
+                      borderRadius: '50%',
+                      padding: 0,
+                      '&:hover, &:focus, &.Mui-focusVisible': {
+                        borderRadius: '50%',
+                        backgroundColor: 'background.level1',
+                      },
+                      transition: 'background 0.2s',
+                    },
+                  },
+                }}
               >
                 <Avatar src={user?.image || ''} alt={user?.name || 'Usuario'} size="sm" />
-
               </MenuButton>
             </Tooltip>
             <Menu placement="bottom-end" sx={{
