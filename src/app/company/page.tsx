@@ -106,14 +106,19 @@ export default function CompaniesPage() {
       )
 
       const createdCompany = response.data as Company
-
       setCompanies((prev) => [...prev, createdCompany])
       showNotification("Empresa creada correctamente", "success")
       setIsFormModalOpen(false)
     } catch (error) {
       console.error("Error al crear empresa:", error)
-      showNotification("No se pudo crear la empresa", "error")
+
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        showNotification("Ya existe una empresa con este CIF", "error")
+      } else {
+        showNotification("No se pudo crear la empresa", "error")
+      }
     }
+    
   }
 
 
