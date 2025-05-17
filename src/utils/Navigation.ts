@@ -8,8 +8,8 @@ import {
 
 export const navigationItems = [
   { name: "Inicio", path: "/dashboard", icon: HomeIcon },
-  { name: "Proyectos", path: "/proyectos", icon: ProjectIcon },
-  { name: "Red", path: "/red", icon: NetworkIcon },
+  { name: "Proyectos", path: "/project", icon: ProjectIcon },
+  { name: "Red", path: "/network", icon: NetworkIcon },
   { name: "Material", path: "/material", icon: MaterialIcon },
-  { name: "Empresa", path: "/empresa", icon: CompanyIcon },
+  { name: "Empresa", path: "/company", icon: CompanyIcon },
 ]

@@ -36,6 +36,7 @@ import {
 } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
+import Image from "next/image"
 
 // Tipos para los materiales
 type MaterialType = "video" | "image" | "audio" | "document" | "other"
@@ -502,10 +503,12 @@ export default function MaterialPage() {
                 >
                   <Box sx={{ position: "relative" }}>
                     <AspectRatio ratio="16/9">
-                      <img
+                      <Image
                         src={material.thumbnail || "/placeholder.svg"}
                         alt={material.title}
+                        fill
                         style={{ objectFit: "cover" }}
+                        sizes="(max-width: 768px) 100vw, 300px"
                       />
                     </AspectRatio>
 

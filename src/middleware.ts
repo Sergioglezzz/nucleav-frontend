@@ -10,9 +10,9 @@ export const config = {
   matcher: [
     '/dashboard',
     '/profile/:path*',
-    '/proyectos/:path*',
-    '/red/:path*',
+    '/project/:path*',
+    '/network/:path*',
     '/material/:path*',
-    '/empresa/:path*',
+    '/company/:path*',
   ],
 };

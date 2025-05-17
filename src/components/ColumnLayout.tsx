@@ -2,7 +2,7 @@
 
 import { Box, Stack } from '@mui/joy';
 
-const NAVBAR_HEIGHT = 64; // 👈 define la altura del navbar
+const NAVBAR_HEIGHT = 64;
 
 export default function ColumnLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -23,7 +23,7 @@ export default function ColumnLayout({ children }: { children: React.ReactNode }
       <Box sx={{
         width: '100%',
         minHeight: "100%",
-        maxWidth: "800px",
+        maxWidth: "1000px",
         minWidth: "320px",
         p: 4,
         mx: 'auto',

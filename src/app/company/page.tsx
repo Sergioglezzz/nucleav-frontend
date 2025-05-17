@@ -1,0 +1,474 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+// import { useRouter } from "next/navigation"
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Input,
+  IconButton,
+  Tabs,
+  TabList,
+  Tab,
+  Sheet,
+  CircularProgress,
+  Alert,
+  Divider,
+} from "@mui/joy"
+import { Add, Search, FilterList, Business, SortByAlpha, Clear } from "@mui/icons-material"
+import ColumnLayout from "@/components/ColumnLayout"
+// import { useColorScheme } from "@mui/joy/styles"
+import { useNotification } from "@/components/context/NotificationContext"
+import CompanyProfile, { type Company } from "@/components/company/CompanyProfile"
+import CompanyCard from "@/components/company/CompanyCard"
+import CompanyFormModal from "@/components/company/CompanyFormModal"
+
+export default function CompaniesPage() {
+  // const router = useRouter()
+  // const { mode } = useColorScheme()
+  const { data: session, status } = useSession()
+  const { showNotification } = useNotification()
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [activeTab, setActiveTab] = useState<string>("all")
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false)
+  const [editingCompany, setEditingCompany] = useState<Company | null>(null)
+
+  // Cargar empresas
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      if (status !== "authenticated" || !session?.accessToken) {
+        return
+      }
+
+      setLoading(true)
+      setError(null)
+
+      try {
+        // Aquí se haría la llamada a la API para obtener las empresas
+        // Por ahora, usamos datos de ejemplo
+        const mockCompanies: Company[] = [
+          {
+            cif: "B12345678",
+            name: "NucleAV Productions",
+            description:
+              "Somos una productora audiovisual especializada en contenido corporativo, publicidad y documentales.",
+            address: "Calle Gran Vía 28, 28013 Madrid",
+            phone: "+34 912 345 678",
+            email: "info@nucleav.com",
+            website: "https://www.nucleav.com",
+            logo_url: "https://picsum.photos/seed/company1/200/200",
+            created_by: 1,
+            is_active: true,
+            created_at: "2023-01-15T10:30:00Z",
+            updated_at: "2023-05-20T14:45:00Z",
+          },
+          {
+            cif: "A87654321",
+            name: "MediaTech Solutions",
+            description: "Empresa de tecnología especializada en soluciones multimedia y streaming.",
+            address: "Paseo de la Castellana 95, 28046 Madrid",
+            phone: "+34 913 456 789",
+            email: "contact@mediatech.com",
+            website: "https://www.mediatech.com",
+            logo_url: "https://picsum.photos/seed/company2/200/200",
+            created_by: 1,
+            is_active: true,
+            created_at: "2022-11-05T09:15:00Z",
+            updated_at: "2023-06-10T11:30:00Z",
+          },
+          {
+            cif: "C55555555",
+            name: "Creative Visuals",
+            description: "Estudio creativo especializado en diseño visual y producción de contenido.",
+            address: "Calle Fuencarral 45, 28004 Madrid",
+            phone: "+34 914 567 890",
+            email: "hello@creativevisuals.com",
+            website: "https://www.creativevisuals.com",
+            logo_url: "https://picsum.photos/seed/company3/200/200",
+            created_by: 2,
+            is_active: true,
+            created_at: "2023-03-20T14:00:00Z",
+            updated_at: "2023-07-15T16:20:00Z",
+          },
+        ]
+
+        // Simular una llamada a la API
+        setTimeout(() => {
+          setCompanies(mockCompanies)
+          setLoading(false)
+        }, 1000)
+
+        // Cuando se conecte a la API real, sería algo así:
+        /*
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error('Error al cargar las empresas');
+        }
+        
+        const data = await response.json();
+        setCompanies(data);
+        */
+      } catch (error) {
+        console.error("Error al cargar las empresas:", error)
+        setError("No se pudieron cargar las empresas")
+        setLoading(false)
+      }
+    }
+
+    fetchCompanies()
+  }, [session, status])
+
+  // Filtrar empresas según la búsqueda y la pestaña activa
+  const filteredCompanies = companies.filter((company) => {
+    const matchesSearch =
+      company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.cif.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (company.description && company.description.toLowerCase().includes(searchTerm.toLowerCase()))
+
+    if (activeTab === "all") {
+      return matchesSearch
+    } else if (activeTab === "my") {
+      return matchesSearch && company.created_by === Number(session?.user?.id)
+    }
+
+    return matchesSearch
+  })
+
+  // Manejar la creación de una empresa
+  const handleCreateCompany = async (
+    companyData: Omit<Company, "created_at" | "updated_at" | "created_by" | "is_active">,
+  ) => {
+    if (!session?.accessToken) {
+      showNotification("Debes iniciar sesión para realizar esta acción")
+      return
+    }
+
+    try {
+      // Aquí se haría la llamada a la API para crear la empresa
+      // Por ahora, simulamos una respuesta exitosa
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Crear una nueva empresa con datos simulados
+      const newCompany: Company = {
+        ...companyData,
+        created_by: Number(session.user?.id) || 1,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+
+      // Actualizar el estado local
+      setCompanies([...companies, newCompany])
+
+      showNotification("Empresa creada correctamente", "success")
+
+      // Cerrar el modal
+      setIsFormModalOpen(false)
+    } catch (error) {
+      console.error("Error al crear la empresa:", error)
+      showNotification("No se pudo crear la empresa", "error")
+    }
+  }
+
+  // Manejar la edición de una empresa
+  const handleEditCompany = async (
+    companyData: Omit<Company, "created_at" | "updated_at" | "created_by" | "is_active">,
+  ) => {
+    if (!session?.accessToken) {
+      showNotification("Debes iniciar sesión para realizar esta acción", "error")
+      return
+    }
+
+    try {
+      // Aquí se haría la llamada a la API para actualizar la empresa
+      // Por ahora, simulamos una respuesta exitosa
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Actualizar la empresa en el estado local
+      const updatedCompanies = companies.map((company) =>
+        company.cif === companyData.cif
+          ? {
+            ...company,
+            ...companyData,
+            updated_at: new Date().toISOString(),
+          }
+          : company,
+      )
+
+      setCompanies(updatedCompanies)
+
+      // Si la empresa que se está editando es la seleccionada, actualizar también ese estado
+      if (selectedCompany && selectedCompany.cif === companyData.cif) {
+        setSelectedCompany({
+          ...selectedCompany,
+          ...companyData,
+          updated_at: new Date().toISOString(),
+        })
+      }
+
+      showNotification("Empresa actualizada correctamente", "success")
+
+      // Cerrar el modal y limpiar el estado de edición
+      setEditingCompany(null)
+    } catch (error) {
+      console.error("Error al actualizar la empresa:", error)
+      showNotification("No se pudo actualizar la empresa", "error")
+    }
+  }
+
+  // Manejar la eliminación de una empresa
+  const handleDeleteCompany = async (company: Company) => {
+    if (!session?.accessToken) {
+      showNotification("Debes iniciar sesión para realizar esta acción", "error")
+      return
+    }
+
+    try {
+      // Aquí se haría la llamada a la API para eliminar la empresa
+      // Por ahora, simulamos una respuesta exitosa
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Eliminar la empresa del estado local
+      const updatedCompanies = companies.filter((c) => c.cif !== company.cif)
+      setCompanies(updatedCompanies)
+
+      // Si la empresa que se está eliminando es la seleccionada, volver a la lista
+      if (selectedCompany && selectedCompany.cif === company.cif) {
+        setSelectedCompany(null)
+      }
+
+      showNotification("Empresa eliminada correctamente", "success")
+    } catch (error) {
+      console.error("Error al eliminar la empresa:", error)
+      showNotification("No se pudo eliminar la empresa", "error")
+    }
+  }
+
+  // Abrir el modal de edición
+  const openEditModal = (company: Company) => {
+    setEditingCompany(company)
+  }
+
+  // Manejar el envío del formulario (crear o editar)
+  const handleFormSubmit = (values: Omit<Company, "created_at" | "updated_at" | "created_by" | "is_active">) => {
+    if (editingCompany) {
+      handleEditCompany(values)
+    } else {
+      handleCreateCompany(values)
+    }
+  }
+
+  return (
+    <>
+      <ColumnLayout>
+        {error && (
+          <Alert color="danger" variant="soft" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Si hay una empresa seleccionada, mostrar su perfil */}
+        {selectedCompany ? (
+          <CompanyProfile
+            companyId={selectedCompany.cif}
+            onBack={() => setSelectedCompany(null)}
+            onEdit={openEditModal}
+            onDelete={handleDeleteCompany}
+          />
+        ) : (
+          <>
+            {/* Cabecera */}
+            <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography level="h2" sx={{ color: "#ffbc62" }}>Empresa</Typography>
+              <Button
+                variant="solid"
+                startDecorator={<Add />}
+                onClick={() => {
+                  setEditingCompany(null)
+                  setIsFormModalOpen(true)
+                }}
+                sx={{
+                  bgcolor: "#ffbc62",
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: "rgba(255, 188, 98, 0.8)",
+                  },
+                }}
+              >
+                Nueva Empresa
+              </Button>
+            </Box>
+
+            <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as string)} sx={{ mb: 2 }}>
+              <TabList
+                variant="plain"
+                sx={{
+                  p: 0.5,
+                  gap: 0.5,
+                  borderRadius: "xl",
+                  bgcolor: "background.level1",
+                  overflow: "hidden",
+                  border: "1px solid", // evita fuga por aliasing
+                  borderColor: "divider", // coherente con modo claro/oscuro
+                  position: "relative", // asegura colocación correcta
+                  [`& .MuiTab-root`]: {
+                    boxShadow: "none",
+                    borderRadius: "lg", // suaviza tabs individuales
+                    zIndex: 1, // sobre el pseudo-elemento ::after
+                    "&:hover": {
+                      bgcolor: "transparent",
+                    },
+                    [`&.Mui-selected`]: {
+                      color: "#ffbc62",
+                      bgcolor: "background.level2", // ligeramente distinto para evitar glitches
+                      "&::after": {
+                        height: "3px",
+                        bgcolor: "#ffbc62",
+                      },
+                    },
+                  },
+                }}
+              >
+                <Tab value="all">Todas las empresas</Tab>
+                <Tab value="my">Mis empresas</Tab>
+              </TabList>
+            </Tabs>
+
+            {/* Barra de búsqueda */}
+            <Sheet
+              variant="outlined"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                p: 1,
+                borderRadius: "md",
+                mb: 3,
+                gap: 1,
+              }}
+            >
+              <Search sx={{ color: "text.tertiary" }} />
+              <Input
+                variant="plain"
+                placeholder="Buscar empresas..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                sx={{
+                  flex: 1,
+                  border: "none",
+                  "&::before": {
+                    display: "none",
+                  },
+                }}
+              />
+              {searchTerm && (
+                <IconButton
+                  variant="plain"
+                  color="neutral"
+                  onClick={() => setSearchTerm("")}
+                  sx={{ borderRadius: "50%" }}
+                >
+                  <Clear />
+                </IconButton>
+              )}
+              <Divider orientation="vertical" />
+              <IconButton variant="plain" color="neutral" sx={{ borderRadius: "50%" }}>
+                <FilterList />
+              </IconButton>
+              <IconButton variant="plain" color="neutral" sx={{ borderRadius: "50%" }}>
+                <SortByAlpha />
+              </IconButton>
+            </Sheet>
+
+            {/* Lista de empresas */}
+            {loading ? (
+              <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
+                <CircularProgress
+                  size="lg"
+                  sx={{
+                    "--CircularProgress-trackColor": "rgba(255, 188, 98, 0.2)",
+                    "--CircularProgress-progressColor": "#ffbc62",
+                  }}
+                />
+              </Box>
+            ) : filteredCompanies.length === 0 ? (
+              <Box
+                sx={{
+                  p: 4,
+                  borderRadius: "md",
+                  bgcolor: "background.level1",
+                  textAlign: "center",
+                }}
+              >
+                <Business sx={{ fontSize: 48, color: "neutral.400", mb: 2 }} />
+                <Typography level="h4" sx={{ mb: 1 }}>
+                  No se encontraron empresas
+                </Typography>
+                <Typography level="body-md" sx={{ mb: 3, color: "text.secondary" }}>
+                  {searchTerm
+                    ? "No hay empresas que coincidan con tu búsqueda"
+                    : activeTab === "my"
+                      ? "Aún no has creado ninguna empresa"
+                      : "No hay empresas disponibles"}
+                </Typography>
+                <Button
+                  variant="solid"
+                  startDecorator={<Add />}
+                  onClick={() => {
+                    setEditingCompany(null)
+                    setIsFormModalOpen(true)
+                  }}
+                  sx={{
+                    bgcolor: "#ffbc62",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255, 188, 98, 0.8)",
+                    },
+                  }}
+                >
+                  Crear empresa
+                </Button>
+              </Box>
+            ) : (
+              <Grid container spacing={3}>
+                {filteredCompanies.map((company) => (
+                  <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+                    <CompanyCard
+                      company={company}
+                      onSelect={setSelectedCompany}
+                      onEdit={openEditModal}
+                      onDelete={handleDeleteCompany}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            )}
+          </>
+        )}
+
+        {/* Modal de formulario (crear/editar) */}
+        <CompanyFormModal
+          open={isFormModalOpen || !!editingCompany}
+          onClose={() => {
+            setIsFormModalOpen(false)
+            setEditingCompany(null)
+          }}
+          onSubmit={handleFormSubmit}
+          initialValues={editingCompany || undefined}
+          isEdit={!!editingCompany}
+        />
+      </ColumnLayout>
+    </>
+  )
+}
