@@ -24,7 +24,8 @@ import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
 import CompanyProfile, { type Company } from "@/components/company/CompanyProfile"
 import CompanyCard from "@/components/company/CompanyCard"
-import CompanyFormModal from "@/components/company/CompanyFormModal"
+import CompanyFormModal from "@/app/company/CompanyFormModal"
+import axios from "axios"
 
 export default function CompaniesPage() {
   // const router = useRouter()
@@ -43,92 +44,30 @@ export default function CompaniesPage() {
   // Cargar empresas
   useEffect(() => {
     const fetchCompanies = async () => {
-      if (status !== "authenticated" || !session?.accessToken) {
-        return
-      }
+      if (status !== "authenticated" || !session?.accessToken) return
 
       setLoading(true)
       setError(null)
 
       try {
-        // Aquí se haría la llamada a la API para obtener las empresas
-        // Por ahora, usamos datos de ejemplo
-        const mockCompanies: Company[] = [
-          {
-            cif: "B12345678",
-            name: "NucleAV Productions",
-            description:
-              "Somos una productora audiovisual especializada en contenido corporativo, publicidad y documentales.",
-            address: "Calle Gran Vía 28, 28013 Madrid",
-            phone: "+34 912 345 678",
-            email: "info@nucleav.com",
-            website: "https://www.nucleav.com",
-            logo_url: "https://picsum.photos/seed/company1/200/200",
-            created_by: 1,
-            is_active: true,
-            created_at: "2023-01-15T10:30:00Z",
-            updated_at: "2023-05-20T14:45:00Z",
-          },
-          {
-            cif: "A87654321",
-            name: "MediaTech Solutions",
-            description: "Empresa de tecnología especializada en soluciones multimedia y streaming.",
-            address: "Paseo de la Castellana 95, 28046 Madrid",
-            phone: "+34 913 456 789",
-            email: "contact@mediatech.com",
-            website: "https://www.mediatech.com",
-            logo_url: "https://picsum.photos/seed/company2/200/200",
-            created_by: 1,
-            is_active: true,
-            created_at: "2022-11-05T09:15:00Z",
-            updated_at: "2023-06-10T11:30:00Z",
-          },
-          {
-            cif: "C55555555",
-            name: "Creative Visuals",
-            description: "Estudio creativo especializado en diseño visual y producción de contenido.",
-            address: "Calle Fuencarral 45, 28004 Madrid",
-            phone: "+34 914 567 890",
-            email: "hello@creativevisuals.com",
-            website: "https://www.creativevisuals.com",
-            logo_url: "https://picsum.photos/seed/company3/200/200",
-            created_by: 2,
-            is_active: true,
-            created_at: "2023-03-20T14:00:00Z",
-            updated_at: "2023-07-15T16:20:00Z",
-          },
-        ]
-
-        // Simular una llamada a la API
-        setTimeout(() => {
-          setCompanies(mockCompanies)
-          setLoading(false)
-        }, 1000)
-
-        // Cuando se conecte a la API real, sería algo así:
-        /*
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies`, {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies`, {
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
           },
-        });
-        
-        if (!response.ok) {
-          throw new Error('Error al cargar las empresas');
-        }
-        
-        const data = await response.json();
-        setCompanies(data);
-        */
+        })
+
+        setCompanies(response.data)
       } catch (error) {
         console.error("Error al cargar las empresas:", error)
         setError("No se pudieron cargar las empresas")
+      } finally {
         setLoading(false)
       }
     }
 
     fetchCompanies()
   }, [session, status])
+  
 
   // Filtrar empresas según la búsqueda y la pestaña activa
   const filteredCompanies = companies.filter((company) => {
@@ -151,36 +90,32 @@ export default function CompaniesPage() {
     companyData: Omit<Company, "created_at" | "updated_at" | "created_by" | "is_active">,
   ) => {
     if (!session?.accessToken) {
-      showNotification("Debes iniciar sesión para realizar esta acción")
+      showNotification("Debes iniciar sesión para realizar esta acción", "error")
       return
     }
 
     try {
-      // Aquí se haría la llamada a la API para crear la empresa
-      // Por ahora, simulamos una respuesta exitosa
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/companies`,
+        companyData,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
+      )
 
-      // Crear una nueva empresa con datos simulados
-      const newCompany: Company = {
-        ...companyData,
-        created_by: Number(session.user?.id) || 1,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
+      const createdCompany = response.data as Company
 
-      // Actualizar el estado local
-      setCompanies([...companies, newCompany])
-
+      setCompanies((prev) => [...prev, createdCompany])
       showNotification("Empresa creada correctamente", "success")
-
-      // Cerrar el modal
       setIsFormModalOpen(false)
     } catch (error) {
-      console.error("Error al crear la empresa:", error)
+      console.error("Error al crear empresa:", error)
       showNotification("No se pudo crear la empresa", "error")
     }
   }
+
 
   // Manejar la edición de una empresa
   const handleEditCompany = async (

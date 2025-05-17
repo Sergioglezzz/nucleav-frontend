@@ -36,7 +36,6 @@ import {
   Badge,
   Cancel,
 } from "@mui/icons-material"
-import Navbar from "@/components/Navbar"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useNotification } from "@/components/context/NotificationContext"
@@ -226,7 +225,6 @@ export default function CompanyEditPage() {
 
   return (
     <>
-      <Navbar />
       <ColumnLayout>
         {error && (
           <Alert color="danger" variant="soft" sx={{ mb: 3 }}>
