@@ -40,6 +40,8 @@ export default function CompaniesPage() {
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<Company | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+
 
   // Cargar empresas
   useEffect(() => {
@@ -131,42 +133,40 @@ export default function CompaniesPage() {
       return
     }
 
-    try {
-      // Aquí se haría la llamada a la API para actualizar la empresa
-      // Por ahora, simulamos una respuesta exitosa
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+    setIsEditing(true)
 
-      // Actualizar la empresa en el estado local
-      const updatedCompanies = companies.map((company) =>
-        company.cif === companyData.cif
-          ? {
-            ...company,
-            ...companyData,
-            updated_at: new Date().toISOString(),
-          }
-          : company,
+    try {
+      const response = await axios.patch(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${companyData.cif}`,
+        companyData,
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        }
       )
 
-      setCompanies(updatedCompanies)
+      const updatedCompany = response.data as Company
 
-      // Si la empresa que se está editando es la seleccionada, actualizar también ese estado
-      if (selectedCompany && selectedCompany.cif === companyData.cif) {
-        setSelectedCompany({
-          ...selectedCompany,
-          ...companyData,
-          updated_at: new Date().toISOString(),
-        })
+      setCompanies((prev) =>
+        prev.map((company) => (company.cif === updatedCompany.cif ? updatedCompany : company))
+      )
+
+      if (selectedCompany?.cif === updatedCompany.cif) {
+        setSelectedCompany(updatedCompany)
       }
 
       showNotification("Empresa actualizada correctamente", "success")
-
-      // Cerrar el modal y limpiar el estado de edición
       setEditingCompany(null)
     } catch (error) {
       console.error("Error al actualizar la empresa:", error)
       showNotification("No se pudo actualizar la empresa", "error")
+    } finally {
+      setIsEditing(false)
     }
   }
+  
+  
 
   // Manejar la eliminación de una empresa
   const handleDeleteCompany = async (company: Company) => {
@@ -407,6 +407,7 @@ export default function CompaniesPage() {
           onSubmit={handleFormSubmit}
           initialValues={editingCompany || undefined}
           isEdit={!!editingCompany}
+          loading={isEditing}
         />
       </ColumnLayout>
     </>

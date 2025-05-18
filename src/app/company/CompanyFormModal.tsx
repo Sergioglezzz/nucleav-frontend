@@ -41,6 +41,7 @@ interface CompanyFormModalProps {
   onSubmit: (values: Omit<Company, "created_at" | "updated_at" | "created_by" | "is_active">) => void
   initialValues?: Partial<Company>
   isEdit?: boolean
+  loading?: boolean
 }
 
 // Esquema de validación
@@ -66,6 +67,7 @@ export default function CompanyFormModal({
   onSubmit,
   initialValues,
   isEdit = false,
+  loading = false,
 }: CompanyFormModalProps) {
   const [logoPreview, setLogoPreview] = useState<string | null>(initialValues?.logo_url || null)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -398,6 +400,7 @@ export default function CompanyFormModal({
               variant="outlined"
               color="neutral"
               onClick={onClose}
+              disabled={loading}
               sx={{
                 fontSize: { xs: "sm", sm: "md" },
                 "--Button-minHeight": { xs: "2rem", sm: "2.5rem" },
