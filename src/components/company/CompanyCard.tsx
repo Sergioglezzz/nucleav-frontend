@@ -10,7 +10,7 @@ interface CompanyCardProps {
   company: Company
   onSelect: (company: Company) => void
   onEdit: (company: Company) => void
-  onDelete: (company: Company) => void
+  onDelete?: (cif: string) => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

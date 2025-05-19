@@ -74,7 +74,7 @@ interface CompanyProfileProps {
   companyId: string
   onBack: () => void
   onEdit: (company: Company) => void
-  onDelete: (company: Company) => void
+  onDelete?: (cif: string) => void;
 }
 
 export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: CompanyProfileProps) {
@@ -184,7 +184,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
   const handleDelete = () => {
     if (company) {
       if (window.confirm(`¿Estás seguro de que deseas eliminar la empresa ${company.name}?`)) {
-        onDelete(company)
+        onDelete && onDelete(company.cif)
       }
     }
   }
