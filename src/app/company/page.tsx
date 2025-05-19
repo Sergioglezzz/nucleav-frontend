@@ -232,7 +232,7 @@ export default function CompaniesPage() {
         ) : (
           <>
             {/* Cabecera */}
-            <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography level="h2" sx={{ color: "#ffbc62" }}>Empresa</Typography>
               <Button
                 variant="solid"
@@ -253,13 +253,11 @@ export default function CompaniesPage() {
               </Button>
             </Box>
 
-
             <CustomTabs
               options={tabOptions}
               defaultValue={activeTab}
               onChange={(value) => setActiveTab(value)}
             />
-
 
             {/* Barra de búsqueda */}
             <Sheet
