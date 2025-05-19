@@ -10,9 +10,6 @@ import {
   Grid,
   Input,
   IconButton,
-  Tabs,
-  TabList,
-  Tab,
   Sheet,
   CircularProgress,
   Alert,
@@ -26,6 +23,7 @@ import CompanyProfile, { type Company } from "@/components/company/CompanyProfil
 import CompanyCard from "@/components/company/CompanyCard"
 import CompanyFormModal from "@/app/company/CompanyFormModal"
 import axios from "axios"
+import CustomTabs from "@/components/CustomTabs"
 
 export default function CompaniesPage() {
   // const router = useRouter()
@@ -36,12 +34,16 @@ export default function CompaniesPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
-  const [activeTab, setActiveTab] = useState<string>("all")
+  const [activeTab, setActiveTab] = useState<string>("my")
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null)
   const [isFormModalOpen, setIsFormModalOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<Company | null>(null)
   const [isEditing, setIsEditing] = useState(false)
 
+  const tabOptions = [
+    { value: "my", label: "Mis empresas" },
+    { value: "all", label: "Todas las empresas" },
+  ]
 
   // Cargar empresas
   useEffect(() => {
@@ -69,7 +71,7 @@ export default function CompaniesPage() {
 
     fetchCompanies()
   }, [session, status])
-  
+
 
   // Filtrar empresas según la búsqueda y la pestaña activa
   const filteredCompanies = companies.filter((company) => {
@@ -120,7 +122,7 @@ export default function CompaniesPage() {
         showNotification("No se pudo crear la empresa", "error")
       }
     }
-    
+
   }
 
 
@@ -165,8 +167,8 @@ export default function CompaniesPage() {
       setIsEditing(false)
     }
   }
-  
-  
+
+
 
   // Manejar la eliminación de una empresa
   const handleDeleteCompany = async (company: Company) => {
@@ -251,40 +253,13 @@ export default function CompaniesPage() {
               </Button>
             </Box>
 
-            <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as string)} sx={{ mb: 2 }}>
-              <TabList
-                variant="plain"
-                sx={{
-                  p: 0.5,
-                  gap: 0.5,
-                  borderRadius: "xl",
-                  bgcolor: "background.level1",
-                  overflow: "hidden",
-                  border: "1px solid", // evita fuga por aliasing
-                  borderColor: "divider", // coherente con modo claro/oscuro
-                  position: "relative", // asegura colocación correcta
-                  [`& .MuiTab-root`]: {
-                    boxShadow: "none",
-                    borderRadius: "lg", // suaviza tabs individuales
-                    zIndex: 1, // sobre el pseudo-elemento ::after
-                    "&:hover": {
-                      bgcolor: "transparent",
-                    },
-                    [`&.Mui-selected`]: {
-                      color: "#ffbc62",
-                      bgcolor: "background.level2", // ligeramente distinto para evitar glitches
-                      "&::after": {
-                        height: "3px",
-                        bgcolor: "#ffbc62",
-                      },
-                    },
-                  },
-                }}
-              >
-                <Tab value="all">Todas las empresas</Tab>
-                <Tab value="my">Mis empresas</Tab>
-              </TabList>
-            </Tabs>
+
+            <CustomTabs
+              options={tabOptions}
+              defaultValue={activeTab}
+              onChange={(value) => setActiveTab(value)}
+            />
+
 
             {/* Barra de búsqueda */}
             <Sheet
