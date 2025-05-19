@@ -81,6 +81,11 @@ export default function CompaniesPage() {
     router.push(`/company/edit/${company.cif}`)
   }
 
+  // Navegar a la página de detalle de empresa
+  const handleSelectCompany = (company: Company) => {
+    router.push(`/company/${company.cif}`)
+  }
+
   // Manejar la eliminación de una empresa
   const handleDeleteCompany = async (cif: string) => {
     if (!session?.accessToken) {
@@ -115,7 +120,7 @@ export default function CompaniesPage() {
       {/* Si hay una empresa seleccionada, mostrar su perfil */}
       {selectedCompany ? (
         <CompanyProfile
-          companyId={selectedCompany.cif}
+          company={selectedCompany}
           onBack={() => setSelectedCompany(null)}
           onEdit={() => handleEditCompany(selectedCompany)}
           onDelete={handleDeleteCompany}
@@ -242,7 +247,7 @@ export default function CompaniesPage() {
                 <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
                   <CompanyCard
                     company={company}
-                    onSelect={setSelectedCompany}
+                    onSelect={handleSelectCompany}
                     onEdit={() => handleEditCompany(company)}
                     onDelete={handleDeleteCompany}
                   />

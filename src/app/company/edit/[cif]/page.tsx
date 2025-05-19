@@ -1,9 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import axios from "axios"
 import {
@@ -64,15 +63,14 @@ const validationSchema = Yup.object({
     .matches(/^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/, "Formato de URL inválido"),
 })
 
-export default function EditCompanyPage() {
+function EditCompanyPage({ cif }: { cif: string }) {
   const router = useRouter()
-  const params = useParams()
-  const cif = params.cif as string
   const { data: session } = useSession()
   const { showNotification } = useNotification()
 
-  const [company, setCompany] = useState<Company | null>(null)
+  const [, setCompany] = useState<Company | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -80,6 +78,69 @@ export default function EditCompanyPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [openDeleteModal, setOpenDeleteModal] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+
+  // Inicializar formik
+  const formik = useFormik({
+    initialValues: {
+      cif: "",
+      name: "",
+      description: "",
+      address: "",
+      phone: "",
+      email: "",
+      website: "",
+      logo_url: null,
+    },
+    validationSchema,
+    onSubmit: async (values) => {
+      if (!session?.accessToken) {
+        showNotification("Debes iniciar sesión para realizar esta acción", "error")
+        return
+      }
+
+      setSaving(true)
+      setError(null)
+      setSuccessMessage(null)
+
+      try {
+        const companyData = {
+          ...values,
+          description: values.description || null,
+          address: values.address || null,
+          website: values.website || null,
+          logo_url: logoPreview,
+        }
+
+        const response = await axios.patch(
+          `${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${values.cif}`,
+          companyData,
+          {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }
+        );
+
+        // Si el backend devuelve la empresa actualizada:
+        const updatedCompany = response.data;
+        setCompany(updatedCompany); // Actualiza el estado local si lo necesitas
+        
+        setSuccessMessage("Empresa actualizada correctamente")
+        showNotification("Empresa actualizada correctamente", "success")
+
+        // Redirigir después de un breve retraso
+          router.push("/company")
+      } catch (error) {
+        console.error("Error al actualizar empresa:", error)
+        setError("No se pudo actualizar la empresa")
+        showNotification("No se pudo actualizar la empresa", "error")
+      } finally {
+        setSaving(false)
+      }
+    },
+    enableReinitialize: true,
+  })
 
   // Cargar datos de la empresa
   useEffect(() => {
@@ -124,63 +185,7 @@ export default function EditCompanyPage() {
     if (session?.accessToken) {
       fetchCompany()
     }
-  }, [cif, session])
-
-  // Inicializar formik
-  const formik = useFormik({
-    initialValues: {
-      cif: "",
-      name: "",
-      description: "",
-      address: "",
-      phone: "",
-      email: "",
-      website: "",
-      logo_url: null,
-    },
-    validationSchema,
-    onSubmit: async (values) => {
-      if (!session?.accessToken) {
-        showNotification("Debes iniciar sesión para realizar esta acción", "error")
-        return
-      }
-
-      setSaving(true)
-      setError(null)
-      setSuccessMessage(null)
-
-      try {
-        const companyData = {
-          ...values,
-          description: values.description || null,
-          address: values.address || null,
-          website: values.website || null,
-          logo_url: logoPreview,
-        }
-
-        const response = await axios.patch(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${cif}`, companyData, {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        })
-
-        setSuccessMessage("Empresa actualizada correctamente")
-        showNotification("Empresa actualizada correctamente", "success")
-
-        // Redirigir después de un breve retraso
-        setTimeout(() => {
-          router.push("/company")
-        }, 1500)
-      } catch (error) {
-        console.error("Error al actualizar empresa:", error)
-        setError("No se pudo actualizar la empresa")
-        showNotification("No se pudo actualizar la empresa", "error")
-      } finally {
-        setSaving(false)
-      }
-    },
-    enableReinitialize: true,
-  })
+  }, [cif, session, formik])
 
   // Manejar cambio de logo
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -614,7 +619,17 @@ export default function EditCompanyPage() {
         onConfirm={handleDeleteCompany}
         loading={deleting}
         companyName={formik.values.name}
-      />
+      />  
+    </ColumnLayout>
+  )
+}
+
+export default function Page({ params }: { params: { cif: string } }) {
+  return (
+    <ColumnLayout>
+      <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 2, sm: 3 } }}>
+        <EditCompanyPage cif={params.cif} />
+      </Box>
     </ColumnLayout>
   )
 }

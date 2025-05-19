@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-// import { useRouter } from "next/navigation"
+import { useState } from "react"
+// import { useSession } from "next-auth/react"
 import {
   Box,
   Typography,
@@ -22,7 +21,6 @@ import {
   TabList,
   Tab,
   TabPanel,
-  Alert,
 } from "@mui/joy"
 import {
   Business,
@@ -71,21 +69,20 @@ export interface Company {
 }
 
 interface CompanyProfileProps {
-  companyId: string
+  company: Company
   onBack: () => void
   onEdit: (company: Company) => void
   onDelete?: (cif: string) => void;
 }
 
-export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: CompanyProfileProps) {
+export default function CompanyProfile({ company, onBack, onEdit, onDelete }: CompanyProfileProps) {
   // const router = useRouter()
   const { mode } = useColorScheme()
-  const { data: session, status } = useSession()
+  // const { data: session, status } = useSession()
   const { showNotification } = useNotification()
-  const [company, setCompany] = useState<Company | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<string>("info")
+  
+  // const isCreator = company?.created_by === Number(session?.user?.id)
 
   // Datos simulados para las estadísticas
   const stats = [
@@ -93,73 +90,6 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
     { label: "Miembros", value: 8, icon: <Groups /> },
     { label: "Materiales", value: 156, icon: <Description /> },
   ]
-
-  // Función para cargar los datos de la empresa
-  useEffect(() => {
-    const fetchCompany = async () => {
-      if (status !== "authenticated" || !session?.accessToken) {
-        return
-      }
-
-      setLoading(true)
-      setError(null)
-
-      try {
-        // Aquí se haría la llamada a la API para obtener los datos de la empresa
-        // Por ahora, usamos datos de ejemplo
-        const mockCompany: Company = {
-          cif: companyId,
-          name: "NucleAV Productions",
-          description:
-            "Somos una productora audiovisual especializada en contenido corporativo, publicidad y documentales. Nuestro equipo de profesionales ofrece soluciones creativas y técnicas para todo tipo de proyectos audiovisuales.",
-          address: "Calle Gran Vía 28, 28013 Madrid",
-          phone: "+34 912 345 678",
-          email: "info@nucleav.com",
-          website: "https://www.nucleav.com",
-          logo_url: "https://picsum.photos/seed/company/200/200",
-          created_by: 1,
-          is_active: true,
-          created_at: "2023-01-15T10:30:00Z",
-          updated_at: "2023-05-20T14:45:00Z",
-          creator: {
-            id: 1,
-            name: "Juan",
-            lastname: "Pérez",
-            username: "juanperez",
-            email: "juan@example.com",
-          },
-        }
-
-        // Simular una llamada a la API
-        setTimeout(() => {
-          setCompany(mockCompany)
-          setLoading(false)
-        }, 1000)
-
-        // Cuando se conecte a la API real, sería algo así:
-        /*
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${companyId}`, {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        });
-        
-        if (!response.ok) {
-          throw new Error('Error al cargar la empresa');
-        }
-        
-        const data = await response.json();
-        setCompany(data);
-        */
-      } catch (error) {
-        console.error("Error al cargar la empresa:", error)
-        setError("No se pudo cargar la información de la empresa")
-        setLoading(false)
-      }
-    }
-
-    fetchCompany()
-  }, [companyId, session, status])
 
   // Función para copiar al portapapeles
   const copyToClipboard = (text: string, message: string) => {
@@ -177,26 +107,15 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
     })
   }
 
-  // Verificar si el usuario actual es el creador de la empresa
-  const isCreator = company?.created_by === session?.user?.id
-
   // Manejar la eliminación de la empresa
   const handleDelete = () => {
-    if (company) {
-      if (window.confirm(`¿Estás seguro de que deseas eliminar la empresa ${company.name}?`)) {
-        onDelete && onDelete(company.cif)
-      }
+    if (company && window.confirm(`¿Estás seguro de que deseas eliminar la empresa ${company.name}?`)) {
+      onDelete?.(company.cif);
     }
   }
 
   return (
     <>
-      {error && (
-        <Alert color="danger" variant="soft" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
       <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
         <IconButton
           variant="soft"
@@ -230,7 +149,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
           >
             <CardContent sx={{ p: 3, display: "flex", flexDirection: "column", alignItems: "center" }}>
               {/* Logo de la empresa */}
-              {loading ? (
+              {!company ? (
                 <Skeleton variant="circular" width={120} height={120} />
               ) : (
                 <Avatar
@@ -250,7 +169,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
               )}
 
               {/* Nombre de la empresa */}
-              {loading ? (
+              {!company ? (
                 <Skeleton variant="text" width={200} height={40} sx={{ mb: 1 }} />
               ) : (
                 <Typography level="h3" sx={{ mb: 1, textAlign: "center" }}>
@@ -259,7 +178,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
               )}
 
               {/* CIF */}
-              {loading ? (
+              {!company ? (
                 <Skeleton variant="text" width={150} height={24} sx={{ mb: 2 }} />
               ) : (
                 <Chip
@@ -288,7 +207,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
               {/* Información de contacto */}
               <Stack spacing={2} sx={{ width: "100%" }}>
                 {/* Dirección */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : company?.address ? (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -303,7 +222,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                 ) : null}
 
                 {/* Teléfono */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -328,7 +247,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                 )}
 
                 {/* Email */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -353,7 +272,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                 )}
 
                 {/* Sitio web */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : company?.website ? (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -392,7 +311,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
               {/* Información adicional */}
               <Stack spacing={2} sx={{ width: "100%" }}>
                 {/* Fecha de creación */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -407,7 +326,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                 )}
 
                 {/* Creador */}
-                {loading ? (
+                {!company ? (
                   <Skeleton variant="text" width="100%" height={24} />
                 ) : company?.creator ? (
                   <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1.5 }}>
@@ -426,7 +345,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
 
               {/* Botones de acción */}
               <Stack direction="row" spacing={1} sx={{ mt: 3, width: "100%" }}>
-                {isCreator && (
+                {!company && (
                   <>
                     <Button
                       variant="outlined"
@@ -587,7 +506,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                     Sobre la empresa
                   </Typography>
 
-                  {loading ? (
+                  {!company ? (
                     <>
                       <Skeleton variant="text" width="100%" height={20} sx={{ mb: 1 }} />
                       <Skeleton variant="text" width="100%" height={20} sx={{ mb: 1 }} />
@@ -605,7 +524,7 @@ export default function CompanyProfile({ companyId, onBack, onEdit, onDelete }: 
                     Galería
                   </Typography>
 
-                  {loading ? (
+                  {!company ? (
                     <Grid container spacing={2}>
                       {[1, 2, 3].map((i) => (
                         <Grid key={i} xs={12} sm={4}>

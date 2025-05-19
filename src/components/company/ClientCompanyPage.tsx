@@ -1,66 +1,68 @@
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Box, CircularProgress } from "@mui/joy";
-import ColumnLayout from "@/components/ColumnLayout";
-import CompanyProfile from "@/components/company/CompanyProfile";
-import { useSession } from "next-auth/react";
-import { useNotification } from "@/components/context/NotificationContext";
+import { useEffect, useState } from "react"
+import { useSession } from "next-auth/react"
+import axios from "axios"
+import CompanyProfile, { type Company } from "@/components/company/CompanyProfile"
+import { CircularProgress, Alert, Box } from "@mui/joy"
 
-export default function ClientCompanyPage({ companyId }: { companyId: string }) {
-  const router = useRouter();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { data: session, status } = useSession();
-  const { showNotification } = useNotification();
+interface ClientCompanyPageProps {
+  companyId: string
+}
+
+export default function ClientCompanyPage({ companyId }: ClientCompanyPageProps) {
+  const { data: session, status } = useSession()
+  const [company, setCompany] = useState<Company | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/login");
+    const fetchCompany = async () => {
+      if (status !== "authenticated" || !session?.accessToken) return
+
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${companyId}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        })
+
+        setCompany(response.data)
+      } catch (err) {
+        console.error(err)
+        setError("No se pudo cargar la información de la empresa")
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [status, router]);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleEditCompany = (company: unknown) => {
-    router.push(`/company`);
-  };
+    fetchCompany()
+  }, [companyId, session, status])
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleDeleteCompany = async (company: unknown) => {
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      showNotification("Empresa eliminada correctamente", "success");
-      router.push("/empresa");
-    } catch (error) {
-      console.error("Error al eliminar la empresa:", error);
-      showNotification("No se pudo eliminar la empresa", "error");
-    }
-  };
-
-  if (status === "loading") {
+  if (loading) {
     return (
-      <ColumnLayout>
-        <Box sx={{ display: "flex", justifyContent: "center", p: 4 }}>
-          <CircularProgress
-            size="lg"
-            sx={{
-              "--CircularProgress-trackColor": "rgba(255, 188, 98, 0.2)",
-              "--CircularProgress-progressColor": "#ffbc62",
-            }}
-          />
-        </Box>
-      </ColumnLayout>
-    );
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+        <CircularProgress />
+      </Box>
+    )
+  }
+
+  if (error) {
+    return <Alert color="danger">{error}</Alert>
+  }
+
+  if (!company) {
+    return <Alert color="warning">Empresa no encontrada</Alert>
   }
 
   return (
-    <ColumnLayout>
-      <CompanyProfile
-        companyId={companyId}
-        onBack={() => router.push("/empresa")}
-        onEdit={handleEditCompany}
-        onDelete={handleDeleteCompany}
-      />
-    </ColumnLayout>
-  );
+    <CompanyProfile
+      company={company}
+      onBack={() => history.back()}
+      onEdit={(updatedCompany) => setCompany(updatedCompany)}
+      onDelete={() => {
+        history.back()
+      }}
+    />
+  )
 }
