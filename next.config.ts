@@ -31,6 +31,13 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  async rewrites() {
+    return [
+      { source: "/index.html", destination: "/" },
+      { source: "/index.php", destination: "/" },
+    ];
+  },
   trailingSlash: false,
 };
 
