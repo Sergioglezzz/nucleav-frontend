@@ -36,6 +36,7 @@ import {
   VerifiedUser,
   Share,
   ContentCopy,
+  InfoOutlined,
   Groups,
   Folder,
   BarChart,
@@ -81,7 +82,7 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
   // const { data: session, status } = useSession()
   const { showNotification } = useNotification()
   const [activeTab, setActiveTab] = useState<string>("info")
-  
+
   // const isCreator = company?.created_by === Number(session?.user?.id)
 
   // Datos simulados para las estadísticas
@@ -116,7 +117,7 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
 
   return (
     <>
-      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2.3 }}>
         <IconButton
           variant="soft"
           color="neutral"
@@ -127,7 +128,7 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
         >
           <ArrowBack />
         </IconButton>
-        <Typography level="h2">Perfil de Empresa</Typography>
+        <Typography level="h2" sx={{ color: "#ffbc62" }}>Perfil de Empresa</Typography>
       </Box>
 
       <Grid container spacing={3}>
@@ -373,7 +374,7 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
                   startDecorator={<Share />}
                   onClick={() =>
                     copyToClipboard(
-                      `${window.location.origin}/empresa/${company?.cif}`,
+                      `${window.location.origin}/company/${company?.cif}`,
                       "Enlace copiado al portapapeles",
                     )
                   }
@@ -475,15 +476,19 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
                 <TabList
                   variant="plain"
                   sx={{
-                    p: 1.5,
-                    gap: 2,
-                    borderRadius: 0,
+                    p: 0.2,
+                    gap: 0.2,
+                    flexWrap: "wrap", // por si no caben
+                    justifyContent: "center",
                     [`& .MuiTab-root`]: {
+                      minWidth: 60,
+                      px: 1.5,
+                      py: 0.5,
+                      flexDirection: "column", // icon arriba, texto debajo
+                      alignItems: "center",
                       bgcolor: "transparent",
                       boxShadow: "none",
-                      "&:hover": {
-                        bgcolor: "transparent",
-                      },
+                      "&:hover": { bgcolor: "transparent" },
                       [`&.Mui-selected`]: {
                         color: "#ffbc62",
                         "&::after": {
@@ -494,10 +499,22 @@ export default function CompanyProfile({ company, onBack, onEdit, onDelete }: Co
                     },
                   }}
                 >
-                  <Tab value="info">Información</Tab>
-                  <Tab value="projects">Proyectos</Tab>
-                  <Tab value="team">Equipo</Tab>
-                  <Tab value="stats">Análisis</Tab>
+                  <Tab value="info">
+                    <InfoOutlined sx={{ display: { xs: "flex", sm: "none" } }} />
+                    <Box sx={{ display: { xs: "none", sm: "flex" }, justifyContent: "row", alignItems: "center", mt: 0.5, ml: 0.5, gap: 1 }}> <InfoOutlined />Información</Box>
+                  </Tab>
+                  <Tab value="projects">
+                    <Folder sx={{ display: { xs: "flex", sm: "none" } }} />
+                    <Box sx={{ display: { xs: "none", sm: "flex" }, justifyContent: "row", alignItems: "center", mt: 0.5, ml: 0.5, gap: 1 }}> <Folder />Proyectos</Box>
+                  </Tab>
+                  <Tab value="team">
+                    <Groups sx={{ display: { xs: "flex", sm: "none" } }} />
+                    <Box sx={{ display: { xs: "none", sm: "flex" }, justifyContent: "row", alignItems: "center", mt: 0.5, ml: 0.5, gap: 1 }}> <Groups /> Equipo</Box>
+                  </Tab>
+                  <Tab value="stats">
+                    <BarChart sx={{ display: { xs: "flex", sm: "none" } }} />
+                    <Box sx={{ display: { xs: "none", sm: "flex" }, justifyContent: "row", alignItems: "center", mt: 0.5, ml: 0.5, gap: 1 }}> <BarChart /> Análisis</Box>
+                  </Tab>
                 </TabList>
 
                 <TabPanel value="info" sx={{ p: 3 }}>
