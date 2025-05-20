@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { use, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import axios from "axios"
@@ -63,7 +63,8 @@ const validationSchema = Yup.object({
     .matches(/^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/, "Formato de URL inválido"),
 })
 
-function EditCompanyPage({ cif }: { cif: string }) {
+export default function EditCompanyPage({ params }: { params: Promise<{ cif: string }> }) {
+  const { cif } = use(params)
   const router = useRouter()
   const { data: session } = useSession()
   const { showNotification } = useNotification()
@@ -125,12 +126,12 @@ function EditCompanyPage({ cif }: { cif: string }) {
         // Si el backend devuelve la empresa actualizada:
         const updatedCompany = response.data;
         setCompany(updatedCompany); // Actualiza el estado local si lo necesitas
-        
+
         setSuccessMessage("Empresa actualizada correctamente")
         showNotification("Empresa actualizada correctamente", "success")
 
         // Redirigir después de un breve retraso
-          router.push("/company")
+        router.push("/company")
       } catch (error) {
         console.error("Error al actualizar empresa:", error)
         setError("No se pudo actualizar la empresa")
@@ -619,17 +620,7 @@ function EditCompanyPage({ cif }: { cif: string }) {
         onConfirm={handleDeleteCompany}
         loading={deleting}
         companyName={formik.values.name}
-      />  
-    </ColumnLayout>
-  )
-}
-
-export default function Page({ params }: { params: { cif: string } }) {
-  return (
-    <ColumnLayout>
-      <Box sx={{ maxWidth: 800, mx: "auto", p: { xs: 2, sm: 3 } }}>
-        <EditCompanyPage cif={params.cif} />
-      </Box>
+      />
     </ColumnLayout>
   )
 }
