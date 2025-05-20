@@ -68,6 +68,8 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
   const router = useRouter()
   const { data: session } = useSession()
   const { showNotification } = useNotification()
+  const [hasInitialized, setHasInitialized] = useState(false)
+
 
   const [, setCompany] = useState<Company | null>(null)
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -146,11 +148,7 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
   // Cargar datos de la empresa
   useEffect(() => {
     const fetchCompany = async () => {
-      if (!session?.accessToken) {
-        setLoading(false)
-        setError("No se ha encontrado información de sesión")
-        return
-      }
+      if (!session?.accessToken || hasInitialized) return
 
       try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies/${cif}`, {
@@ -174,6 +172,7 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
           logo_url: companyData.logo_url || null,
         })
 
+        setHasInitialized(true) // 🚨 Impide repetir la llamada
         setError(null)
       } catch (error) {
         console.error("Error al cargar la empresa:", error)
@@ -183,10 +182,11 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
       }
     }
 
-    if (session?.accessToken) {
-      fetchCompany()
-    }
-  }, [cif, session, formik])
+    fetchCompany()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.accessToken, cif, hasInitialized])
+
+
 
   // Manejar cambio de logo
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
