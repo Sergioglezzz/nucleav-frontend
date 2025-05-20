@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Box, Typography, Button, Grid, Input, IconButton, Sheet, CircularProgress, Alert, Divider } from "@mui/joy"
+import { Box, Typography, Button, Grid, Input, IconButton, Sheet, CircularProgress, Alert, Divider, Stack } from "@mui/joy"
 import { Add, Search, FilterList, Business, SortByAlpha, Clear } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
@@ -128,24 +128,13 @@ export default function CompaniesPage() {
       ) : (
         <>
           {/* Cabecera */}
-          <Box sx={{ mb: 4, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <Typography level="h2" sx={{ color: "#ffbc62" }}>
-              Empresa
+          <Box sx={{ mb: 4 }}>
+            <Typography level="h1" sx={{ mb: 1, color: "#ffbc62" }}>
+              Empresas
             </Typography>
-            <Button
-              variant="solid"
-              startDecorator={<Add />}
-              onClick={handleCreateCompany}
-              sx={{
-                bgcolor: "#ffbc62",
-                color: "white",
-                "&:hover": {
-                  bgcolor: "rgba(255, 188, 98, 0.8)",
-                },
-              }}
-            >
-              Nueva Empresa
-            </Button>
+            <Typography level="body-lg" color="neutral">
+              Gestiona todas tus empresas audiovisuales
+            </Typography>
           </Box>
 
           <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
@@ -242,18 +231,36 @@ export default function CompaniesPage() {
               </Button>
             </Box>
           ) : (
-            <Grid container spacing={3}>
-              {filteredCompanies.map((company) => (
-                <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-                  <CompanyCard
-                    company={company}
-                    onSelect={handleSelectCompany}
-                    onEdit={() => handleEditCompany(company)}
-                    onDelete={handleDeleteCompany}
-                  />
-                </Grid>
-              ))}
-            </Grid>
+            <>
+              <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
+                <Button
+                  variant="solid"
+                  startDecorator={<Add />}
+                  onClick={handleCreateCompany}
+                  sx={{
+                    bgcolor: "#ffbc62",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255, 188, 98, 0.8)",
+                    },
+                  }}
+                >
+                  Nueva Empresa
+                </Button>
+              </Stack>
+              <Grid container spacing={3}>
+                {filteredCompanies.map((company) => (
+                  <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+                    <CompanyCard
+                      company={company}
+                      onSelect={handleSelectCompany}
+                      onEdit={() => handleEditCompany(company)}
+                      onDelete={handleDeleteCompany}
+                    />
+                  </Grid>
+                ))}
+              </Grid>
+            </>
           )}
         </>
       )}

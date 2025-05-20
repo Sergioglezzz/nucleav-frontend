@@ -600,7 +600,7 @@ export default function ProjectsPage() {
     <>
       <ColumnLayout>
         <Box sx={{ mb: 4 }}>
-          <Typography level="h1" sx={{ mb: 1 }}>
+          <Typography level="h1" sx={{ mb: 1, color: "#ffbc62" }}>
             Proyectos
           </Typography>
           <Typography level="body-lg" color="neutral">

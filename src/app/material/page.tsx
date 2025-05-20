@@ -4,9 +4,6 @@ import { useState, useEffect } from "react"
 import {
   Box,
   Typography,
-  Tabs,
-  TabList,
-  Tab,
   Input,
   IconButton,
   Card,
@@ -37,6 +34,7 @@ import {
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import Image from "next/image"
+import CustomTabs from "@/components/CustomTabs"
 
 // Tipos para los materiales
 type MaterialType = "video" | "image" | "audio" | "document" | "other"
@@ -54,6 +52,11 @@ interface Material {
   tags: string[]
   isFavorite: boolean
 }
+
+const tabOptions = [
+  { value: "my-materials", label: "Mis Materiales" },
+  { value: "company-materials", label: "Materiales de la Empresa" },
+]
 
 // Datos de ejemplo para mostrar en el boceto
 const MOCK_MATERIALS: Material[] = [
@@ -265,7 +268,7 @@ export default function MaterialPage() {
     <>
       <ColumnLayout>
         <Box sx={{ mb: 4 }}>
-          <Typography level="h1" sx={{ mb: 1 }}>
+          <Typography level="h1" sx={{ mb: 1, color: "#ffbc62" }}>
             Materiales Audiovisuales
           </Typography>
           <Typography level="body-lg" color="neutral">
@@ -274,12 +277,12 @@ export default function MaterialPage() {
         </Box>
 
         {/* Tabs para alternar entre mis materiales y materiales de la empresa */}
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as string)} sx={{ mb: 3 }}>
-          <TabList>
-            <Tab value="my-materials">Mis Materiales</Tab>
-            <Tab value="company-materials">Materiales de la Empresa</Tab>
-          </TabList>
-        </Tabs>
+        <CustomTabs
+          options={tabOptions}
+          defaultValue={activeTab}
+          onChange={(value) => setActiveTab(value)}
+        />
+
 
         {/* Barra de búsqueda y filtros */}
         <Sheet
@@ -306,7 +309,18 @@ export default function MaterialPage() {
             startDecorator={<Search />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ flexGrow: 1 }}
+            sx={{
+              width: "100%",
+              flexGrow: 1,
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }}
           />
 
           <Stack direction="row" spacing={1} alignItems="center">

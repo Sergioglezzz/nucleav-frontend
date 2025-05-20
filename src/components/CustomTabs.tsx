@@ -75,7 +75,7 @@ export default function CustomTabs({ options, defaultValue = options[0]?.value, 
               onClick={() => handleTabChange(option.value)}
               sx={{
                 flex: 1,
-                py: 1,
+                py: 1.5,
                 borderRadius: "lg",
                 position: "relative",
                 zIndex: 1,
