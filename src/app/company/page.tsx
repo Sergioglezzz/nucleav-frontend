@@ -7,8 +7,8 @@ import { Box, Typography, Button, Grid, Input, IconButton, Sheet, CircularProgre
 import { Add, Search, FilterList, Business, SortByAlpha, Clear } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
-import CompanyProfile, { type Company } from "@/components/company/CompanyProfile"
-import CompanyCard from "@/components/company/CompanyCard"
+import CompanyProfile, { type Company } from "@/app/company/components/CompanyProfile"
+import CompanyCard from "@/app/company/components/CompanyCard"
 import axios from "axios"
 import CustomTabs from "@/components/CustomTabs"
 

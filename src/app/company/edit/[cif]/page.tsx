@@ -41,10 +41,10 @@ import {
 } from "@mui/icons-material"
 import { useFormik } from "formik"
 import * as Yup from "yup"
-import type { Company } from "@/components/company/CompanyProfile"
+import type { Company } from "@/app/company/components/CompanyProfile"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
-import DeleteCompanyModal from "../../DeleteCompanyModal"
+import DeleteCompanyModal from "../../components/DeleteCompanyModal"
 
 // Esquema de validación
 const validationSchema = Yup.object({
@@ -172,7 +172,7 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
           logo_url: companyData.logo_url || null,
         })
 
-        setHasInitialized(true) // 🚨 Impide repetir la llamada
+        setHasInitialized(true)
         setError(null)
       } catch (error) {
         console.error("Error al cargar la empresa:", error)
@@ -440,7 +440,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                         placeholder="B12345678"
                         disabled={true}
                         error={formik.touched.cif && Boolean(formik.errors.cif)}
-                        sx={{ width: "100%" }}
+                        sx={{
+                          width: "100%",
+                          "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                          "&:hover": {
+                            borderColor: "primary.solidBg",
+                          },
+                          "&:focus-within": {
+                            borderColor: "primary.solidBg",
+                            boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                          },
+                        }}
                       />
                       {formik.touched.cif && formik.errors.cif && <FormHelperText>{formik.errors.cif}</FormHelperText>}
                     </Box>
@@ -456,7 +466,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                         onBlur={formik.handleBlur}
                         placeholder="Nombre de la empresa"
                         error={formik.touched.name && Boolean(formik.errors.name)}
-                        sx={{ width: "100%" }}
+                        sx={{
+                          width: "100%",
+                          "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                          "&:hover": {
+                            borderColor: "primary.solidBg",
+                          },
+                          "&:focus-within": {
+                            borderColor: "primary.solidBg",
+                            boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                          },
+                        }}
                       />
                       {formik.touched.name && formik.errors.name && (
                         <FormHelperText>{formik.errors.name}</FormHelperText>
@@ -487,7 +507,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                       onBlur={formik.handleBlur}
                       placeholder="+34 912 345 678"
                       error={formik.touched.phone && Boolean(formik.errors.phone)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        width: "100%",
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                      }}
                     />
                     {formik.touched.phone && formik.errors.phone && (
                       <FormHelperText>{formik.errors.phone}</FormHelperText>
@@ -506,7 +536,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                       onBlur={formik.handleBlur}
                       placeholder="info@empresa.com"
                       error={formik.touched.email && Boolean(formik.errors.email)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        width: "100%",
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                      }}
                     />
                     {formik.touched.email && formik.errors.email && (
                       <FormHelperText>{formik.errors.email}</FormHelperText>
@@ -527,7 +567,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                       onBlur={formik.handleBlur}
                       placeholder="Dirección de la empresa"
                       error={formik.touched.address && Boolean(formik.errors.address)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        width: "100%",
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                      }}
                     />
                     {formik.touched.address && formik.errors.address && (
                       <FormHelperText>{formik.errors.address}</FormHelperText>
@@ -545,7 +595,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                       onBlur={formik.handleBlur}
                       placeholder="https://www.empresa.com"
                       error={formik.touched.website && Boolean(formik.errors.website)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        width: "100%",
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                      }}
                     />
                     {formik.touched.website && formik.errors.website && (
                       <FormHelperText>{formik.errors.website}</FormHelperText>
@@ -571,7 +631,17 @@ export default function EditCompanyPage({ params }: { params: Promise<{ cif: str
                   minRows={3}
                   maxRows={5}
                   error={formik.touched.description && Boolean(formik.errors.description)}
-                  sx={{ width: "100%" }}
+                  sx={{
+                    width: "100%",
+                    "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                    "&:hover": {
+                      borderColor: "primary.solidBg",
+                    },
+                    "&:focus-within": {
+                      borderColor: "primary.solidBg",
+                      boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                    },
+                  }}
                 />
                 {formik.touched.description && formik.errors.description && (
                   <FormHelperText>{formik.errors.description}</FormHelperText>

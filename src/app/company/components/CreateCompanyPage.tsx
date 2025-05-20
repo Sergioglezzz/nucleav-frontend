@@ -107,7 +107,7 @@ export default function CreateCompanyPage() {
         showNotification("Empresa creada correctamente", "success")
 
         // Redirigir después de un breve retraso
-          router.push("/company")
+        router.push("/company")
       } catch (error) {
         console.error("Error al crear empresa:", error)
 
@@ -294,7 +294,17 @@ export default function CreateCompanyPage() {
                       onBlur={formik.handleBlur}
                       placeholder="B12345678"
                       error={formik.touched.cif && Boolean(formik.errors.cif)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                        width: "100%",
+                      }}
                     />
                     {formik.touched.cif && formik.errors.cif && <FormHelperText>{formik.errors.cif}</FormHelperText>}
                   </Box>
@@ -310,7 +320,17 @@ export default function CreateCompanyPage() {
                       onBlur={formik.handleBlur}
                       placeholder="Nombre de la empresa"
                       error={formik.touched.name && Boolean(formik.errors.name)}
-                      sx={{ width: "100%" }}
+                      sx={{
+                        "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                        "&:hover": {
+                          borderColor: "primary.solidBg",
+                        },
+                        "&:focus-within": {
+                          borderColor: "primary.solidBg",
+                          boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                        },
+                        width: "100%",
+                      }}
                     />
                     {formik.touched.name && formik.errors.name && <FormHelperText>{formik.errors.name}</FormHelperText>}
                   </Box>
@@ -339,7 +359,17 @@ export default function CreateCompanyPage() {
                     onBlur={formik.handleBlur}
                     placeholder="+34 912 345 678"
                     error={formik.touched.phone && Boolean(formik.errors.phone)}
-                    sx={{ width: "100%" }}
+                    sx={{
+                      "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                      "&:hover": {
+                        borderColor: "primary.solidBg",
+                      },
+                      "&:focus-within": {
+                        borderColor: "primary.solidBg",
+                        boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                      },
+                      width: "100%",
+                    }}
                   />
                   {formik.touched.phone && formik.errors.phone && (
                     <FormHelperText>{formik.errors.phone}</FormHelperText>
@@ -358,7 +388,17 @@ export default function CreateCompanyPage() {
                     onBlur={formik.handleBlur}
                     placeholder="info@empresa.com"
                     error={formik.touched.email && Boolean(formik.errors.email)}
-                    sx={{ width: "100%" }}
+                    sx={{
+                      "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                      "&:hover": {
+                        borderColor: "primary.solidBg",
+                      },
+                      "&:focus-within": {
+                        borderColor: "primary.solidBg",
+                        boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                      },
+                      width: "100%",
+                    }}
                   />
                   {formik.touched.email && formik.errors.email && (
                     <FormHelperText>{formik.errors.email}</FormHelperText>
@@ -379,7 +419,17 @@ export default function CreateCompanyPage() {
                     onBlur={formik.handleBlur}
                     placeholder="Dirección de la empresa"
                     error={formik.touched.address && Boolean(formik.errors.address)}
-                    sx={{ width: "100%" }}
+                    sx={{
+                      "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                      "&:hover": {
+                        borderColor: "primary.solidBg",
+                      },
+                      "&:focus-within": {
+                        borderColor: "primary.solidBg",
+                        boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                      },
+                      width: "100%",
+                    }}
                   />
                   {formik.touched.address && formik.errors.address && (
                     <FormHelperText>{formik.errors.address}</FormHelperText>
@@ -397,7 +447,17 @@ export default function CreateCompanyPage() {
                     onBlur={formik.handleBlur}
                     placeholder="https://www.empresa.com"
                     error={formik.touched.website && Boolean(formik.errors.website)}
-                    sx={{ width: "100%" }}
+                    sx={{
+                      "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                      "&:hover": {
+                        borderColor: "primary.solidBg",
+                      },
+                      "&:focus-within": {
+                        borderColor: "primary.solidBg",
+                        boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                      },
+                      width: "100%",
+                    }}
                   />
                   {formik.touched.website && formik.errors.website && (
                     <FormHelperText>{formik.errors.website}</FormHelperText>
@@ -423,7 +483,17 @@ export default function CreateCompanyPage() {
                 minRows={3}
                 maxRows={5}
                 error={formik.touched.description && Boolean(formik.errors.description)}
-                sx={{ width: "100%" }}
+                sx={{
+                  "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                  "&:hover": {
+                    borderColor: "primary.solidBg",
+                  },
+                  "&:focus-within": {
+                    borderColor: "primary.solidBg",
+                    boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                  },
+                  width: "100%",
+                }}
               />
               {formik.touched.description && formik.errors.description && (
                 <FormHelperText>{formik.errors.description}</FormHelperText>

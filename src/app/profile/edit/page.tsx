@@ -246,7 +246,7 @@ export default function ProfileEditPage() {
       setDeleting(false)
       setOpenDeleteModal(false)
     }
-  }  
+  }
 
   // Cancelar edición
   const handleCancel = () => {
@@ -450,7 +450,17 @@ export default function ProfileEditPage() {
                             value={formData.name || ""}
                             onChange={handleInputChange}
                             placeholder="Nombre"
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: "100%",
+                              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                              "&:hover": {
+                                borderColor: "primary.solidBg",
+                              },
+                              "&:focus-within": {
+                                borderColor: "primary.solidBg",
+                                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                              },
+                            }}
                           />
                         )}
                       </Box>
@@ -466,7 +476,17 @@ export default function ProfileEditPage() {
                             value={formData.lastname || ""}
                             onChange={handleInputChange}
                             placeholder="Apellido"
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: "100%",
+                              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                              "&:hover": {
+                                borderColor: "primary.solidBg",
+                              },
+                              "&:focus-within": {
+                                borderColor: "primary.solidBg",
+                                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                              },
+                            }}
                           />
                         )}
                       </Box>
@@ -487,7 +507,17 @@ export default function ProfileEditPage() {
                             onChange={handleInputChange}
                             placeholder="Nombre de usuario"
                             startDecorator="@"
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: "100%",
+                              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                              "&:hover": {
+                                borderColor: "primary.solidBg",
+                              },
+                              "&:focus-within": {
+                                borderColor: "primary.solidBg",
+                                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                              },
+                            }}
                           />
                         )}
                       </Box>
@@ -505,7 +535,17 @@ export default function ProfileEditPage() {
                             onChange={handleInputChange}
                             placeholder="Email"
                             type="email"
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: "100%",
+                              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                              "&:hover": {
+                                borderColor: "primary.solidBg",
+                              },
+                              "&:focus-within": {
+                                borderColor: "primary.solidBg",
+                                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                              },
+                            }}
                           />
                         )}
                       </Box>
@@ -531,7 +571,17 @@ export default function ProfileEditPage() {
                           value={formData.profession || ""}
                           onChange={handleInputChange}
                           placeholder="Profesión"
-                          sx={{ width: "100%" }}
+                          sx={{
+                            width: "100%",
+                            "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                            "&:hover": {
+                              borderColor: "primary.solidBg",
+                            },
+                            "&:focus-within": {
+                              borderColor: "primary.solidBg",
+                              boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                            },
+                          }}
                         />
                       )}
                     </Box>
@@ -549,7 +599,17 @@ export default function ProfileEditPage() {
                             onChange={handleInputChange}
                             placeholder="Rol"
                             disabled={true}
-                            sx={{ width: "100%" }}
+                            sx={{
+                              width: "100%",
+                              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                              "&:hover": {
+                                borderColor: "primary.solidBg",
+                              },
+                              "&:focus-within": {
+                                borderColor: "primary.solidBg",
+                                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                              },
+                            }}
                           />
                           <Chip color="primary" size="sm" variant="outlined">
                             {formData.role || "Rol"}
@@ -584,7 +644,17 @@ export default function ProfileEditPage() {
                         placeholder="Escribe una breve descripción sobre ti"
                         minRows={3}
                         maxRows={6}
-                        sx={{ width: "100%" }}
+                        sx={{
+                          width: "100%",
+                          "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                          "&:hover": {
+                            borderColor: "primary.solidBg",
+                          },
+                          "&:focus-within": {
+                            borderColor: "primary.solidBg",
+                            boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                          },
+                        }}
                       />
                       <Typography level="body-xs" sx={{ mt: 1, color: "text.tertiary" }}>
                         {bioCharCount} caracteres restantes

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import axios from "axios"
-import CompanyProfile, { type Company } from "@/components/company/CompanyProfile"
+import CompanyProfile, { type Company } from "@/app/company/components/CompanyProfile"
 import { CircularProgress, Alert, Box } from "@mui/joy"
 
 interface ClientCompanyPageProps {
