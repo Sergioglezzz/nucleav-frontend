@@ -30,9 +30,11 @@ import {
   MoreVert,
   SortByAlpha,
   CalendarMonth,
+  Add,
 } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import CustomTabs from "@/components/CustomTabs"
 
@@ -182,6 +184,7 @@ export default function MaterialPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [materials, setMaterials] = useState<Material[]>([])
   const [showFilters, setShowFilters] = useState(false)
+  const router = useRouter()
 
   // Simular carga de datos
   useEffect(() => {
@@ -255,6 +258,11 @@ export default function MaterialPage() {
       default:
         return "neutral"
     }
+  }
+
+  // Navegar a la página de creación de Materiales
+  const handleCreateMaterial = () => {
+    router.push("/material/create")
   }
 
   // Función para manejar el toggle de favorito
@@ -430,6 +438,23 @@ export default function MaterialPage() {
             </Button>
           </Sheet>
         )}
+
+        <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
+          <Button
+            variant="solid"
+            startDecorator={<Add />}
+            onClick={handleCreateMaterial}
+            sx={{
+              bgcolor: "#ffbc62",
+              color: "white",
+              "&:hover": {
+                bgcolor: "rgba(255, 188, 98, 0.8)",
+              },
+            }}
+          >
+            Nuevo Material
+          </Button>
+        </Stack>
 
         {/* Grid de materiales */}
         {isLoading ? (
