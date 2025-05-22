@@ -6,53 +6,38 @@ import {
   Typography,
   Input,
   IconButton,
-  Card,
-  AspectRatio,
-  Chip,
   Grid,
   Select,
   Option,
   Stack,
   Button,
-  Divider,
   Sheet,
   CircularProgress,
 } from "@mui/joy"
-import {
-  Search,
-  FilterList,
-  VideoLibrary,
-  Image as ImageIcon,
-  AudioFile,
-  Description,
-  Favorite,
-  FavoriteBorder,
-  MoreVert,
-  SortByAlpha,
-  CalendarMonth,
-  Add,
-} from "@mui/icons-material"
+import { Search, FilterList, SortByAlpha, CalendarMonth, Add } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useRouter } from "next/navigation"
-import Image from "next/image"
 import CustomTabs from "@/components/CustomTabs"
+import MaterialCard, { type MaterialCardProps } from "./components/MaterialCard"
 
-// Tipos para los materiales
-type MaterialType = "video" | "image" | "audio" | "document" | "other"
+// Añadir axios a las importaciones
+import axios from "axios"
+import { useSession } from "next-auth/react"
 
-interface Material {
+// Reemplazar el tipo Material para que coincida con la API
+type Material = Omit<MaterialCardProps, "onToggleFavorite" | "onEdit" | "onDelete" | "onView"> & {
   id: string
-  title: string
-  type: MaterialType
-  thumbnail: string
-  createdAt: string
-  owner: string
-  duration?: string // Para videos y audios
-  resolution?: string // Para imágenes y videos
-  fileSize: string
-  tags: string[]
-  isFavorite: boolean
+  name: string
+  description: string | null
+  category: string | null
+  quantity: number
+  is_consumable: boolean
+  location: string | null
+  serial_number: string | null
+  created_at: string // Nota: la API probablemente usa snake_case
+  updated_at: string
+  isFavorite?: boolean // Mantenemos esto para la funcionalidad de favoritos en el frontend
 }
 
 const tabOptions = [
@@ -61,120 +46,144 @@ const tabOptions = [
 ]
 
 // Datos de ejemplo para mostrar en el boceto
-const MOCK_MATERIALS: Material[] = [
-  {
-    id: "1",
-    title: "Entrevista CEO - Proyecto Alpha",
-    type: "video",
-    thumbnail: "https://picsum.photos/seed/video1/300/200",
-    createdAt: "2023-10-15",
-    owner: "Juan Pérez",
-    duration: "12:34",
-    resolution: "1920x1080",
-    fileSize: "1.2 GB",
-    tags: ["entrevista", "corporativo"],
-    isFavorite: true,
-  },
-  {
-    id: "2",
-    title: "Fotografías evento anual",
-    type: "image",
-    thumbnail: "https://picsum.photos/seed/image1/300/200",
-    createdAt: "2023-09-22",
-    owner: "María López",
-    resolution: "4000x3000",
-    fileSize: "8.5 MB",
-    tags: ["evento", "fotografía"],
-    isFavorite: false,
-  },
-  {
-    id: "3",
-    title: "Música para spot publicitario",
-    type: "audio",
-    thumbnail: "https://picsum.photos/seed/audio1/300/200",
-    createdAt: "2023-11-05",
-    owner: "Carlos Ruiz",
-    duration: "03:45",
-    fileSize: "6.8 MB",
-    tags: ["música", "publicidad"],
-    isFavorite: true,
-  },
-  {
-    id: "4",
-    title: "Guión documental histórico",
-    type: "document",
-    thumbnail: "https://picsum.photos/seed/doc1/300/200",
-    createdAt: "2023-08-30",
-    owner: "Ana Martínez",
-    fileSize: "1.5 MB",
-    tags: ["guión", "documental"],
-    isFavorite: false,
-  },
-  {
-    id: "5",
-    title: "Tomas aéreas ciudad",
-    type: "video",
-    thumbnail: "https://picsum.photos/seed/video2/300/200",
-    createdAt: "2023-10-28",
-    owner: "Roberto Sánchez",
-    duration: "08:22",
-    resolution: "3840x2160",
-    fileSize: "4.7 GB",
-    tags: ["aéreo", "ciudad", "4K"],
-    isFavorite: false,
-  },
-  {
-    id: "6",
-    title: "Fotografías producto nuevo",
-    type: "image",
-    thumbnail: "https://picsum.photos/seed/image2/300/200",
-    createdAt: "2023-11-10",
-    owner: "Laura Gómez",
-    resolution: "5000x3000",
-    fileSize: "12.3 MB",
-    tags: ["producto", "estudio"],
-    isFavorite: true,
-  },
-  {
-    id: "7",
-    title: "Efectos sonoros para animación",
-    type: "audio",
-    thumbnail: "https://picsum.photos/seed/audio2/300/200",
-    createdAt: "2023-09-15",
-    owner: "David Torres",
-    duration: "15:30",
-    fileSize: "22.5 MB",
-    tags: ["efectos", "animación"],
-    isFavorite: false,
-  },
-  {
-    id: "8",
-    title: "Storyboard campaña verano",
-    type: "document",
-    thumbnail: "https://picsum.photos/seed/doc2/300/200",
-    createdAt: "2023-07-20",
-    owner: "Elena Castro",
-    fileSize: "3.8 MB",
-    tags: ["storyboard", "campaña"],
-    isFavorite: true,
-  },
-  {
-    id: "9",
-    title: "Grabación evento corporativo",
-    type: "video",
-    thumbnail: "https://picsum.photos/seed/video3/300/200",
-    createdAt: "2023-10-05",
-    owner: "Miguel Ángel",
-    duration: "45:12",
-    resolution: "1920x1080",
-    fileSize: "8.3 GB",
-    tags: ["evento", "corporativo"],
-    isFavorite: false,
-  },
-]
+// const MOCK_MATERIALS: Material[] = [
+//   {
+//     id: "1",
+//     name: "Cámara Sony Alpha A7III",
+//     type: "equipment",
+//     createdAt: "2023-10-15",
+//     owner: "Juan Pérez",
+//     description: "Cámara mirrorless full frame con lente kit 28-70mm",
+//     category: "Cámaras",
+//     quantity: 2,
+//     is_consumable: false,
+//     location: "Almacén principal",
+//     serial_number: "S123456789",
+//     tags: ["cámara", "sony", "full frame"],
+//     isFavorite: true,
+//   },
+//   {
+//     id: "2",
+//     name: "Trípode Manfrotto",
+//     type: "equipment",
+//     createdAt: "2023-09-22",
+//     owner: "María López",
+//     description: "Trípode profesional para cámaras de hasta 8kg",
+//     category: "Soportes",
+//     quantity: 5,
+//     is_consumable: false,
+//     location: "Estudio A",
+//     tags: ["trípode", "soporte"],
+//     isFavorite: false,
+//   },
+//   {
+//     id: "3",
+//     name: "Micrófono Rode NTG4+",
+//     type: "equipment",
+//     createdAt: "2023-11-05",
+//     owner: "Carlos Ruiz",
+//     description: "Micrófono direccional shotgun con batería recargable",
+//     category: "Audio",
+//     quantity: 3,
+//     is_consumable: false,
+//     location: "Estudio B",
+//     serial_number: "RD78945612",
+//     tags: ["micrófono", "audio", "rode"],
+//     isFavorite: true,
+//   },
+//   {
+//     id: "4",
+//     name: "Baterías Sony NP-FZ100",
+//     type: "equipment",
+//     createdAt: "2023-08-30",
+//     owner: "Ana Martínez",
+//     description: "Baterías recargables para cámaras Sony Alpha",
+//     category: "Accesorios",
+//     quantity: 10,
+//     is_consumable: true,
+//     location: "Armario 2",
+//     tags: ["batería", "sony", "accesorio"],
+//     isFavorite: false,
+//   },
+//   {
+//     id: "5",
+//     name: "Kit de iluminación LED Aputure",
+//     type: "equipment",
+//     createdAt: "2023-10-28",
+//     owner: "Roberto Sánchez",
+//     description: "Kit de 3 luces LED Aputure con stands y modificadores",
+//     category: "Iluminación",
+//     quantity: 1,
+//     is_consumable: false,
+//     location: "Estudio C",
+//     serial_number: "AP123987456",
+//     tags: ["iluminación", "led", "kit"],
+//     isFavorite: false,
+//   },
+//   {
+//     id: "6",
+//     name: "Tarjetas SD SanDisk Extreme Pro 128GB",
+//     type: "equipment",
+//     createdAt: "2023-11-10",
+//     owner: "Laura Gómez",
+//     description: "Tarjetas de memoria SD UHS-II V90 para grabación 4K",
+//     category: "Almacenamiento",
+//     quantity: 8,
+//     is_consumable: true,
+//     location: "Caja fuerte",
+//     tags: ["tarjeta", "memoria", "almacenamiento"],
+//     isFavorite: true,
+//   },
+//   {
+//     id: "7",
+//     name: "Estabilizador DJI Ronin-S",
+//     type: "equipment",
+//     createdAt: "2023-09-15",
+//     owner: "David Torres",
+//     description: "Estabilizador de 3 ejes para cámaras DSLR y mirrorless",
+//     category: "Estabilización",
+//     quantity: 2,
+//     is_consumable: false,
+//     location: "Armario 3",
+//     serial_number: "DJI456789123",
+//     tags: ["estabilizador", "gimbal", "dji"],
+//     isFavorite: false,
+//   },
+//   {
+//     id: "8",
+//     name: "Filtros ND Tiffen",
+//     type: "equipment",
+//     createdAt: "2023-07-20",
+//     owner: "Elena Castro",
+//     description: "Set de filtros ND de densidad variable 77mm",
+//     category: "Óptica",
+//     quantity: 3,
+//     is_consumable: false,
+//     location: "Estantería B",
+//     tags: ["filtro", "nd", "óptica"],
+//     isFavorite: true,
+//   },
+//   {
+//     id: "9",
+//     name: "Drone DJI Mavic 3 Pro",
+//     type: "equipment",
+//     createdAt: "2023-10-05",
+//     owner: "Miguel Ángel",
+//     description: "Drone profesional con cámara Hasselblad y baterías extra",
+//     category: "Drones",
+//     quantity: 1,
+//     is_consumable: false,
+//     location: "Caja fuerte",
+//     serial_number: "DJI987654321",
+//     tags: ["drone", "aéreo", "dji"],
+//     isFavorite: false,
+//   },
+// ]
 
+// Reemplazar la función MaterialPage con la siguiente implementación
 export default function MaterialPage() {
   const { mode } = useColorScheme()
+  const { data: session } = useSession()
 
   // Estados para gestionar la interfaz
   const [activeTab, setActiveTab] = useState<string>("my-materials")
@@ -182,37 +191,109 @@ export default function MaterialPage() {
   const [selectedType, setSelectedType] = useState<string | null>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [materials, setMaterials] = useState<Material[]>([])
   const [showFilters, setShowFilters] = useState(false)
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
   const router = useRouter()
 
-  // Simular carga de datos
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMaterials(MOCK_MATERIALS)
+  // Función para cargar materiales desde la API
+  const fetchMaterials = async (pageNum = 1, append = false) => {
+    if (!session?.accessToken) {
+      setError("Debes iniciar sesión para ver los materiales")
       setIsLoading(false)
-    }, 1000)
+      return
+    }
 
-    return () => clearTimeout(timer)
-  }, [])
+    setIsLoading(true)
+    setError(null)
 
-  // Función para filtrar materiales
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials`, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+        params: {
+          page: pageNum,
+          // Aquí puedes añadir más parámetros según la API
+          // limit: 10,
+          // sort: sortBy,
+          // category: selectedType !== 'all' ? selectedType : undefined,
+          // search: searchQuery || undefined,
+        },
+      })
+
+      // Transformar los datos si es necesario para que coincidan con nuestro tipo Material
+      const apiMaterials = response.data.data || response.data || []
+
+      // Mapear los datos de la API a nuestro formato
+      const formattedMaterials = apiMaterials.map((item: Material) => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        quantity: item.quantity,
+        is_consumable: item.is_consumable,
+        location: item.location,
+        serial_number: item.serial_number,
+        createdAt: item.created_at, // Convertimos snake_case a camelCase
+        // Añadir campos que podrían no venir de la API pero necesitamos para el componente
+        type: "equipment",
+        thumbnail: null, // Por ahora usamos null, el componente generará un placeholder
+        tags: item.tags || [],
+        isFavorite: false, // Por defecto no es favorito
+      }))
+
+      if (append) {
+        setMaterials((prev) => [...prev, ...formattedMaterials])
+      } else {
+        setMaterials(formattedMaterials)
+      }
+
+      // Determinar si hay más páginas
+      setHasMore(formattedMaterials.length > 0)
+      setPage(pageNum)
+    } catch (err) {
+      console.error("Error al cargar materiales:", err)
+      setError("No se pudieron cargar los materiales. Por favor, intenta de nuevo más tarde.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  // Cargar materiales cuando el componente se monta o cambian los filtros
+  useEffect(() => {
+    if (session?.accessToken) {
+      fetchMaterials(1, false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session, selectedType, sortBy, activeTab])
+
+  // Función para cargar más materiales
+  const handleLoadMore = () => {
+    if (!isLoading && hasMore) {
+      fetchMaterials(page + 1, true)
+    }
+  }
+
+  // Función para filtrar materiales localmente (para búsqueda en tiempo real)
   const filteredMaterials = materials.filter((material) => {
+    if (!searchQuery) return true
+
     // Filtrar por búsqueda
-    const matchesSearch =
-      material.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      material.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-
-    // Filtrar por tipo
-    const matchesType = selectedType === "all" || material.type === selectedType
-
-    // Filtrar por pestaña
-    const matchesTab = activeTab === "my-materials" ? material.owner === "Juan Pérez" : true
-
-    return matchesSearch && matchesType && matchesTab
+    return (
+      material.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      material.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      false ||
+      material.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      false ||
+      material.tags?.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      false
+    )
   })
 
-  // Función para ordenar materiales
+  // Función para ordenar materiales localmente
   const sortedMaterials = [...filteredMaterials].sort((a, b) => {
     switch (sortBy) {
       case "date-asc":
@@ -220,45 +301,13 @@ export default function MaterialPage() {
       case "date-desc":
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       case "name-asc":
-        return a.title.localeCompare(b.title)
+        return a.name.localeCompare(b.name)
       case "name-desc":
-        return b.title.localeCompare(a.title)
+        return b.name.localeCompare(a.name)
       default:
         return 0
     }
   })
-
-  // Función para obtener el icono según el tipo de material
-  const getMaterialIcon = (type: MaterialType) => {
-    switch (type) {
-      case "video":
-        return <VideoLibrary />
-      case "image":
-        return <ImageIcon />
-      case "audio":
-        return <AudioFile />
-      case "document":
-        return <Description />
-      default:
-        return <Description />
-    }
-  }
-
-  // Función para obtener el color del chip según el tipo de material
-  const getMaterialColor = (type: MaterialType): "primary" | "success" | "warning" | "neutral" | "danger" => {
-    switch (type) {
-      case "video":
-        return "primary"
-      case "image":
-        return "success"
-      case "audio":
-        return "warning"
-      case "document":
-        return "neutral"
-      default:
-        return "neutral"
-    }
-  }
 
   // Navegar a la página de creación de Materiales
   const handleCreateMaterial = () => {
@@ -272,25 +321,58 @@ export default function MaterialPage() {
     )
   }
 
+  // Funciones para manejar acciones en las tarjetas
+  const handleEditMaterial = (id: string) => {
+    router.push(`/material/edit/${id}`)
+  }
+
+  const handleDeleteMaterial = async (id: string) => {
+    if (!session?.accessToken) {
+      setError("Debes iniciar sesión para eliminar materiales")
+      return
+    }
+
+    if (window.confirm("¿Estás seguro de que deseas eliminar este material?")) {
+      try {
+        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials/${id}`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        })
+
+        // Actualizar el estado local eliminando el material
+        setMaterials(materials.filter((material) => material.id !== id))
+      } catch (err) {
+        console.error("Error al eliminar material:", err)
+        setError("No se pudo eliminar el material. Por favor, intenta de nuevo más tarde.")
+      }
+    }
+  }
+
+  const handleViewMaterial = (id: string) => {
+    router.push(`/material/${id}`)
+  }
+
+  // Reemplazar la sección de carga de datos mock con un mensaje de error si existe
+  useEffect(() => {
+    // Este efecto está vacío porque ya tenemos fetchMaterials
+    // que se ejecuta en otro useEffect
+  }, [])
+
   return (
     <>
       <ColumnLayout>
         <Box sx={{ mb: 4 }}>
           <Typography level="h1" sx={{ mb: 1, color: "#ffbc62" }}>
-            Materiales Audiovisuales
+            Materiales y Equipos
           </Typography>
           <Typography level="body-lg" color="neutral">
-            Gestiona y explora todos los recursos audiovisuales disponibles
+            Gestiona y explora todos los recursos disponibles para tus producciones
           </Typography>
         </Box>
 
         {/* Tabs para alternar entre mis materiales y materiales de la empresa */}
-        <CustomTabs
-          options={tabOptions}
-          defaultValue={activeTab}
-          onChange={(value) => setActiveTab(value)}
-        />
-
+        <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Barra de búsqueda y filtros */}
         <Sheet
@@ -333,18 +415,19 @@ export default function MaterialPage() {
 
           <Stack direction="row" spacing={1} alignItems="center">
             <Select
-              placeholder="Tipo"
+              placeholder="Categoría"
               value={selectedType}
               onChange={(_, value) => setSelectedType(value)}
               startDecorator={<FilterList />}
               size="sm"
               sx={{ minWidth: 120 }}
             >
-              <Option value="all">Todos</Option>
-              <Option value="video">Videos</Option>
-              <Option value="image">Imágenes</Option>
-              <Option value="audio">Audio</Option>
-              <Option value="document">Documentos</Option>
+              <Option value="all">Todas</Option>
+              <Option value="Cámaras">Cámaras</Option>
+              <Option value="Audio">Audio</Option>
+              <Option value="Iluminación">Iluminación</Option>
+              <Option value="Soportes">Soportes</Option>
+              <Option value="Accesorios">Accesorios</Option>
             </Select>
 
             <Select
@@ -407,18 +490,18 @@ export default function MaterialPage() {
               <Option value="maria">María López</Option>
             </Select>
 
-            <Select placeholder="Fecha" size="sm" sx={{ minWidth: 150 }}>
-              <Option value="all">Cualquier fecha</Option>
-              <Option value="today">Hoy</Option>
-              <Option value="week">Esta semana</Option>
-              <Option value="month">Este mes</Option>
+            <Select placeholder="Ubicación" size="sm" sx={{ minWidth: 150 }}>
+              <Option value="all">Todas</Option>
+              <Option value="almacen">Almacén principal</Option>
+              <Option value="estudio">Estudios</Option>
+              <Option value="caja">Caja fuerte</Option>
             </Select>
 
-            <Select placeholder="Etiquetas" size="sm" sx={{ minWidth: 150 }}>
-              <Option value="all">Todas</Option>
-              <Option value="evento">Evento</Option>
-              <Option value="corporativo">Corporativo</Option>
-              <Option value="publicidad">Publicidad</Option>
+            <Select placeholder="Estado" size="sm" sx={{ minWidth: 150 }}>
+              <Option value="all">Todos</Option>
+              <Option value="disponible">Disponible</Option>
+              <Option value="prestado">Prestado</Option>
+              <Option value="mantenimiento">En mantenimiento</Option>
             </Select>
 
             <Button
@@ -490,163 +573,50 @@ export default function MaterialPage() {
               borderColor: mode === "dark" ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.03)",
             }}
           >
-            <Typography level="h3" sx={{ mb: 2 }}>
-              No se encontraron materiales
-            </Typography>
-            <Typography level="body-md" sx={{ mb: 3 }}>
-              Intenta con otros términos de búsqueda o filtros
-            </Typography>
-            <Button
-              variant="outlined"
-              color="neutral"
-              onClick={() => {
-                setSearchQuery("")
-                setSelectedType("all")
-              }}
-              sx={{
-                color: "#ffbc62",
-                borderColor: "#ffbc62",
-                "&:hover": {
-                  borderColor: "#ff9b44",
-                  bgcolor: "rgba(255, 188, 98, 0.1)",
-                },
-              }}
-            >
-              Limpiar búsqueda
-            </Button>
+            {error ? (
+              <Typography level="h3" sx={{ mb: 2 }}>
+                {error}
+              </Typography>
+            ) : (
+              <>
+                <Typography level="h3" sx={{ mb: 2 }}>
+                  No se encontraron materiales
+                </Typography>
+                <Typography level="body-md" sx={{ mb: 3 }}>
+                  Intenta con otros términos de búsqueda o filtros
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="neutral"
+                  onClick={() => {
+                    setSearchQuery("")
+                    setSelectedType("all")
+                  }}
+                  sx={{
+                    color: "#ffbc62",
+                    borderColor: "#ffbc62",
+                    "&:hover": {
+                      borderColor: "#ff9b44",
+                      bgcolor: "rgba(255, 188, 98, 0.1)",
+                    },
+                  }}
+                >
+                  Limpiar búsqueda
+                </Button>
+              </>
+            )}
           </Sheet>
         ) : (
           <Grid container spacing={2} sx={{ mb: 4 }}>
             {sortedMaterials.map((material) => (
               <Grid key={material.id} xs={12} sm={6} md={4}>
-                <Card
-                  variant="outlined"
-                  sx={{
-                    height: "100%",
-                    display: "flex",
-                    flexDirection: "column",
-                    transition: "transform 0.2s, box-shadow 0.2s",
-                    "&:hover": {
-                      transform: "translateY(-4px)",
-                      boxShadow: "md",
-                      cursor: "pointer",
-                    },
-                    overflow: "hidden",
-                    borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-                    background:
-                      mode === "dark"
-                        ? "linear-gradient(145deg, rgba(45,45,45,0.7) 0%, rgba(35,35,35,0.4) 100%)"
-                        : "linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(250,250,250,0.6) 100%)",
-                    backdropFilter: "blur(10px)",
-                  }}
-                >
-                  <Box sx={{ position: "relative" }}>
-                    <AspectRatio ratio="16/9">
-                      <Image
-                        src={material.thumbnail || "/placeholder.svg"}
-                        alt={material.title}
-                        fill
-                        style={{ objectFit: "cover" }}
-                        sizes="(max-width: 768px) 100vw, 300px"
-                      />
-                    </AspectRatio>
-
-                    {/* Overlay con tipo de material */}
-                    <Chip
-                      variant="soft"
-                      color={getMaterialColor(material.type)}
-                      startDecorator={getMaterialIcon(material.type)}
-                      size="sm"
-                      sx={{
-                        position: "absolute",
-                        top: 8,
-                        left: 8,
-                      }}
-                    >
-                      {material.type.charAt(0).toUpperCase() + material.type.slice(1)}
-                    </Chip>
-
-                    {/* Duración para videos y audios */}
-                    {material.duration && (
-                      <Chip
-                        variant="soft"
-                        color="neutral"
-                        size="sm"
-                        sx={{
-                          position: "absolute",
-                          bottom: 8,
-                          right: 8,
-                          bgcolor: "rgba(0,0,0,0.6)",
-                          color: "white",
-                        }}
-                      >
-                        {material.duration}
-                      </Chip>
-                    )}
-                  </Box>
-
-                  <Box sx={{ p: 2, flexGrow: 1, display: "flex", flexDirection: "column" }}>
-                    <Typography level="title-md" sx={{ mb: 0.5 }}>
-                      {material.title}
-                    </Typography>
-
-                    <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
-                      {material.owner} • {new Date(material.createdAt).toLocaleDateString()}
-                    </Typography>
-
-                    <Box sx={{ mb: 1.5, flexGrow: 1 }}>
-                      {material.tags.map((tag) => (
-                        <Chip
-                          key={tag}
-                          size="sm"
-                          variant="soft"
-                          color="neutral"
-                          sx={{
-                            mr: 0.5,
-                            mb: 0.5,
-                            bgcolor: "rgba(255, 188, 98, 0.2)",
-                            color: mode === "dark" ? "#ffbc62" : "#ff9b44",
-                          }}
-                        >
-                          {tag}
-                        </Chip>
-                      ))}
-                    </Box>
-
-                    <Divider sx={{ my: 1 }} />
-
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <Typography level="body-xs" color="neutral">
-                        {material.fileSize}
-                        {material.resolution && ` • ${material.resolution}`}
-                      </Typography>
-
-                      <Box sx={{ display: "flex", gap: 0.5 }}>
-                        <IconButton
-                          variant="plain"
-                          color={material.isFavorite ? "danger" : "neutral"}
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleToggleFavorite(material.id)
-                          }}
-                        >
-                          {material.isFavorite ? <Favorite /> : <FavoriteBorder />}
-                        </IconButton>
-
-                        <IconButton variant="plain" color="neutral" size="sm">
-                          <MoreVert />
-                        </IconButton>
-                      </Box>
-                    </Box>
-                  </Box>
-                </Card>
+                <MaterialCard
+                  {...material}
+                  onToggleFavorite={handleToggleFavorite}
+                  onEdit={handleEditMaterial}
+                  onDelete={handleDeleteMaterial}
+                  onView={handleViewMaterial}
+                />
               </Grid>
             ))}
           </Grid>
@@ -659,6 +629,8 @@ export default function MaterialPage() {
               variant="outlined"
               color="neutral"
               startDecorator={<FilterList />}
+              onClick={handleLoadMore}
+              disabled={!hasMore || isLoading}
               sx={{
                 color: "#ffbc62",
                 borderColor: "#ffbc62",
@@ -666,11 +638,37 @@ export default function MaterialPage() {
                   borderColor: "#ff9b44",
                   bgcolor: "rgba(255, 188, 98, 0.1)",
                 },
+                "&:disabled": {
+                  opacity: 0.5,
+                  color: "text.disabled",
+                  borderColor: "divider",
+                },
               }}
             >
-              Cargar más materiales
+              {isLoading ? "Cargando..." : hasMore ? "Cargar más materiales" : "No hay más materiales"}
             </Button>
           </Box>
+        )}
+
+        {/* Mostrar mensaje de error si existe */}
+        {error && (
+          <Sheet
+            variant="soft"
+            color="danger"
+            sx={{
+              p: 3,
+              borderRadius: "lg",
+              textAlign: "center",
+              mb: 4,
+            }}
+          >
+            <Typography level="body-lg" sx={{ mb: 1 }}>
+              {error}
+            </Typography>
+            <Button variant="soft" color="danger" onClick={() => fetchMaterials(1, false)} sx={{ mt: 1 }}>
+              Reintentar
+            </Button>
+          </Sheet>
         )}
       </ColumnLayout>
     </>
