@@ -19,8 +19,18 @@ import {
   Chip,
   Tooltip,
   LinearProgress,
+  AspectRatio,
 } from "@mui/joy"
-import { Save, ArrowBackIos, InfoOutlined, HelpOutline } from "@mui/icons-material"
+import {
+  Save,
+  ArrowBackIos,
+  InfoOutlined,
+  HelpOutline,
+  CloudUpload,
+  Delete as DeleteIcon,
+  PhotoCamera,
+  Edit,
+} from "@mui/icons-material"
 import { useFormik } from "formik"
 import * as Yup from "yup"
 import { useRouter } from "next/navigation"
@@ -28,8 +38,9 @@ import { useSession } from "next-auth/react"
 import axios from "axios"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import React from "react"
+import Image from "next/image"
 
 export default function CreateMaterialPage() {
   const router = useRouter()
@@ -39,6 +50,10 @@ export default function CreateMaterialPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isFormDirty, setIsFormDirty] = useState(false)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [, setImageFile] = useState<File | null>(null)
+  const [isHovering, setIsHovering] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const validationSchema = Yup.object({
     name: Yup.string().required("El nombre es obligatorio"),
@@ -48,6 +63,7 @@ export default function CreateMaterialPage() {
     is_consumable: Yup.boolean(),
     location: Yup.string().nullable(),
     serial_number: Yup.string().nullable(),
+    image_url: Yup.string().nullable(),
   })
 
   const formik = useFormik({
@@ -59,6 +75,7 @@ export default function CreateMaterialPage() {
       is_consumable: false,
       location: "",
       serial_number: "",
+      image_url: "",
     },
     validationSchema,
     onSubmit: async (values) => {
@@ -71,7 +88,12 @@ export default function CreateMaterialPage() {
       setError(null)
 
       try {
-        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials`, values, {
+        const materialData = {
+          ...values,
+          image_url: imagePreview, // Enviar la imagen en base64
+        }
+
+        await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials`, materialData, {
           headers: {
             Authorization: `Bearer ${session.accessToken}`,
           },
@@ -94,6 +116,48 @@ export default function CreateMaterialPage() {
     },
   })
 
+  // Manejar cambio de imagen
+  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (file) {
+      // Validar el tipo de archivo
+      const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"]
+      if (!validTypes.includes(file.type)) {
+        setError("El archivo debe ser una imagen (JPEG, PNG, WEBP o GIF)")
+        return
+      }
+
+      // Validar el tamaño del archivo (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setError("La imagen no debe superar los 5MB")
+        return
+      }
+
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+        showNotification("Imagen cargada correctamente", "success")
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  // Eliminar imagen
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImagePreview(null)
+    formik.setFieldValue("image_url", "")
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  // Abrir selector de archivos
+  const handleSelectImage = () => {
+    fileInputRef.current?.click()
+  }
+
   // Detectar cambios en el formulario
   React.useEffect(() => {
     if (
@@ -103,13 +167,14 @@ export default function CreateMaterialPage() {
       formik.values.quantity !== 1 ||
       formik.values.is_consumable !== false ||
       formik.values.location !== "" ||
-      formik.values.serial_number !== ""
+      formik.values.serial_number !== "" ||
+      imagePreview !== null
     ) {
       setIsFormDirty(true)
     } else {
       setIsFormDirty(false)
     }
-  }, [formik.values])
+  }, [formik.values, imagePreview])
 
   // Confirmar antes de cancelar si hay cambios
   const handleCancel = () => {
@@ -199,6 +264,183 @@ export default function CreateMaterialPage() {
                     </Typography>
                   </Box>
                 </Stack>
+
+                {/* Sección de imagen */}
+                <Divider sx={{ my: 1 }}>
+                  <Chip size="sm" variant="soft" color="neutral">
+                    Imagen del material
+                  </Chip>
+                </Divider>
+
+                <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 3, alignItems: "center" }}>
+                  {/* Vista previa de la imagen */}
+                  <Box sx={{ width: { xs: "100%", sm: "40%" }, position: "relative" }}>
+                    <AspectRatio
+                      ratio="1"
+                      sx={{
+                        width: "100%",
+                        borderRadius: "lg",
+                        bgcolor: "background.level2",
+                        overflow: "hidden",
+                        border: "2px dashed",
+                        borderColor: isHovering ? "#ffbc62" : "divider",
+                        transition: "all 0.2s ease",
+                        cursor: imagePreview ? "default" : "pointer",
+                        "&:hover": {
+                          borderColor: "#ffbc62",
+                          bgcolor: imagePreview ? "background.level2" : "rgba(255, 188, 98, 0.05)",
+                        },
+                      }}
+                      onMouseEnter={() => setIsHovering(true)}
+                      onMouseLeave={() => setIsHovering(false)}
+                      onClick={!imagePreview ? handleSelectImage : undefined}
+                    >
+                      {imagePreview ? (
+                        <Box sx={{ position: "relative", width: "100%", height: "100%" }}>
+                          <Image
+                            src={imagePreview || "/placeholder.svg"}
+                            alt="Vista previa del material"
+                            fill
+                            style={{ objectFit: "cover" }}
+                            sizes="(max-width: 768px) 100vw, 300px"
+                          />
+                          {/* Overlay con acciones al hacer hover */}
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              bgcolor: "rgba(0,0,0,0.5)",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              gap: 1,
+                              opacity: isHovering ? 1 : 0,
+                              transition: "opacity 0.2s ease",
+                            }}
+                          >
+                            <IconButton
+                              variant="solid"
+                              color="neutral"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleSelectImage()
+                              }}
+                              sx={{ bgcolor: "rgba(255,255,255,0.9)", color: "black" }}
+                            >
+                              <Edit />
+                            </IconButton>
+                            <IconButton
+                              variant="solid"
+                              color="danger"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleRemoveImage()
+                              }}
+                              sx={{ bgcolor: "rgba(255,255,255,0.9)", color: "#d32f2f" }}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </Box>
+                        </Box>
+                      ) : (
+                        <Box
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            flexDirection: "column",
+                            textAlign: "center",
+                            p: 3,
+                            height: "100%",
+                          }}
+                        >
+                          <PhotoCamera
+                            sx={{
+                              fontSize: 48,
+                              color: isHovering ? "#ffbc62" : "text.tertiary",
+                              mb: 2,
+                              transition: "color 0.2s ease",
+                            }}
+                          />
+                          <Typography
+                            level="body-sm"
+                            sx={{
+                              color: isHovering ? "#ffbc62" : "text.tertiary",
+                              transition: "color 0.2s ease",
+                              fontWeight: isHovering ? 500 : 400,
+                            }}
+                          >
+                            Haz clic para seleccionar una imagen
+                          </Typography>
+                          <Typography level="body-xs" sx={{ color: "text.tertiary", mt: 0.5 }}>
+                            JPEG, PNG, WEBP, GIF (máx. 5MB)
+                          </Typography>
+                        </Box>
+                      )}
+                    </AspectRatio>
+                  </Box>
+
+                  {/* Controles de imagen */}
+                  <Box sx={{ width: { xs: "100%", sm: "60%" } }}>
+                    <Stack spacing={2}>
+                      <Typography level="body-sm">
+                        Sube una imagen para identificar fácilmente el material. La imagen se almacenará de forma segura
+                        y se mostrará en la lista de materiales.
+                      </Typography>
+
+                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Button
+                          variant="outlined"
+                          color="neutral"
+                          startDecorator={<CloudUpload />}
+                          onClick={handleSelectImage}
+                          sx={{
+                            flexGrow: 1,
+                            minWidth: "fit-content",
+                            "&:hover": {
+                              borderColor: "#ffbc62",
+                              color: "#ffbc62",
+                            },
+                          }}
+                        >
+                          {imagePreview ? "Cambiar imagen" : "Seleccionar imagen"}
+                        </Button>
+
+                        {imagePreview && (
+                          <Button
+                            variant="soft"
+                            color="danger"
+                            startDecorator={<DeleteIcon />}
+                            onClick={handleRemoveImage}
+                            sx={{ minWidth: "fit-content" }}
+                          >
+                            Eliminar
+                          </Button>
+                        )}
+                      </Box>
+
+                      {imagePreview && (
+                        <Typography level="body-xs" sx={{ color: "success.500" }}>
+                          ✓ Imagen cargada correctamente
+                        </Typography>
+                      )}
+                    </Stack>
+                  </Box>
+                </Box>
+
+                {/* Input oculto para seleccionar archivos */}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg, image/png, image/webp, image/gif"
+                  hidden
+                  onChange={handleImageChange}
+                />
 
                 <Divider sx={{ my: 1 }}>
                   <Chip size="sm" variant="soft" color="neutral">

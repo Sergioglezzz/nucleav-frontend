@@ -104,10 +104,14 @@ export default function MaterialCard({
     }
   }
 
-  // Generar un placeholder basado en el nombre y categoría
+  // Generar un placeholder basado en el nombre y categoría, o usar la imagen real
   const getPlaceholderImage = () => {
-    const query = `${category || "equipment"} ${name}`.trim()
-    return `/placeholder.svg?height=200&width=300&query=${encodeURIComponent(query)}`
+    // Si hay una imagen real (thumbnail), usarla
+    if (thumbnail) {
+      return thumbnail
+    }
+    // Si no hay imagen, retornar null para mostrar el icono
+    return null
   }
 
   const handleCardClick = () => {
@@ -146,13 +150,33 @@ export default function MaterialCard({
     >
       <Box sx={{ position: "relative" }}>
         <AspectRatio ratio="16/9">
-          <Image
-            src={thumbnail || getPlaceholderImage()}
-            alt={name}
-            fill
-            style={{ objectFit: "cover" }}
-            sizes="(max-width: 768px) 100vw, 300px"
-          />
+          {getPlaceholderImage() ? (
+            <Image
+              src={getPlaceholderImage() || "/placeholder.svg"}
+              alt={name}
+              fill
+              style={{ objectFit: "cover" }}
+              sizes="(max-width: 768px) 100vw, 300px"
+              onError={(e) => {
+                // Si la imagen falla al cargar, ocultar la imagen y mostrar el icono
+                const target = e.target as HTMLImageElement
+                target.style.display = "none"
+              }}
+            />
+          ) : (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                height: "100%",
+                bgcolor: mode === "dark" ? "rgba(45,45,45,0.3)" : "rgba(250,250,250,0.8)",
+                color: mode === "dark" ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.3)",
+              }}
+            >
+              <ConstructionOutlined sx={{ fontSize: 64 }} />
+            </Box>
+          )}
         </AspectRatio>
 
         {/* Overlay con tipo de material */}

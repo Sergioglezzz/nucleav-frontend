@@ -227,8 +227,14 @@ export default function MaterialPage() {
       // Transformar los datos si es necesario para que coincidan con nuestro tipo Material
       const apiMaterials = response.data.data || response.data || []
 
+      // Definir el tipo de respuesta de la API para evitar 'any'
+      type ApiMaterial = Material & {
+        image_url?: string | null
+        tags?: string[]
+      }
+
       // Mapear los datos de la API a nuestro formato
-      const formattedMaterials = apiMaterials.map((item: Material) => ({
+      const formattedMaterials = apiMaterials.map((item: ApiMaterial) => ({
         id: item.id,
         name: item.name,
         description: item.description,
@@ -240,7 +246,7 @@ export default function MaterialPage() {
         createdAt: item.created_at, // Convertimos snake_case a camelCase
         // Añadir campos que podrían no venir de la API pero necesitamos para el componente
         type: "equipment",
-        thumbnail: null, // Por ahora usamos null, el componente generará un placeholder
+        thumbnail: item.image_url || null, // Usar la imagen de la API si existe
         tags: item.tags || [],
         isFavorite: false, // Por defecto no es favorito
       }))
@@ -288,7 +294,7 @@ export default function MaterialPage() {
       false ||
       material.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       false ||
-      material.tags?.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      material.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
       false
     )
   })
