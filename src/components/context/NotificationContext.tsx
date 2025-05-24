@@ -75,7 +75,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         color={getColor()}
         open={notification.open}
         onClose={handleClose}
-        autoHideDuration={5000}
+        autoHideDuration={4000}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         startDecorator={getIcon()}
         endDecorator={

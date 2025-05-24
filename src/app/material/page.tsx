@@ -45,141 +45,6 @@ const tabOptions = [
   { value: "company-materials", label: "Materiales de la Empresa" },
 ]
 
-// Datos de ejemplo para mostrar en el boceto
-// const MOCK_MATERIALS: Material[] = [
-//   {
-//     id: "1",
-//     name: "Cámara Sony Alpha A7III",
-//     type: "equipment",
-//     createdAt: "2023-10-15",
-//     owner: "Juan Pérez",
-//     description: "Cámara mirrorless full frame con lente kit 28-70mm",
-//     category: "Cámaras",
-//     quantity: 2,
-//     is_consumable: false,
-//     location: "Almacén principal",
-//     serial_number: "S123456789",
-//     tags: ["cámara", "sony", "full frame"],
-//     isFavorite: true,
-//   },
-//   {
-//     id: "2",
-//     name: "Trípode Manfrotto",
-//     type: "equipment",
-//     createdAt: "2023-09-22",
-//     owner: "María López",
-//     description: "Trípode profesional para cámaras de hasta 8kg",
-//     category: "Soportes",
-//     quantity: 5,
-//     is_consumable: false,
-//     location: "Estudio A",
-//     tags: ["trípode", "soporte"],
-//     isFavorite: false,
-//   },
-//   {
-//     id: "3",
-//     name: "Micrófono Rode NTG4+",
-//     type: "equipment",
-//     createdAt: "2023-11-05",
-//     owner: "Carlos Ruiz",
-//     description: "Micrófono direccional shotgun con batería recargable",
-//     category: "Audio",
-//     quantity: 3,
-//     is_consumable: false,
-//     location: "Estudio B",
-//     serial_number: "RD78945612",
-//     tags: ["micrófono", "audio", "rode"],
-//     isFavorite: true,
-//   },
-//   {
-//     id: "4",
-//     name: "Baterías Sony NP-FZ100",
-//     type: "equipment",
-//     createdAt: "2023-08-30",
-//     owner: "Ana Martínez",
-//     description: "Baterías recargables para cámaras Sony Alpha",
-//     category: "Accesorios",
-//     quantity: 10,
-//     is_consumable: true,
-//     location: "Armario 2",
-//     tags: ["batería", "sony", "accesorio"],
-//     isFavorite: false,
-//   },
-//   {
-//     id: "5",
-//     name: "Kit de iluminación LED Aputure",
-//     type: "equipment",
-//     createdAt: "2023-10-28",
-//     owner: "Roberto Sánchez",
-//     description: "Kit de 3 luces LED Aputure con stands y modificadores",
-//     category: "Iluminación",
-//     quantity: 1,
-//     is_consumable: false,
-//     location: "Estudio C",
-//     serial_number: "AP123987456",
-//     tags: ["iluminación", "led", "kit"],
-//     isFavorite: false,
-//   },
-//   {
-//     id: "6",
-//     name: "Tarjetas SD SanDisk Extreme Pro 128GB",
-//     type: "equipment",
-//     createdAt: "2023-11-10",
-//     owner: "Laura Gómez",
-//     description: "Tarjetas de memoria SD UHS-II V90 para grabación 4K",
-//     category: "Almacenamiento",
-//     quantity: 8,
-//     is_consumable: true,
-//     location: "Caja fuerte",
-//     tags: ["tarjeta", "memoria", "almacenamiento"],
-//     isFavorite: true,
-//   },
-//   {
-//     id: "7",
-//     name: "Estabilizador DJI Ronin-S",
-//     type: "equipment",
-//     createdAt: "2023-09-15",
-//     owner: "David Torres",
-//     description: "Estabilizador de 3 ejes para cámaras DSLR y mirrorless",
-//     category: "Estabilización",
-//     quantity: 2,
-//     is_consumable: false,
-//     location: "Armario 3",
-//     serial_number: "DJI456789123",
-//     tags: ["estabilizador", "gimbal", "dji"],
-//     isFavorite: false,
-//   },
-//   {
-//     id: "8",
-//     name: "Filtros ND Tiffen",
-//     type: "equipment",
-//     createdAt: "2023-07-20",
-//     owner: "Elena Castro",
-//     description: "Set de filtros ND de densidad variable 77mm",
-//     category: "Óptica",
-//     quantity: 3,
-//     is_consumable: false,
-//     location: "Estantería B",
-//     tags: ["filtro", "nd", "óptica"],
-//     isFavorite: true,
-//   },
-//   {
-//     id: "9",
-//     name: "Drone DJI Mavic 3 Pro",
-//     type: "equipment",
-//     createdAt: "2023-10-05",
-//     owner: "Miguel Ángel",
-//     description: "Drone profesional con cámara Hasselblad y baterías extra",
-//     category: "Drones",
-//     quantity: 1,
-//     is_consumable: false,
-//     location: "Caja fuerte",
-//     serial_number: "DJI987654321",
-//     tags: ["drone", "aéreo", "dji"],
-//     isFavorite: false,
-//   },
-// ]
-
 // Reemplazar la función MaterialPage con la siguiente implementación
 export default function MaterialPage() {
   const { mode } = useColorScheme()
@@ -227,14 +92,9 @@ export default function MaterialPage() {
       // Transformar los datos si es necesario para que coincidan con nuestro tipo Material
       const apiMaterials = response.data.data || response.data || []
 
-      // Definir el tipo de respuesta de la API para evitar 'any'
-      type ApiMaterial = Material & {
-        image_url?: string | null
-        tags?: string[]
-      }
-
       // Mapear los datos de la API a nuestro formato
-      const formattedMaterials = apiMaterials.map((item: ApiMaterial) => ({
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const formattedMaterials = apiMaterials.map((item: any) => ({
         id: item.id,
         name: item.name,
         description: item.description,
@@ -294,7 +154,7 @@ export default function MaterialPage() {
       false ||
       material.category?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       false ||
-      material.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      material.tags?.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
       false
     )
   })
@@ -332,27 +192,10 @@ export default function MaterialPage() {
     router.push(`/material/edit/${id}`)
   }
 
-  const handleDeleteMaterial = async (id: string) => {
-    if (!session?.accessToken) {
-      setError("Debes iniciar sesión para eliminar materiales")
-      return
-    }
-
-    if (window.confirm("¿Estás seguro de que deseas eliminar este material?")) {
-      try {
-        await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials/${id}`, {
-          headers: {
-            Authorization: `Bearer ${session.accessToken}`,
-          },
-        })
-
-        // Actualizar el estado local eliminando el material
-        setMaterials(materials.filter((material) => material.id !== id))
-      } catch (err) {
-        console.error("Error al eliminar material:", err)
-        setError("No se pudo eliminar el material. Por favor, intenta de nuevo más tarde.")
-      }
-    }
+  // Función para manejar la eliminación desde el modal
+  const handleDeleteMaterial = (id: string) => {
+    // Actualizar el estado local eliminando el material
+    setMaterials(materials.filter((material) => material.id !== id))
   }
 
   const handleViewMaterial = (id: string) => {
