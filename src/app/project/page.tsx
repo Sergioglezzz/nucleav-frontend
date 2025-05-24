@@ -14,13 +14,9 @@ import {
   IconButton,
   Input,
   Chip,
-  Tabs,
-  TabList,
-  Tab,
   Sheet,
   Divider,
   Stack,
-  Table,
   Modal,
   ModalDialog,
   ModalClose,
@@ -30,7 +26,6 @@ import {
   Option,
   Textarea,
   CircularProgress,
-  Tooltip,
   FormHelperText,
 } from "@mui/joy"
 import {
@@ -39,12 +34,10 @@ import {
   Add,
   Edit,
   Delete,
-  Visibility,
   Movie,
   Tv,
   Campaign,
   Work,
-  CalendarMonth,
   Business,
   Person,
   Check,
@@ -58,7 +51,7 @@ import {
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useNotification } from "@/components/context/NotificationContext"
-// import { LoadingButton } from "@/components/ui/loading-button"
+import CustomTabs from "@/components/CustomTabs"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -114,6 +107,13 @@ interface Company {
   name: string
   logo_url?: string | null
 }
+
+// Opciones para las pestañas de proyectos
+const projectTabOptions = [
+  { value: "all", label: "Todos los proyectos" },
+  { value: "my", label: "Mis proyectos" },
+  { value: "collaborative", label: "Colaborativos" },
+]
 
 export default function ProjectsPage() {
   const { mode } = useColorScheme()
@@ -609,13 +609,7 @@ export default function ProjectsPage() {
         </Box>
 
         {/* Tabs para filtrar proyectos */}
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as string)} sx={{ mb: 3 }}>
-          <TabList>
-            <Tab value="all">Todos los proyectos</Tab>
-            <Tab value="my">Mis proyectos</Tab>
-            <Tab value="collaborative">Colaborativos</Tab>
-          </TabList>
-        </Tabs>
+        <CustomTabs options={projectTabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Barra de búsqueda y filtros */}
         <Sheet
@@ -625,8 +619,7 @@ export default function ProjectsPage() {
             mb: 3,
             borderRadius: "lg",
             display: "flex",
-            flexDirection: { xs: "column", sm: "row" },
-            alignItems: "center",
+            flexDirection: "column",
             gap: 2,
             background:
               mode === "dark"
@@ -637,22 +630,46 @@ export default function ProjectsPage() {
             borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
           }}
         >
+          {/* Barra de búsqueda - siempre ocupa el ancho completo */}
           <Input
             placeholder="Buscar proyectos..."
             startDecorator={<Search />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ flexGrow: 1 }}
+            sx={{
+              width: "100%",
+              flexGrow: 1,
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }}
           />
 
-          <Stack direction="row" spacing={1} alignItems="center">
+          {/* Filtros - se adaptan según el tamaño de pantalla */}
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "stretch",
+              gap: { xs: 1, sm: 1 },
+              width: "100%",
+            }}
+          >
             <Select
               placeholder="Tipo"
               value={typeFilter}
               onChange={(_, value) => setTypeFilter(value as string)}
               startDecorator={<FilterList />}
               size="sm"
-              sx={{ minWidth: 120 }}
+              sx={{
+                flex: { xs: "1", sm: "0 0 120px" },
+                minWidth: { xs: "auto", sm: "120px" },
+              }}
             >
               <Option value="all">Todos</Option>
               <Option value={ProjectType.FILM}>Cine</Option>
@@ -667,7 +684,10 @@ export default function ProjectsPage() {
               onChange={(_, value) => setStatusFilter(value as string)}
               startDecorator={<FilterList />}
               size="sm"
-              sx={{ minWidth: 120 }}
+              sx={{
+                flex: { xs: "1", sm: "0 0 120px" },
+                minWidth: { xs: "auto", sm: "120px" },
+              }}
             >
               <Option value="all">Todos</Option>
               <Option value="draft">Borrador</Option>
@@ -683,7 +703,10 @@ export default function ProjectsPage() {
               onChange={(_, value) => setSortBy(value as string)}
               startDecorator={<Sort />}
               size="sm"
-              sx={{ minWidth: 140 }}
+              sx={{
+                flex: { xs: "1", sm: "0 0 140px" },
+                minWidth: { xs: "auto", sm: "140px" },
+              }}
             >
               <Option value="date-desc">Más recientes</Option>
               <Option value="date-asc">Más antiguos</Option>
@@ -701,10 +724,14 @@ export default function ProjectsPage() {
                 setSortBy("date-desc")
               }}
               size="sm"
+              sx={{
+                alignSelf: { xs: "stretch", sm: "center" },
+                minHeight: { xs: "40px", sm: "auto" },
+              }}
             >
               <Refresh />
             </IconButton>
-          </Stack>
+          </Box>
         </Sheet>
 
         {/* Botón para crear nuevo proyecto */}
@@ -725,7 +752,7 @@ export default function ProjectsPage() {
           </Button>
         </Box>
 
-        {/* Tabla de proyectos */}
+        {/* Lista de proyectos */}
         {loading ? (
           <Box
             sx={{
@@ -789,161 +816,226 @@ export default function ProjectsPage() {
             </Button>
           </Sheet>
         ) : (
-          <Card
-            variant="outlined"
-            sx={{
-              overflow: "auto",
-              background:
-                mode === "dark"
-                  ? "linear-gradient(145deg, rgba(45,45,45,0.7) 0%, rgba(35,35,35,0.4) 100%)"
-                  : "linear-gradient(145deg, rgba(250,250,250,0.8) 0%, rgba(240,240,240,0.4) 100%)",
-              backdropFilter: "blur(10px)",
-              border: "1px solid",
-              borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
-            }}
-          >
-            <Table
-              hoverRow
-              sx={{
-                "& th": { textAlign: "left", fontWeight: "bold" },
-                "& td": { py: 1.5 },
-                "--TableCell-headBackground": "var(--joy-palette-background-level1)",
-                "--Table-headerUnderlineThickness": "1px",
-                "--TableRow-hoverBackground": "var(--joy-palette-background-level1)",
-              }}
-            >
-              <thead>
-                <tr>
-                  <th style={{ width: 250 }}>Nombre</th>
-                  <th style={{ width: 120 }}>Tipo</th>
-                  <th style={{ width: 120 }}>Estado</th>
-                  <th style={{ width: 150 }}>Empresa</th>
-                  <th style={{ width: 120 }}>Fechas</th>
-                  <th style={{ width: 120 }}>Recursos</th>
-                  <th style={{ width: 120, textAlign: "center" }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProjects.map((project) => (
-                  <tr key={project.id}>
-                    <td>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            width: 40,
-                            height: 40,
-                            borderRadius: "50%",
-                            bgcolor: "rgba(255, 188, 98, 0.2)",
-                            color: "#ffbc62",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
+          <Stack spacing={2}>
+            {filteredProjects.map((project) => (
+              <Card
+                key={project.id}
+                variant="outlined"
+                sx={{
+                  background:
+                    mode === "dark"
+                      ? "linear-gradient(145deg, rgba(45,45,45,0.7) 0%, rgba(35,35,35,0.4) 100%)"
+                      : "linear-gradient(145deg, rgba(250,250,250,0.8) 0%, rgba(240,240,240,0.4) 100%)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid",
+                  borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-1px)",
+                    boxShadow: "lg",
+                    borderColor: "#ffbc62",
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 2,
+                    p: { xs: 1.5, sm: 2 },
+                  }}
+                >
+                  {/* Header del proyecto */}
+                  <Box sx={{ display: "flex", alignItems: "flex-start", gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: { xs: 48, sm: 56 },
+                        height: { xs: 48, sm: 56 },
+                        borderRadius: "lg",
+                        bgcolor: "rgba(255, 188, 98, 0.2)",
+                        color: "#ffbc62",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {getProjectTypeIcon(project.type)}
+                    </Box>
+
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        level="title-md"
+                        sx={{
+                          mb: 0.5,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          fontSize: { xs: "0.95rem", sm: "1.1rem" },
+                        }}
+                      >
+                        {project.name}
+                      </Typography>
+
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                        <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
+                        <Typography level="body-sm" color="neutral">
+                          {project.company.name}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
+                        <Chip
+                          variant="soft"
+                          color={getStatusColor(project.status)}
+                          size="sm"
+                          startDecorator={
+                            project.status === "completed" ? (
+                              <Check />
+                            ) : project.status === "cancelled" ? (
+                              <Close />
+                            ) : null
+                          }
                         >
-                          {getProjectTypeIcon(project.type)}
+                          {getStatusText(project.status)}
+                        </Chip>
+                        {project.is_collaborative && (
+                          <Chip
+                            variant="soft"
+                            color="primary"
+                            size="sm"
+                            sx={{ bgcolor: "rgba(255, 188, 98, 0.2)", color: "#ffbc62" }}
+                          >
+                            Colaborativo
+                          </Chip>
+                        )}
+                      </Box>
+
+
+                    </Box>
+                  </Box>
+
+                  {/* Descripción - solo en pantallas más grandes */}
+                  {project.description && (
+                    <Typography
+                      level="body-sm"
+                      color="neutral"
+                      sx={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        WebkitLineClamp: { xs: 2, sm: 1 },
+                        WebkitBoxOrient: "vertical",
+                        display: { xs: "block", sm: "-webkit-box" },
+                      }}
+                    >
+                      {project.description}
+                    </Typography>
+                  )}
+
+                  {/* Información secundaria y acciones */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: { xs: "column", sm: "row" },
+                      alignItems: { xs: "stretch", sm: "center" },
+                      justifyContent: "space-between",
+                      gap: { xs: 2, sm: 1 },
+                    }}
+                  >
+                    {/* Fechas y estadísticas */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
+                        gap: { xs: 1, sm: 3 },
+                      }}
+                    >
+                      {/* Fechas */}
+                      <Box sx={{ display: "flex", gap: { xs: 3, sm: 2 }, alignItems: "center" }}>
+                        <Box>
+                          <Typography level="body-xs" color="neutral">
+                            Inicio
+                          </Typography>
+                          <Typography
+                            level="body-sm"
+                            fontWeight="md"
+                            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+                          >
+                            {formatDate(project.start_date)}
+                          </Typography>
                         </Box>
                         <Box>
-                          <Typography level="body-sm" fontWeight="lg">
-                            {project.name}
-                          </Typography>
                           <Typography level="body-xs" color="neutral">
-                            Creado: {formatDate(project.created_at)}
+                            Fin
+                          </Typography>
+                          <Typography
+                            level="body-sm"
+                            fontWeight="md"
+                            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+                          >
+                            {formatDate(project.end_date)}
                           </Typography>
                         </Box>
                       </Box>
-                    </td>
-                    <td>
-                      <Chip variant="soft" color="neutral" size="sm" startDecorator={getProjectTypeIcon(project.type)}>
-                        {project.type === ProjectType.FILM
-                          ? "Cine"
-                          : project.type === ProjectType.TV
-                            ? "TV"
-                            : project.type === ProjectType.ADVERTISING
-                              ? "Publicidad"
-                              : "Otro"}
-                      </Chip>
-                    </td>
-                    <td>
-                      <Chip
-                        variant="soft"
-                        color={getStatusColor(project.status)}
-                        size="sm"
-                        startDecorator={
-                          project.status === "completed" ? <Check /> : project.status === "cancelled" ? <Close /> : null
-                        }
-                      >
-                        {getStatusText(project.status)}
-                      </Chip>
-                    </td>
-                    <td>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
-                        <Typography level="body-sm">{project.company.name}</Typography>
-                      </Box>
-                    </td>
-                    <td>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <CalendarMonth sx={{ color: "#ffbc62", fontSize: 16 }} />
-                          <Typography level="body-xs">Inicio: {formatDate(project.start_date)}</Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <CalendarMonth sx={{ color: "#ffbc62", fontSize: 16 }} />
-                          <Typography level="body-xs">Fin: {formatDate(project.end_date)}</Typography>
-                        </Box>
-                      </Box>
-                    </td>
-                    <td>
-                      <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+
+                      {/* Estadísticas */}
+                      <Box sx={{ display: "flex", gap: { xs: 3, sm: 2 }, alignItems: "center" }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                           <Folder sx={{ color: "#ffbc62", fontSize: 16 }} />
-                          <Typography level="body-xs">{project.materials_count} materiales</Typography>
+                          <Typography level="body-xs">{project.materials_count || 0} materiales</Typography>
                         </Box>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                           <Group sx={{ color: "#ffbc62", fontSize: 16 }} />
-                          <Typography level="body-xs">{project.team_members} miembros</Typography>
+                          <Typography level="body-xs">{project.team_members || 0} miembros</Typography>
                         </Box>
                       </Box>
-                    </td>
-                    <td>
-                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-                        <Tooltip title="Ver detalles">
-                          <IconButton
-                            variant="plain"
-                            color="neutral"
-                            size="sm"
-                            onClick={() => handleViewProject(project)}
-                          >
-                            <Visibility />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Editar proyecto">
-                          <IconButton
-                            variant="plain"
-                            color="neutral"
-                            size="sm"
-                            onClick={() => handleEditProject(project)}
-                          >
-                            <Edit />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar proyecto">
-                          <IconButton
-                            variant="plain"
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleDeleteConfirm(project.id)}
-                          >
-                            <Delete />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Card>
+                    </Box>
+
+                    {/* Acciones */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        gap: 1,
+                        flexShrink: 0,
+                        justifyContent: { xs: "stretch", sm: "flex-end" },
+                      }}
+                    >
+                      <Button
+                        variant="solid"
+                        color="primary"
+                        size="sm"
+                        onClick={() => handleViewProject(project)}
+                        sx={{
+                          flex: { xs: 1, sm: "0 0 auto" },
+                          minWidth: { xs: "auto", sm: "60px" },
+                        }}
+                      >
+                        Ver más
+                      </Button>
+                      <IconButton
+                        variant="outlined"
+                        color="neutral"
+                        size="sm"
+                        onClick={() => handleEditProject(project)}
+                        sx={{ flex: { xs: 1, sm: "0 0 auto" } }}
+                      >
+                        <Edit />
+                      </IconButton>
+                      <IconButton
+                        variant="outlined"
+                        color="danger"
+                        size="sm"
+                        onClick={() => handleDeleteConfirm(project.id)}
+                        sx={{ flex: { xs: 1, sm: "0 0 auto" } }}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Box>
+                  </Box>
+                </Box>
+              </Card>
+            ))}
+          </Stack>
         )}
 
         {/* Modal para crear/editar proyecto */}
