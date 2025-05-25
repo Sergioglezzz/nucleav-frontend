@@ -140,6 +140,7 @@ export default function CreateProjectPage() {
         let errorMessage = "No se pudo crear el proyecto. Por favor, verifica los datos e intenta nuevamente."
 
         if (typeof err === "object" && err !== null && "response" in err) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const response = (err as { response?: { data?: any; status?: number } }).response
 
           if (response?.data?.message) {
@@ -204,6 +205,7 @@ export default function CreateProjectPage() {
     }
 
     fetchCompanies()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.accessToken])
 
   // Obtener icono según tipo de proyecto
@@ -238,7 +240,7 @@ export default function CreateProjectPage() {
       setIsFormDirty(false)
     }
   }, [formik, companies])
-  
+
 
   // Confirmar antes de cancelar si hay cambios
   const handleCancel = () => {

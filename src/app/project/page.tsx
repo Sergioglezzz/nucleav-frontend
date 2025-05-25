@@ -105,7 +105,7 @@ export default function ProjectsPage() {
   // Estados
   const [projects, setProjects] = useState<Project[]>([])
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
-  const [companies, setCompanies] = useState<Company[]>([])
+  const [, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -146,12 +146,21 @@ export default function ProjectsPage() {
         setCompanies(companiesData)
         setProjects(projectsData)
         setFilteredProjects(projectsData)
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error al cargar datos:", error)
 
         let errorMessage = "Error al cargar los proyectos"
-        if (error.response?.status === 401) {
-          errorMessage = "No tienes permisos para ver los proyectos"
+        if (
+          typeof error === "object" &&
+          error !== null &&
+          "response" in error &&
+          typeof (error as { response?: { status?: number } }).response === "object" &&
+          (error as { response?: { status?: number } }).response !== null &&
+          "status" in (error as { response?: { status?: number } }).response!
+        ) {
+          if ((error as { response: { status: number } }).response.status === 401) {
+            errorMessage = "No tienes permisos para ver los proyectos"
+          }
         }
 
         showNotification(errorMessage, "error")
@@ -319,14 +328,23 @@ export default function ProjectsPage() {
 
       setDeleteConfirmOpen(false)
       setProjectToDelete(null)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al eliminar proyecto:", error)
 
       let errorMessage = "Error al eliminar el proyecto"
-      if (error.response?.status === 401) {
-        errorMessage = "No tienes permisos para eliminar este proyecto"
-      } else if (error.response?.status === 404) {
-        errorMessage = "El proyecto no existe"
+      if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error &&
+        typeof (error as { response?: { status?: number } }).response === "object" &&
+        (error as { response?: { status?: number } }).response !== null &&
+        "status" in (error as { response?: { status?: number } }).response!
+      ) {
+        if ((error as { response: { status: number } }).response.status === 401) {
+          errorMessage = "No tienes permisos para eliminar este proyecto"
+        } else if ((error as { response: { status: number } }).response.status === 404) {
+          errorMessage = "El proyecto no existe"
+        }
       }
 
       showNotification(errorMessage, "error")
