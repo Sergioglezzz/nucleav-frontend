@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
@@ -20,13 +18,9 @@ import {
   Modal,
   ModalDialog,
   ModalClose,
-  FormControl,
-  FormLabel,
   Select,
   Option,
-  Textarea,
   CircularProgress,
-  FormHelperText,
 } from "@mui/joy"
 import {
   Search,
@@ -39,19 +33,18 @@ import {
   Campaign,
   Work,
   Business,
-  Person,
   Check,
   Close,
   Refresh,
   Sort,
   Group,
   Folder,
-  Save,
 } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useNotification } from "@/components/context/NotificationContext"
 import CustomTabs from "@/components/CustomTabs"
+import axios from "axios"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -89,18 +82,6 @@ interface Project {
   team_members?: number
 }
 
-// Interfaz para el formulario
-interface ProjectFormData {
-  name: string
-  description: string
-  type: ProjectType
-  start_date: string
-  end_date: string
-  status: string
-  is_collaborative: boolean
-  company_cif: string
-}
-
 // Interfaz para empresas
 interface Company {
   cif: string
@@ -131,196 +112,56 @@ export default function ProjectsPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
-  const [openModal, setOpenModal] = useState(false)
-  const [modalMode, setModalMode] = useState<"create" | "edit" | "view">("create")
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [formData, setFormData] = useState<ProjectFormData>({
-    name: "",
-    description: "",
-    type: ProjectType.OTHER,
-    start_date: "",
-    end_date: "",
-    status: "draft",
-    is_collaborative: false,
-    company_cif: "",
-  })
-  const [formSubmitting, setFormSubmitting] = useState(false)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [projectToDelete, setProjectToDelete] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [openModal, setOpenModal] = useState(false) // Declare openModal variable
 
   // Cargar datos
   useEffect(() => {
     const fetchData = async () => {
-      if (status !== "authenticated") return
+      if (status !== "authenticated" || !session?.accessToken) return
 
       setLoading(true)
 
       try {
-        // Simular carga de datos
-        await new Promise((resolve) => setTimeout(resolve, 1500))
+        // Cargar proyectos y empresas en paralelo
+        const [projectsResponse, companiesResponse] = await Promise.all([
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/projects`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }),
+          axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/companies`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          }),
+        ])
 
-        // Datos de ejemplo para empresas
-        const mockCompanies: Company[] = [
-          {
-            cif: "B12345678",
-            name: "Producciones Creativas",
-            logo_url: "https://picsum.photos/seed/company1/200/200",
-          },
-          {
-            cif: "B87654321",
-            name: "Visual Media",
-            logo_url: "https://picsum.photos/seed/company2/200/200",
-          },
-          {
-            cif: "B23456789",
-            name: "Sonido Profesional",
-            logo_url: "https://picsum.photos/seed/company3/200/200",
-          },
-        ]
+        const projectsData = projectsResponse.data.data || projectsResponse.data
+        const companiesData = companiesResponse.data.data || companiesResponse.data
 
-        // Datos de ejemplo para proyectos
-        const mockProjects: Project[] = [
-          {
-            id: 1,
-            company_cif: "B12345678",
-            company: {
-              name: "Producciones Creativas",
-              logo_url: "https://picsum.photos/seed/company1/200/200",
-            },
-            created_by: 1,
-            creator: {
-              name: "Juan",
-              lastname: "Pérez",
-              username: "juanperez",
-            },
-            name: "Documental sobre cambio climático",
-            description: "Documental que explora el impacto del cambio climático en ecosistemas marinos.",
-            type: ProjectType.FILM,
-            start_date: "2023-06-15",
-            end_date: "2023-12-20",
-            status: "in_progress",
-            is_collaborative: true,
-            created_at: "2023-05-10T10:30:00Z",
-            updated_at: "2023-06-01T14:45:00Z",
-            materials_count: 45,
-            team_members: 8,
-          },
-          {
-            id: 2,
-            company_cif: "B87654321",
-            company: {
-              name: "Visual Media",
-              logo_url: "https://picsum.photos/seed/company2/200/200",
-            },
-            created_by: 2,
-            creator: {
-              name: "María",
-              lastname: "López",
-              username: "marialopez",
-            },
-            name: "Serie web sobre gastronomía",
-            description: "Serie de 10 episodios sobre gastronomía tradicional española.",
-            type: ProjectType.TV,
-            start_date: "2023-07-01",
-            end_date: "2023-10-30",
-            status: "planning",
-            is_collaborative: false,
-            created_at: "2023-05-20T09:15:00Z",
-            updated_at: "2023-05-25T11:30:00Z",
-            materials_count: 12,
-            team_members: 5,
-          },
-          {
-            id: 3,
-            company_cif: "B12345678",
-            company: {
-              name: "Producciones Creativas",
-              logo_url: "https://picsum.photos/seed/company1/200/200",
-            },
-            created_by: 1,
-            creator: {
-              name: "Juan",
-              lastname: "Pérez",
-              username: "juanperez",
-            },
-            name: "Spot publicitario para marca deportiva",
-            description: "Anuncio de 30 segundos para nueva línea de zapatillas deportivas.",
-            type: ProjectType.ADVERTISING,
-            start_date: "2023-08-10",
-            end_date: "2023-09-15",
-            status: "completed",
-            is_collaborative: true,
-            created_at: "2023-07-05T14:20:00Z",
-            updated_at: "2023-09-20T16:45:00Z",
-            materials_count: 28,
-            team_members: 12,
-          },
-          {
-            id: 4,
-            company_cif: "B23456789",
-            company: {
-              name: "Sonido Profesional",
-              logo_url: "https://picsum.photos/seed/company3/200/200",
-            },
-            created_by: 3,
-            creator: {
-              name: "Carlos",
-              lastname: "Rodríguez",
-              username: "carlosrodriguez",
-            },
-            name: "Podcast sobre historia del cine",
-            description: "Serie de podcasts educativos sobre la historia del cine español.",
-            type: ProjectType.OTHER,
-            start_date: "2023-09-01",
-            end_date: "2024-03-30",
-            status: "planning",
-            is_collaborative: false,
-            created_at: "2023-08-15T11:10:00Z",
-            updated_at: "2023-08-20T09:30:00Z",
-            materials_count: 5,
-            team_members: 3,
-          },
-          {
-            id: 5,
-            company_cif: "B87654321",
-            company: {
-              name: "Visual Media",
-              logo_url: "https://picsum.photos/seed/company2/200/200",
-            },
-            created_by: 2,
-            creator: {
-              name: "María",
-              lastname: "López",
-              username: "marialopez",
-            },
-            name: "Cortometraje de animación",
-            description: "Cortometraje animado para festival internacional de cine.",
-            type: ProjectType.FILM,
-            start_date: "2023-10-15",
-            end_date: "2024-02-28",
-            status: "in_progress",
-            is_collaborative: true,
-            created_at: "2023-09-10T16:20:00Z",
-            updated_at: "2023-10-05T13:45:00Z",
-            materials_count: 34,
-            team_members: 7,
-          },
-        ]
-
-        setCompanies(mockCompanies)
-        setProjects(mockProjects)
-        setFilteredProjects(mockProjects)
-      } catch (error) {
+        setCompanies(companiesData)
+        setProjects(projectsData)
+        setFilteredProjects(projectsData)
+      } catch (error: any) {
         console.error("Error al cargar datos:", error)
-        showNotification("Error al cargar los proyectos", "error")
+
+        let errorMessage = "Error al cargar los proyectos"
+        if (error.response?.status === 401) {
+          errorMessage = "No tienes permisos para ver los proyectos"
+        }
+
+        showNotification(errorMessage, "error")
       } finally {
         setLoading(false)
       }
     }
 
     fetchData()
-  }, [status, showNotification])
+  }, [status, session?.accessToken, showNotification])
 
   // Filtrar proyectos
   useEffect(() => {
@@ -435,43 +276,20 @@ export default function ProjectsPage() {
     })
   }
 
-  // Abrir modal para crear proyecto
+  // Redirigir a la página de crear proyecto
   const handleCreateProject = () => {
-    setFormData({
-      name: "",
-      description: "",
-      type: ProjectType.OTHER,
-      start_date: "",
-      end_date: "",
-      status: "draft",
-      is_collaborative: false,
-      company_cif: companies.length > 0 ? companies[0].cif : "",
-    })
-    setModalMode("create")
-    setOpenModal(true)
+    router.push("/project/create")
   }
 
   // Abrir modal para editar proyecto
   const handleEditProject = (project: Project) => {
     setSelectedProject(project)
-    setFormData({
-      name: project.name,
-      description: project.description || "",
-      type: project.type,
-      start_date: project.start_date || "",
-      end_date: project.end_date || "",
-      status: project.status,
-      is_collaborative: project.is_collaborative,
-      company_cif: project.company_cif,
-    })
-    setModalMode("edit")
-    setOpenModal(true)
+    router.push(`/project/edit/${project.id}`)
   }
 
   // Abrir modal para ver proyecto
   const handleViewProject = (project: Project) => {
     setSelectedProject(project)
-    setModalMode("view")
     setOpenModal(true)
   }
 
@@ -483,116 +301,37 @@ export default function ProjectsPage() {
 
   // Eliminar proyecto
   const handleDeleteProject = async () => {
-    if (!projectToDelete) return
+    if (!projectToDelete || !session?.accessToken) return
 
     setDeleting(true)
 
     try {
-      // Simular eliminación
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/projects/${projectToDelete}`, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      })
 
       // Actualizar estado
       setProjects(projects.filter((project) => project.id !== projectToDelete))
 
-      showNotification("Proyecto eliminado correctamen", "success")
+      showNotification("Proyecto eliminado correctamente", "success")
 
       setDeleteConfirmOpen(false)
       setProjectToDelete(null)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error al eliminar proyecto:", error)
-      showNotification("Error al eliminar el proyecto", "error")
+
+      let errorMessage = "Error al eliminar el proyecto"
+      if (error.response?.status === 401) {
+        errorMessage = "No tienes permisos para eliminar este proyecto"
+      } else if (error.response?.status === 404) {
+        errorMessage = "El proyecto no existe"
+      }
+
+      showNotification(errorMessage, "error")
     } finally {
       setDeleting(false)
-    }
-  }
-
-  // Manejar cambios en el formulario
-  const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  // Manejar cambios en selects
-  const handleSelectChange = (name: string, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
-
-  // Enviar formulario
-  const handleSubmitForm = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setFormSubmitting(true)
-
-    try {
-      // Validar campos obligatorios
-      if (!formData.name || !formData.company_cif) {
-        showNotification("Por favor, completa los campos obligatorios", "warning")
-        setFormSubmitting(false)
-        return
-      }
-
-      // Simular envío
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      if (modalMode === "create") {
-        // Crear nuevo proyecto
-        const newProject: Project = {
-          id: Math.max(...projects.map((p) => p.id), 0) + 1,
-          company_cif: formData.company_cif,
-          company: companies.find((c) => c.cif === formData.company_cif) || {
-            name: "Empresa desconocida",
-          },
-          created_by: Number(session?.user?.id) || 1,
-          creator: {
-            name: session?.user?.name || "Usuario",
-            lastname: "",
-            username: "usuario",
-          },
-          name: formData.name,
-          description: formData.description,
-          type: formData.type,
-          start_date: formData.start_date,
-          end_date: formData.end_date,
-          status: formData.status,
-          is_collaborative: formData.is_collaborative,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          materials_count: 0,
-          team_members: 0,
-        }
-
-        setProjects([...projects, newProject])
-        showNotification("Proyecto creado correctamente", "success")
-      } else if (modalMode === "edit" && selectedProject) {
-        // Actualizar proyecto existente
-        const updatedProjects = projects.map((project) =>
-          project.id === selectedProject.id
-            ? {
-              ...project,
-              name: formData.name,
-              description: formData.description,
-              type: formData.type,
-              start_date: formData.start_date,
-              end_date: formData.end_date,
-              status: formData.status,
-              is_collaborative: formData.is_collaborative,
-              company_cif: formData.company_cif,
-              company: companies.find((c) => c.cif === formData.company_cif) || project.company,
-              updated_at: new Date().toISOString(),
-            }
-            : project,
-        )
-
-        setProjects(updatedProjects)
-        showNotification("Proyecto actualizado correctamente", "success")
-      }
-
-      // Cerrar modal
-      setOpenModal(false)
-    } catch (error) {
-      console.error("Error al guardar proyecto:", error)
-      showNotification("Error al guardar el proyecto", "error")
-    } finally {
-      setFormSubmitting(false)
     }
   }
 
@@ -636,18 +375,7 @@ export default function ProjectsPage() {
             startDecorator={<Search />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{
-              width: "100%",
-              flexGrow: 1,
-              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-              "&:hover": {
-                borderColor: "primary.solidBg",
-              },
-              "&:focus-within": {
-                borderColor: "primary.solidBg",
-                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
-              },
-            }}
+            sx={{ width: "100%" }}
           />
 
           {/* Filtros - se adaptan según el tamaño de pantalla */}
@@ -877,13 +605,6 @@ export default function ProjectsPage() {
                         {project.name}
                       </Typography>
 
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
-                        <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
-                        <Typography level="body-sm" color="neutral">
-                          {project.company.name}
-                        </Typography>
-                      </Box>
-
                       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1, flexWrap: "wrap" }}>
                         <Chip
                           variant="soft"
@@ -911,7 +632,12 @@ export default function ProjectsPage() {
                         )}
                       </Box>
 
-
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: { xs: 1, sm: 0 } }}>
+                        <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
+                        <Typography level="body-sm" color="neutral">
+                          {project.company.name}
+                        </Typography>
+                      </Box>
                     </Box>
                   </Box>
 
@@ -1001,8 +727,8 @@ export default function ProjectsPage() {
                       }}
                     >
                       <Button
-                        variant="solid"
-                        color="primary"
+                        variant="outlined"
+                        color="neutral"
                         size="sm"
                         onClick={() => handleViewProject(project)}
                         sx={{
@@ -1010,7 +736,7 @@ export default function ProjectsPage() {
                           minWidth: { xs: "auto", sm: "60px" },
                         }}
                       >
-                        Ver más
+                        Ver
                       </Button>
                       <IconButton
                         variant="outlined"
@@ -1038,8 +764,8 @@ export default function ProjectsPage() {
           </Stack>
         )}
 
-        {/* Modal para crear/editar proyecto */}
-        <Modal open={openModal} onClose={() => modalMode !== "view" && !formSubmitting && setOpenModal(false)}>
+        {/* Modal para ver proyecto */}
+        <Modal open={openModal} onClose={() => setOpenModal(false)}>
           <ModalDialog
             variant="outlined"
             sx={{
@@ -1049,16 +775,12 @@ export default function ProjectsPage() {
               boxShadow: "lg",
             }}
           >
-            <ModalClose disabled={formSubmitting} />
+            <ModalClose />
             <Typography level="h4" sx={{ mb: 2 }}>
-              {modalMode === "create"
-                ? "Crear nuevo proyecto"
-                : modalMode === "edit"
-                  ? "Editar proyecto"
-                  : "Detalles del proyecto"}
+              Detalles del proyecto
             </Typography>
 
-            {modalMode === "view" && selectedProject ? (
+            {selectedProject ? (
               // Vista de detalles
               <Box>
                 <Grid container spacing={2}>
@@ -1139,29 +861,6 @@ export default function ProjectsPage() {
                   </Grid>
 
                   <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Creado por
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      <Person />
-                      <Typography level="body-md">
-                        {selectedProject.creator.name} {selectedProject.creator.lastname}
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Fecha de creación
-                    </Typography>
-                    <Typography level="body-md">{formatDate(selectedProject.created_at)}</Typography>
-                  </Grid>
-
-                  <Grid xs={12}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Folder sx={{ color: "#ffbc62" }} />
                       <Typography level="body-md">{selectedProject.materials_count} materiales</Typography>
@@ -1185,7 +884,7 @@ export default function ProjectsPage() {
                     color="primary"
                     onClick={() => {
                       setOpenModal(false)
-                      router.push(`/proyecto/${selectedProject.id}`)
+                      router.push(`/project/${selectedProject.id}`)
                     }}
                     sx={{
                       bgcolor: "#ffbc62",
@@ -1198,140 +897,7 @@ export default function ProjectsPage() {
                   </Button>
                 </Box>
               </Box>
-            ) : (
-              // Formulario para crear/editar
-              <form onSubmit={handleSubmitForm}>
-                <Grid container spacing={2}>
-                  <Grid xs={12}>
-                    <FormControl required>
-                      <FormLabel>Nombre del proyecto</FormLabel>
-                      <Input
-                        name="name"
-                        value={formData.name}
-                        onChange={handleFormChange}
-                        placeholder="Nombre del proyecto"
-                      />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12}>
-                    <FormControl>
-                      <FormLabel>Descripción</FormLabel>
-                      <Textarea
-                        name="description"
-                        value={formData.description}
-                        onChange={handleFormChange}
-                        placeholder="Descripción del proyecto"
-                        minRows={3}
-                      />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl required>
-                      <FormLabel>Tipo de proyecto</FormLabel>
-                      <Select
-                        name="type"
-                        value={formData.type}
-                        onChange={(_, value) => handleSelectChange("type", value)}
-                      >
-                        <Option value={ProjectType.FILM}>Cine</Option>
-                        <Option value={ProjectType.TV}>TV</Option>
-                        <Option value={ProjectType.ADVERTISING}>Publicidad</Option>
-                        <Option value={ProjectType.OTHER}>Otro</Option>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl required>
-                      <FormLabel>Empresa</FormLabel>
-                      <Select
-                        name="company_cif"
-                        value={formData.company_cif}
-                        onChange={(_, value) => handleSelectChange("company_cif", value)}
-                      >
-                        {companies.map((company) => (
-                          <Option key={company.cif} value={company.cif}>
-                            {company.name}
-                          </Option>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl>
-                      <FormLabel>Fecha de inicio</FormLabel>
-                      <Input type="date" name="start_date" value={formData.start_date} onChange={handleFormChange} />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl>
-                      <FormLabel>Fecha de finalización</FormLabel>
-                      <Input type="date" name="end_date" value={formData.end_date} onChange={handleFormChange} />
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl required>
-                      <FormLabel>Estado</FormLabel>
-                      <Select
-                        name="status"
-                        value={formData.status}
-                        onChange={(_, value) => handleSelectChange("status", value)}
-                      >
-                        <Option value="draft">Borrador</Option>
-                        <Option value="planning">Planificación</Option>
-                        <Option value="in_progress">En progreso</Option>
-                        <Option value="completed">Completado</Option>
-                        <Option value="cancelled">Cancelado</Option>
-                      </Select>
-                    </FormControl>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <FormControl>
-                      <FormLabel>Colaborativo</FormLabel>
-                      <Select
-                        name="is_collaborative"
-                        value={formData.is_collaborative}
-                        onChange={(_, value) => handleSelectChange("is_collaborative", value)}
-                      >
-                        <Option value={true}>Sí</Option>
-                        <Option value={false}>No</Option>
-                      </Select>
-                      <FormHelperText>
-                        Los proyectos colaborativos permiten que varios usuarios trabajen juntos
-                      </FormHelperText>
-                    </FormControl>
-                  </Grid>
-                </Grid>
-
-                <Box sx={{ mt: 3, display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                  <Button variant="plain" color="neutral" onClick={() => setOpenModal(false)} disabled={formSubmitting}>
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    loading={formSubmitting}
-                    loadingPosition="start"
-                    startDecorator={<Save />}
-                    variant="solid"
-                    color="primary"
-                    sx={{
-                      bgcolor: "#ffbc62",
-                      "&:hover": {
-                        bgcolor: "#ff9b44",
-                      },
-                    }}
-                  >
-                    {modalMode === "create" ? "Crear proyecto" : "Guardar cambios"}
-                  </Button>
-                </Box>
-              </form>
-            )}
+            ) : null}
           </ModalDialog>
         </Modal>
 
