@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import {
@@ -41,6 +42,7 @@ import {
   Add,
   Star,
   StarBorder,
+  PersonRemove,
 } from "@mui/icons-material"
 import { useRouter, useParams } from "next/navigation"
 import { useSession } from "next-auth/react"
@@ -52,6 +54,7 @@ import ColumnLayout from "@/components/ColumnLayout"
 import DeleteProjectModal from "../components/DeleteProjectModal"
 import CustomTabs from "@/components/CustomTabs"
 import MaterialSelectModal from "../components/MaterialSelectModal"
+import TeamMemberSelectModal from "../components/TeamMemberSelectModal"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -89,29 +92,35 @@ interface Project {
   progress?: number
 }
 
-interface TeamMember {
+interface ProjectUser {
   id: number
-  name: string
-  lastname: string
-  username: string
-  email: string
-  role: string
-  avatar_url?: string
-  joined_at: string
+  user_id: number
+  project_id: number
+  created_at: string
+  updated_at: string
+  user: {
+    id: number
+    name: string
+    lastname: string
+    username: string
+    email: string
+    avatar_url?: string
+  }
 }
 
-// interface Material {
-//   id: number
-//   name: string
-//   type: string
-//   size: number
-//   uploaded_at: string
-//   uploaded_by: {
-//     name: string
-//     lastname: string
-//   }
-//   url?: string
-// }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+interface Material {
+  id: number
+  name: string
+  type: string
+  size: number
+  uploaded_at: string
+  uploaded_by: {
+    name: string
+    lastname: string
+  }
+  url?: string
+}
 
 interface Activity {
   id: number
@@ -137,7 +146,7 @@ interface ProjectMaterial {
     category?: string
     location?: string
     serial_number?: string
-    is_consumable: boolean
+    is_consumible: boolean
     quantity: number
   }
   project: {
@@ -156,7 +165,7 @@ export default function ProjectDetailPage() {
 
   // Estados
   const [project, setProject] = useState<Project | null>(null)
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
+  const [projectUsers, setProjectUsers] = useState<ProjectUser[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -168,6 +177,9 @@ export default function ProjectDetailPage() {
   const [materialSelectOpen, setMaterialSelectOpen] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMaterials, setLoadingMaterials] = useState(false)
+  const [teamMemberSelectOpen, setTeamMemberSelectOpen] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
 
   // Cargar datos del proyecto
   useEffect(() => {
@@ -194,12 +206,10 @@ export default function ProjectDetailPage() {
 
         // Filtrar solo los materiales de este proyecto
         const allProjectMaterials = materialsResponse.data.data || materialsResponse.data || []
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const projectSpecificMaterials = allProjectMaterials.filter((pm: any) => pm.project_id === Number(projectId))
 
         // Si algunos materiales no tienen datos relacionados, cargarlos
         const materialsWithCompleteData = await Promise.all(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           projectSpecificMaterials.map(async (pm: any) => {
             if (!pm.material) {
               try {
@@ -233,36 +243,44 @@ export default function ProjectDetailPage() {
 
         setProjectMaterials(materialsWithCompleteData.filter((pm) => pm.material)) // Solo incluir los que tienen datos del material
 
-        // Simular datos adicionales (en una implementación real vendrían de la API)
-        setTeamMembers([
-          {
-            id: 1,
-            name: "Ana",
-            lastname: "García",
-            username: "ana.garcia",
-            email: "ana@example.com",
-            role: "Director",
-            joined_at: "2024-01-15",
+        // Cargar usuarios del proyecto
+        const projectUsersResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-users`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
           },
-          {
-            id: 2,
-            name: "Carlos",
-            lastname: "López",
-            username: "carlos.lopez",
-            email: "carlos@example.com",
-            role: "Editor",
-            joined_at: "2024-01-20",
-          },
-          {
-            id: 3,
-            name: "María",
-            lastname: "Rodríguez",
-            username: "maria.rodriguez",
-            email: "maria@example.com",
-            role: "Productor",
-            joined_at: "2024-01-25",
-          },
-        ])
+        })
+
+        // Filtrar solo los usuarios de este proyecto
+        const allProjectUsers = projectUsersResponse.data.data || projectUsersResponse.data || []
+        const projectSpecificUsers = allProjectUsers.filter((pu: any) => pu.project_id === Number(projectId))
+
+        // Si algunos usuarios no tienen datos de usuario, cargarlos
+        const projectUsersWithCompleteData = await Promise.all(
+          projectSpecificUsers.map(async (pu: any) => {
+            if (!pu.user) {
+              try {
+                const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/users/${pu.user_id}`, {
+                  headers: {
+                    Authorization: `Bearer ${session.accessToken}`,
+                  },
+                })
+
+                const userData = userResponse.data.data || userResponse.data
+
+                return {
+                  ...pu,
+                  user: userData,
+                }
+              } catch (userError) {
+                console.error(`Error al cargar usuario ${pu.user_id}:`, userError)
+                return pu // Devolver el original si falla
+              }
+            }
+            return pu
+          }),
+        )
+
+        setProjectUsers(projectUsersWithCompleteData.filter((pu) => pu.user)) // Solo incluir los que tienen datos del usuario
 
         setActivities([
           {
@@ -308,6 +326,16 @@ export default function ProjectDetailPage() {
 
     fetchProjectData()
   }, [session?.accessToken, projectId, showNotification])
+
+  // Agregar función para notificar cambios al componente padre
+  const notifyMaterialCountChange = () => {
+    // Emitir evento personalizado para notificar cambios
+    window.dispatchEvent(
+      new CustomEvent("materialCountChanged", {
+        detail: { projectId: Number(projectId) },
+      }),
+    )
+  }
 
   // Función para agregar material al proyecto
   const handleAddMaterial = async (materialId: number, quantity: number) => {
@@ -363,7 +391,6 @@ export default function ProjectDetailPage() {
           })
 
           const allProjectMaterials = materialsResponse.data.data || materialsResponse.data || []
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const projectSpecificMaterials = allProjectMaterials.filter((pm: any) => pm.project_id === Number(projectId))
           setProjectMaterials(projectSpecificMaterials)
         }
@@ -374,6 +401,9 @@ export default function ProjectDetailPage() {
 
       showNotification("Material agregado al proyecto correctamente", "success")
       setMaterialSelectOpen(false)
+
+      // Notificar cambio en el contador de materiales
+      notifyMaterialCountChange()
     } catch (error: unknown) {
       console.error("Error al agregar material:", error)
       let errorMessage = "Error al agregar el material al proyecto"
@@ -388,7 +418,80 @@ export default function ProjectDetailPage() {
     }
   }
 
-  // Función para remover material del proyecto
+  // Función para agregar usuario al proyecto
+  const handleAddTeamMember = async (userId: number) => {
+    if (!session?.accessToken) return
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-users`,
+        {
+          project_id: Number(projectId),
+          user_id: userId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const newProjectUser = response.data.data || response.data
+
+      // Si la respuesta no incluye los datos del usuario, los obtenemos por separado
+      if (!newProjectUser.user) {
+        try {
+          const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/users/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          })
+
+          const userData = userResponse.data.data || userResponse.data
+
+          // Construir el objeto completo
+          const completeProjectUser = {
+            ...newProjectUser,
+            user: userData,
+          }
+
+          setProjectUsers((prev) => [...prev, completeProjectUser])
+        } catch (userError) {
+          console.error("Error al obtener datos del usuario:", userError)
+          // Fallback: recargar todos los usuarios del proyecto
+          const projectUsersResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-users`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          })
+
+          const allProjectUsers = projectUsersResponse.data.data || projectUsersResponse.data || []
+          const projectSpecificUsers = allProjectUsers.filter((pu: any) => pu.project_id === Number(projectId))
+          setProjectUsers(projectSpecificUsers)
+        }
+      } else {
+        // Si la respuesta incluye los datos del usuario, usarla directamente
+        setProjectUsers((prev) => [...prev, newProjectUser])
+      }
+
+      showNotification("Usuario agregado al proyecto correctamente", "success")
+      setTeamMemberSelectOpen(false)
+    } catch (error: unknown) {
+      console.error("Error al agregar usuario:", error)
+      let errorMessage = "Error al agregar el usuario al proyecto"
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          errorMessage = "El usuario ya es miembro del proyecto"
+        } else if (error.response?.status === 404) {
+          errorMessage = "Usuario no encontrado"
+        }
+      }
+      showNotification(errorMessage, "error")
+    }
+  }
+
+  // Modificar handleRemoveMaterial para notificar cambios
   const handleRemoveMaterial = async (projectMaterialId: number) => {
     if (!session?.accessToken) return
 
@@ -401,9 +504,31 @@ export default function ProjectDetailPage() {
 
       setProjectMaterials((prev) => prev.filter((pm) => pm.id !== projectMaterialId))
       showNotification("Material removido del proyecto", "success")
+
+      // Notificar cambio en el contador de materiales
+      notifyMaterialCountChange()
     } catch (error: unknown) {
       console.error("Error al remover material:", error)
       showNotification("Error al remover el material del proyecto", "error")
+    }
+  }
+
+  // Función para remover usuario del proyecto
+  const handleRemoveTeamMember = async (projectUserId: number) => {
+    if (!session?.accessToken) return
+
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-users/${projectUserId}`, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      })
+
+      setProjectUsers((prev) => prev.filter((pu) => pu.id !== projectUserId))
+      showNotification("Usuario removido del proyecto", "success")
+    } catch (error: unknown) {
+      console.error("Error al remover usuario:", error)
+      showNotification("Error al remover el usuario del proyecto", "error")
     }
   }
 
@@ -573,6 +698,11 @@ export default function ProjectDetailPage() {
     }
   }
 
+  // Obtener iniciales del usuario
+  const getUserInitials = (user: { name: string; lastname: string }) => {
+    return `${user.name.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase()
+  }
+
   // Mostrar loading
   if (loading) {
     return (
@@ -626,7 +756,7 @@ export default function ProjectDetailPage() {
       label: "Equipo",
       shortLabel: "Eq.",
       icon: <People />,
-      badge: teamMembers.length,
+      badge: projectUsers.length,
     },
     {
       value: "3",
@@ -788,7 +918,7 @@ export default function ProjectDetailPage() {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Group sx={{ color: "#ffbc62", fontSize: 18 }} />
-                      <Typography level="body-sm">{teamMembers.length} miembros</Typography>
+                      <Typography level="body-sm">{projectUsers.length} miembros</Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Folder sx={{ color: "#ffbc62", fontSize: 18 }} />
@@ -1015,9 +1145,9 @@ export default function ProjectDetailPage() {
                         <Chip
                           variant="soft"
                           size="sm"
-                          color={projectMaterial.material.is_consumable ? "warning" : "primary"}
+                          color={projectMaterial.material.is_consumible ? "warning" : "primary"}
                         >
-                          {projectMaterial.material.is_consumable ? "Consumible" : "Reutilizable"}
+                          {projectMaterial.material.is_consumible ? "Consumible" : "Reutilizable"}
                         </Chip>
                         <IconButton
                           variant="plain"
@@ -1045,6 +1175,7 @@ export default function ProjectDetailPage() {
                     variant="outlined"
                     size="sm"
                     startDecorator={<Add />}
+                    onClick={() => setTeamMemberSelectOpen(true)}
                     sx={{
                       color: "#ffbc62",
                       borderColor: "#ffbc62",
@@ -1058,47 +1189,108 @@ export default function ProjectDetailPage() {
                     <Box sx={{ display: { xs: "block", sm: "none" } }}>Invitar</Box>
                   </Button>
                 </Box>
-                <Grid container spacing={2}>
-                  {teamMembers.map((member) => (
-                    <Grid key={member.id} xs={12} sm={6} md={4}>
-                      <Sheet
-                        variant="outlined"
-                        sx={{
-                          p: 2,
-                          borderRadius: "md",
-                          textAlign: "center",
-                          "&:hover": {
-                            bgcolor: "background.level1",
-                          },
-                        }}
-                      >
-                        <Avatar
-                          size="lg"
+
+                {loadingTeamMembers ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                    <CircularProgress size="sm" />
+                  </Box>
+                ) : projectUsers.length === 0 ? (
+                  <Sheet
+                    variant="soft"
+                    sx={{
+                      p: 4,
+                      borderRadius: "md",
+                      textAlign: "center",
+                      bgcolor: "background.level1",
+                    }}
+                  >
+                    <People sx={{ fontSize: 48, color: "text.tertiary", mb: 2 }} />
+                    <Typography level="title-md" sx={{ mb: 1 }}>
+                      No hay miembros en el equipo
+                    </Typography>
+                    <Typography level="body-sm" color="neutral" sx={{ mb: 3 }}>
+                      Invita usuarios para colaborar en este proyecto
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      startDecorator={<Add />}
+                      onClick={() => setTeamMemberSelectOpen(true)}
+                      sx={{
+                        color: "#ffbc62",
+                        borderColor: "#ffbc62",
+                        "&:hover": {
+                          borderColor: "#ff9b44",
+                          bgcolor: "rgba(255, 188, 98, 0.1)",
+                        },
+                      }}
+                    >
+                      Invitar primer miembro
+                    </Button>
+                  </Sheet>
+                ) : (
+                  <Grid container spacing={2}>
+                    {projectUsers.map((projectUser) => (
+                      <Grid key={projectUser.id} xs={12} sm={6} md={4}>
+                        <Sheet
+                          variant="outlined"
                           sx={{
-                            bgcolor: "#ffbc62",
-                            color: "white",
-                            mx: "auto",
-                            mb: 1,
+                            p: 2,
+                            borderRadius: "md",
+                            position: "relative",
+                            "&:hover": {
+                              bgcolor: "background.level1",
+                            },
                           }}
                         >
-                          {member.name.charAt(0)}
-                        </Avatar>
-                        <Typography level="body-sm" fontWeight="md">
-                          {member.name} {member.lastname}
-                        </Typography>
-                        <Typography level="body-xs" color="neutral">
-                          {member.role}
-                        </Typography>
-                        <Typography level="body-xs" color="neutral">
-                          @{member.username}
-                        </Typography>
-                        <Chip variant="soft" size="sm" sx={{ mt: 1 }}>
-                          Activo
-                        </Chip>
-                      </Sheet>
-                    </Grid>
-                  ))}
-                </Grid>
+                          <IconButton
+                            variant="plain"
+                            size="sm"
+                            color="danger"
+                            onClick={() => handleRemoveTeamMember(projectUser.id)}
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              zIndex: 1,
+                            }}
+                          >
+                            <PersonRemove fontSize="small" />
+                          </IconButton>
+
+                          <Box sx={{ textAlign: "center" }}>
+                            <Avatar
+                              size="lg"
+                              src={projectUser.user.avatar_url}
+                              sx={{
+                                bgcolor: "#ffbc62",
+                                color: "white",
+                                mx: "auto",
+                                mb: 1,
+                              }}
+                            >
+                              {!projectUser.user.avatar_url && getUserInitials(projectUser.user)}
+                            </Avatar>
+                            <Typography level="body-sm" fontWeight="md">
+                              {projectUser.user.name} {projectUser.user.lastname}
+                            </Typography>
+                            <Typography level="body-xs" color="neutral">
+                              @{projectUser.user.username}
+                            </Typography>
+                            <Typography level="body-xs" color="neutral" sx={{ mb: 1 }}>
+                              {projectUser.user.email}
+                            </Typography>
+                            <Chip variant="soft" size="sm" color="primary" sx={{ mb: 1 }}>
+                              Miembro
+                            </Chip>
+                            <Typography level="body-xs" color="neutral">
+                              Desde {formatDate(projectUser.created_at)}
+                            </Typography>
+                          </Box>
+                        </Sheet>
+                      </Grid>
+                    ))}
+                  </Grid>
+                )}
               </CardContent>
             </Card>
           )}
@@ -1176,6 +1368,15 @@ export default function ProjectDetailPage() {
         onClose={() => setMaterialSelectOpen(false)}
         onAddMaterial={handleAddMaterial}
         projectId={Number(projectId)}
+      />
+
+      {/* Modal para seleccionar miembros del equipo */}
+      <TeamMemberSelectModal
+        open={teamMemberSelectOpen}
+        onClose={() => setTeamMemberSelectOpen(false)}
+        onAddMember={handleAddTeamMember}
+        projectId={Number(projectId)}
+        existingMemberIds={projectUsers.map((pu) => pu.user.id)}
       />
 
       {/* Modal de confirmación para eliminar */}
