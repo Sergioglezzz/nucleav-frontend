@@ -27,7 +27,6 @@ import {
   CalendarToday,
   Person,
   Visibility,
-  Edit,
   CheckCircle,
   PlayArrow,
   Schedule,
@@ -78,7 +77,7 @@ interface ProjectPreviewDetailsProps {
   project: Project | null
 }
 
-export default function ProjectPreviewDetails({ open, onClose, onEdit, onView, project }: ProjectPreviewDetailsProps) {
+export default function ProjectPreviewDetails({ open, onClose, onView, project }: ProjectPreviewDetailsProps) {
   // Obtener icono según tipo de proyecto
   const getProjectTypeIcon = (type: ProjectType) => {
     switch (type) {
@@ -418,29 +417,6 @@ export default function ProjectPreviewDetails({ open, onClose, onEdit, onView, p
             flexDirection: { xs: "column", sm: "row" },
           }}
         >
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={onClose}
-            sx={{
-              flex: { xs: 1, sm: "0 0 auto" },
-              order: { xs: 3, sm: 1 },
-            }}
-          >
-            Cerrar
-          </Button>
-          <Button
-            variant="outlined"
-            color="neutral"
-            onClick={onEdit}
-            startDecorator={<Edit />}
-            sx={{
-              flex: { xs: 1, sm: "0 0 auto" },
-              order: { xs: 2, sm: 2 },
-            }}
-          >
-            Editar
-          </Button>
           <Button
             variant="solid"
             onClick={onView}
