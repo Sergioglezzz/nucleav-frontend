@@ -16,11 +16,6 @@ import {
   CircularProgress,
   Alert,
   Sheet,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanel,
-  Badge,
 } from "@mui/joy"
 import {
   ArrowBackIos,
@@ -56,6 +51,7 @@ import { useColorScheme } from "@mui/joy/styles"
 import axios from "axios"
 import ColumnLayout from "@/components/ColumnLayout"
 import DeleteProjectModal from "../components/DeleteProjectModal"
+import CustomTabs from "@/components/CustomTabs"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -465,6 +461,36 @@ export default function ProjectDetailPage() {
     )
   }
 
+  // Opciones para las pestañas del proyecto
+  const projectTabOptions = [
+    {
+      value: "0",
+      label: "Actividad",
+      shortLabel: "Act.",
+      icon: <Timeline />,
+    },
+    {
+      value: "1",
+      label: "Materiales",
+      shortLabel: "Mat.",
+      icon: <Folder />,
+      badge: materials.length,
+    },
+    {
+      value: "2",
+      label: "Equipo",
+      shortLabel: "Eq.",
+      icon: <People />,
+      badge: teamMembers.length,
+    },
+    {
+      value: "3",
+      label: "Configuración",
+      shortLabel: "Conf.",
+      icon: <Settings />,
+    },
+  ]
+
   return (
     <ColumnLayout>
       <Box sx={{ mb: 3 }}>
@@ -677,45 +703,16 @@ export default function ProjectDetailPage() {
         </Card>
 
         {/* Tabs de contenido */}
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as number)}>
-          <TabList
-            sx={{
-              bgcolor: "background.level1",
-              borderRadius: "lg",
-              p: 0.5,
-              mb: 3,
-              overflow: "auto",
-              "&::-webkit-scrollbar": {
-                display: "none",
-              },
-            }}
-          >
-            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
-              <Timeline sx={{ mr: 1 }} />
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>Actividad</Box>
-              <Box sx={{ display: { xs: "block", sm: "none" } }}>Act.</Box>
-            </Tab>
-            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
-              <Folder sx={{ mr: 1 }} />
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>Materiales</Box>
-              <Box sx={{ display: { xs: "block", sm: "none" } }}>Mat.</Box>
-              <Badge badgeContent={materials.length} color="primary" sx={{ ml: 1 }} />
-            </Tab>
-            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
-              <People sx={{ mr: 1 }} />
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>Equipo</Box>
-              <Box sx={{ display: { xs: "block", sm: "none" } }}>Eq.</Box>
-              <Badge badgeContent={teamMembers.length} color="primary" sx={{ ml: 1 }} />
-            </Tab>
-            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
-              <Settings sx={{ mr: 1 }} />
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>Configuración</Box>
-              <Box sx={{ display: { xs: "block", sm: "none" } }}>Conf.</Box>
-            </Tab>
-          </TabList>
+        <CustomTabs
+          options={projectTabOptions}
+          defaultValue={activeTab.toString()}
+          onChange={(value) => setActiveTab(Number(value))}
+        />
 
+        {/* Contenido de los tabs */}
+        <Box sx={{ mt: 3 }}>
           {/* Panel de Actividad */}
-          <TabPanel value={0} sx={{ p: 0 }}>
+          {activeTab === 0 && (
             <Card variant="outlined">
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography level="title-md" sx={{ mb: 2 }}>
@@ -743,10 +740,10 @@ export default function ProjectDetailPage() {
                 </Stack>
               </CardContent>
             </Card>
-          </TabPanel>
+          )}
 
           {/* Panel de Materiales */}
-          <TabPanel value={1} sx={{ p: 0 }}>
+          {activeTab === 1 && (
             <Card variant="outlined">
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -813,10 +810,10 @@ export default function ProjectDetailPage() {
                 </Stack>
               </CardContent>
             </Card>
-          </TabPanel>
+          )}
 
           {/* Panel de Equipo */}
-          <TabPanel value={2} sx={{ p: 0 }}>
+          {activeTab === 2 && (
             <Card variant="outlined">
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
@@ -881,10 +878,10 @@ export default function ProjectDetailPage() {
                 </Grid>
               </CardContent>
             </Card>
-          </TabPanel>
+          )}
 
           {/* Panel de Configuración */}
-          <TabPanel value={3} sx={{ p: 0 }}>
+          {activeTab === 3 && (
             <Card variant="outlined">
               <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography level="title-md" sx={{ mb: 2 }}>
@@ -946,8 +943,8 @@ export default function ProjectDetailPage() {
                 </Stack>
               </CardContent>
             </Card>
-          </TabPanel>
-        </Tabs>
+          )}
+        </Box>
       </Box>
 
       {/* Modal de confirmación para eliminar */}

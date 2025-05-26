@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Box from "@mui/joy/Box"
 import Button from "@mui/joy/Button"
@@ -7,6 +9,9 @@ import Button from "@mui/joy/Button"
 interface TabOption {
   value: string
   label: string
+  icon?: React.ReactNode
+  badge?: number
+  shortLabel?: string
 }
 
 interface CustomTabsProps {
@@ -66,6 +71,8 @@ export default function CustomTabs({ options, defaultValue = options[0]?.value, 
         {/* Botones de pestañas */}
         {options.map((option) => {
           const isActive = activeTab === option.value
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const displayLabel = option.shortLabel && window.innerWidth < 600 ? option.shortLabel : option.label
 
           return (
             <Button
@@ -76,10 +83,16 @@ export default function CustomTabs({ options, defaultValue = options[0]?.value, 
               sx={{
                 flex: 1,
                 py: 1.5,
+                px: { xs: 1, sm: 2 },
                 borderRadius: "lg",
                 position: "relative",
                 zIndex: 1,
                 color: isActive ? "#ffbc62" : "text.primary",
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: "center",
+                gap: { xs: 0.5, sm: 1 },
+                minWidth: { xs: "auto", sm: "120px" },
                 "&:hover": {
                   bgcolor: "transparent",
                   color: isActive ? "#ffbc62" : "text.secondary",
@@ -87,7 +100,52 @@ export default function CustomTabs({ options, defaultValue = options[0]?.value, 
                 transition: "color 0.2s ease",
               }}
             >
-              {option.label}
+              {/* Icono */}
+              {option.icon && (
+                <Box
+                  sx={{
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {option.icon}
+                </Box>
+              )}
+
+              {/* Texto responsive */}
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                }}
+              >
+                <Box sx={{ display: { xs: "none", sm: "block" } }}>{option.label}</Box>
+                <Box sx={{ display: { xs: "block", sm: "none" } }}>{option.shortLabel || option.label}</Box>
+
+                {/* Badge */}
+                {option.badge !== undefined && option.badge > 0 && (
+                  <Box
+                    sx={{
+                      bgcolor: isActive ? "#ffbc62" : "primary.500",
+                      color: isActive ? "black" : "white",
+                      borderRadius: "50%",
+                      minWidth: "18px",
+                      height: "18px",
+                      fontSize: "0.7rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: "bold",
+                      ml: { xs: 0, sm: 0.5 },
+                    }}
+                  >
+                    {option.badge > 99 ? "99+" : option.badge}
+                  </Box>
+                )}
+              </Box>
 
               {/* Indicador inferior para la pestaña activa */}
               {isActive && (
