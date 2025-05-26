@@ -7,17 +7,12 @@ import {
   Box,
   Typography,
   Card,
-  Grid,
   Button,
   IconButton,
   Input,
   Chip,
   Sheet,
-  Divider,
   Stack,
-  Modal,
-  ModalDialog,
-  ModalClose,
   Select,
   Option,
   CircularProgress,
@@ -26,8 +21,6 @@ import {
   Search,
   FilterList,
   Add,
-  Edit,
-  Delete,
   Movie,
   Tv,
   Campaign,
@@ -44,6 +37,7 @@ import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useNotification } from "@/components/context/NotificationContext"
 import CustomTabs from "@/components/CustomTabs"
+import ProjectPreviewDetails from "./components/ProjectPreviewDetails"
 import axios from "axios"
 
 // Enumeración para tipos de proyecto
@@ -114,9 +108,6 @@ export default function ProjectsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [sortBy, setSortBy] = useState<string>("date-desc")
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [projectToDelete, setProjectToDelete] = useState<number | null>(null)
-  const [deleting, setDeleting] = useState(false)
   const [openModal, setOpenModal] = useState(false) // Declare openModal variable
 
   // Cargar datos
@@ -291,59 +282,10 @@ export default function ProjectsPage() {
     router.push("/project/create")
   }
 
-  // Abrir modal para editar proyecto
-  const handleEditProject = (project: Project) => {
-    setSelectedProject(project)
-    router.push(`/project/edit/${project.id}`)
-  }
-
   // Abrir modal para ver proyecto
   const handleViewProject = (project: Project) => {
     setSelectedProject(project)
     setOpenModal(true)
-  }
-
-  // Abrir confirmación para eliminar proyecto
-  const handleDeleteConfirm = (projectId: number) => {
-    setProjectToDelete(projectId)
-    setDeleteConfirmOpen(true)
-  }
-
-  // Eliminar proyecto
-  const handleDeleteProject = async () => {
-    if (!projectToDelete || !session?.accessToken) return
-
-    setDeleting(true)
-
-    try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/projects/${projectToDelete}`, {
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      })
-
-      // Actualizar estado
-      setProjects(projects.filter((project) => project.id !== projectToDelete))
-
-      showNotification("Proyecto eliminado correctamente", "success")
-
-      setDeleteConfirmOpen(false)
-      setProjectToDelete(null)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
-      console.error("Error al eliminar proyecto:", error)
-
-      let errorMessage = "Error al eliminar el proyecto"
-      if (error.response?.status === 401) {
-        errorMessage = "No tienes permisos para eliminar este proyecto"
-      } else if (error.response?.status === 404) {
-        errorMessage = "El proyecto no existe"
-      }
-
-      showNotification(errorMessage, "error")
-    } finally {
-      setDeleting(false)
-    }
   }
 
   return (
@@ -767,35 +709,18 @@ export default function ProjectsPage() {
                       }}
                     >
                       <Button
-                        variant="outlined"
-                        color="neutral"
+                        variant="solid"
+                        color="primary"
                         size="sm"
                         onClick={() => handleViewProject(project)}
                         sx={{
                           flex: { xs: 1, sm: "0 0 auto" },
                           minWidth: { xs: "auto", sm: "60px" },
+                          color: "white",
                         }}
                       >
                         Ver
                       </Button>
-                      <IconButton
-                        variant="outlined"
-                        color="neutral"
-                        size="sm"
-                        onClick={() => handleEditProject(project)}
-                        sx={{ flex: { xs: 1, sm: "0 0 auto" } }}
-                      >
-                        <Edit />
-                      </IconButton>
-                      <IconButton
-                        variant="outlined"
-                        color="danger"
-                        size="sm"
-                        onClick={() => handleDeleteConfirm(project.id)}
-                        sx={{ flex: { xs: 1, sm: "0 0 auto" } }}
-                      >
-                        <Delete />
-                      </IconButton>
                     </Box>
                   </Box>
                 </Box>
@@ -805,161 +730,23 @@ export default function ProjectsPage() {
         )}
 
         {/* Modal para ver proyecto */}
-        <Modal open={openModal} onClose={() => setOpenModal(false)}>
-          <ModalDialog
-            variant="outlined"
-            sx={{
-              maxWidth: 600,
-              borderRadius: "md",
-              p: 3,
-              boxShadow: "lg",
-            }}
-          >
-            <ModalClose />
-            <Typography level="h4" sx={{ mb: 2 }}>
-              Detalles del proyecto
-            </Typography>
-
-            {selectedProject ? (
-              // Vista de detalles
-              <Box>
-                <Grid container spacing={2}>
-                  <Grid xs={12}>
-                    <Typography level="title-lg" sx={{ color: "#ffbc62" }}>
-                      {selectedProject.name}
-                    </Typography>
-                    <Chip variant="soft" color={getStatusColor(selectedProject.status)} size="sm" sx={{ ml: 1 }}>
-                      {getStatusText(selectedProject.status)}
-                    </Chip>
-                    {selectedProject.is_collaborative && (
-                      <Chip
-                        variant="soft"
-                        color="primary"
-                        size="sm"
-                        sx={{ ml: 1, bgcolor: "rgba(255, 188, 98, 0.2)", color: "#ffbc62" }}
-                      >
-                        Colaborativo
-                      </Chip>
-                    )}
-                  </Grid>
-
-                  <Grid xs={12}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Tipo de proyecto
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      {getProjectTypeIcon(selectedProject.type)}
-                      <Typography level="body-md">
-                        {selectedProject.type === ProjectType.FILM
-                          ? "Cine"
-                          : selectedProject.type === ProjectType.TV
-                            ? "TV"
-                            : selectedProject.type === ProjectType.ADVERTISING
-                              ? "Publicidad"
-                              : "Otro"}
-                      </Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Empresa
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
-                      <Business />
-                      <Typography level="body-md">{selectedProject.company.name}</Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Fecha de inicio
-                    </Typography>
-                    <Typography level="body-md">{formatDate(selectedProject.start_date)}</Typography>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Typography level="body-sm" color="neutral">
-                      Fecha de finalización
-                    </Typography>
-                    <Typography level="body-md">{formatDate(selectedProject.end_date)}</Typography>
-                  </Grid>
-
-                  <Grid xs={12}>
-                    <Typography level="body-sm" color="neutral">
-                      Descripción
-                    </Typography>
-                    <Typography level="body-md">{selectedProject.description || "Sin descripción"}</Typography>
-                  </Grid>
-
-                  <Grid xs={12}>
-                    <Divider sx={{ my: 1 }} />
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Folder sx={{ color: "#ffbc62" }} />
-                      <Typography level="body-md">{selectedProject.materials_count} materiales</Typography>
-                    </Box>
-                  </Grid>
-
-                  <Grid xs={12} sm={6}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Group sx={{ color: "#ffbc62" }} />
-                      <Typography level="body-md">{selectedProject.team_members} miembros en el equipo</Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
-
-                <Box sx={{ mt: 3, display: "flex", gap: 1, justifyContent: "flex-end" }}>
-                  <Button variant="plain" color="neutral" onClick={() => setOpenModal(false)}>
-                    Cerrar
-                  </Button>
-                  <Button
-                    variant="solid"
-                    color="primary"
-                    onClick={() => {
-                      setOpenModal(false)
-                      router.push(`/project/${selectedProject.id}`)
-                    }}
-                    sx={{
-                      bgcolor: "#ffbc62",
-                      "&:hover": {
-                        bgcolor: "#ff9b44",
-                      },
-                    }}
-                  >
-                    Gestionar proyecto
-                  </Button>
-                </Box>
-              </Box>
-            ) : null}
-          </ModalDialog>
-        </Modal>
-
-        {/* Modal de confirmación para eliminar */}
-        <Modal open={deleteConfirmOpen} onClose={() => !deleting && setDeleteConfirmOpen(false)}>
-          <ModalDialog variant="outlined" role="alertdialog">
-            <Typography level="h4" sx={{ mb: 2 }}>
-              Confirmar eliminación
-            </Typography>
-            <Typography sx={{ mb: 3 }}>
-              ¿Estás seguro de que deseas eliminar este proyecto? Esta acción no se puede deshacer.
-            </Typography>
-            <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-              <Button variant="plain" color="neutral" onClick={() => setDeleteConfirmOpen(false)} disabled={deleting}>
-                Cancelar
-              </Button>
-              <Button variant="solid" color="danger" onClick={handleDeleteProject} loading={deleting}>
-                Eliminar
-              </Button>
-            </Box>
-          </ModalDialog>
-        </Modal>
+        <ProjectPreviewDetails
+          open={openModal}
+          onClose={() => setOpenModal(false)}
+          onEdit={() => {
+            if (selectedProject) {
+              setOpenModal(false)
+              router.push(`/project/edit/${selectedProject.id}`)
+            }
+          }}
+          onView={() => {
+            if (selectedProject) {
+              setOpenModal(false)
+              router.push(`/project/${selectedProject.id}`)
+            }
+          }}
+          project={selectedProject}
+        />
       </ColumnLayout>
     </>
   )

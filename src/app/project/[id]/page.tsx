@@ -21,9 +21,6 @@ import {
   Tab,
   TabPanel,
   Badge,
-  Modal,
-  ModalDialog,
-  ModalClose,
 } from "@mui/joy"
 import {
   ArrowBackIos,
@@ -43,11 +40,9 @@ import {
   CheckCircle,
   Cancel,
   Schedule,
-  Description,
   Settings,
   Timeline,
   People,
-  Visibility,
   MoreVert,
   Add,
   Star,
@@ -60,6 +55,7 @@ import { useState, useEffect } from "react"
 import { useColorScheme } from "@mui/joy/styles"
 import axios from "axios"
 import ColumnLayout from "@/components/ColumnLayout"
+import DeleteProjectModal from "../components/DeleteProjectModal"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -92,7 +88,6 @@ interface Project {
   is_collaborative: boolean
   created_at: string
   updated_at: string
-  // Campos adicionales para la UI
   materials_count?: number
   team_members?: number
   progress?: number
@@ -255,16 +250,10 @@ export default function ProjectDetailPage() {
         console.error("Error al cargar proyecto:", error)
 
         let errorMessage = "Error al cargar el proyecto"
-        if (
-          typeof error === "object" &&
-          error !== null &&
-          "response" in error &&
-          typeof (error as { response?: { status?: number } }).response === "object"
-        ) {
-          const response = (error as { response?: { status?: number } }).response
-          if (response?.status === 401) {
+        if (axios.isAxiosError(error)) {
+          if (error.response?.status === 401) {
             errorMessage = "No tienes permisos para ver este proyecto"
-          } else if (response?.status === 404) {
+          } else if (error.response?.status === 404) {
             errorMessage = "El proyecto no existe"
           }
         }
@@ -383,9 +372,9 @@ export default function ProjectDetailPage() {
       case "video":
         return <Movie sx={{ color: "#ff6b6b" }} />
       case "audio":
-        return <Visibility sx={{ color: "#4ecdc4" }} />
+        return <Folder sx={{ color: "#4ecdc4" }} />
       case "document":
-        return <Description sx={{ color: "#45b7d1" }} />
+        return <Folder sx={{ color: "#45b7d1" }} />
       default:
         return <Folder sx={{ color: "#96ceb4" }} />
     }
@@ -428,16 +417,10 @@ export default function ProjectDetailPage() {
       console.error("Error al eliminar proyecto:", error)
 
       let errorMessage = "Error al eliminar el proyecto"
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error &&
-        typeof (error as { response?: { status?: number } }).response === "object"
-      ) {
-        const response = (error as { response?: { status?: number } }).response
-        if (response?.status === 401) {
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
           errorMessage = "No tienes permisos para eliminar este proyecto"
-        } else if (response?.status === 404) {
+        } else if (error.response?.status === 404) {
           errorMessage = "El proyecto no existe"
         }
       }
@@ -499,9 +482,9 @@ export default function ProjectDetailPage() {
             borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
           }}
         >
-          <CardContent sx={{ p: 3 }}>
+          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
             {/* Navegación y acciones */}
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }} spacing={2}>
               <IconButton
                 variant="soft"
                 size="sm"
@@ -517,7 +500,14 @@ export default function ProjectDetailPage() {
                 <ArrowBackIos fontSize="small" sx={{ marginRight: -1 }} />
               </IconButton>
 
-              <Stack direction="row" spacing={1}>
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  flexWrap: "wrap",
+                  gap: 1,
+                }}
+              >
                 <IconButton variant="soft" size="sm" color="neutral" onClick={() => setIsFavorite(!isFavorite)}>
                   {isFavorite ? <Star sx={{ color: "#ffbc62" }} /> : <StarBorder />}
                 </IconButton>
@@ -548,24 +538,34 @@ export default function ProjectDetailPage() {
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Box
                       sx={{
-                        width: 64,
-                        height: 64,
+                        width: { xs: 56, sm: 64 },
+                        height: { xs: 56, sm: 64 },
                         borderRadius: "lg",
                         bgcolor: "rgba(255, 188, 98, 0.2)",
                         color: "#ffbc62",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: "2rem",
+                        fontSize: { xs: "1.75rem", sm: "2rem" },
                       }}
                     >
                       {getProjectTypeIcon(project.type)}
                     </Box>
-                    <Box>
-                      <Typography level="h2" sx={{ mb: 0.5, color: "#ffbc62" }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <Typography
+                        level="h2"
+                        sx={{
+                          mb: 0.5,
+                          color: "#ffbc62",
+                          fontSize: { xs: "1.5rem", sm: "2rem" },
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
                         {project.name}
                       </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
+                      <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap", gap: 1 }}>
                         <Chip
                           variant="soft"
                           color={getStatusColor(project.status)}
@@ -589,12 +589,28 @@ export default function ProjectDetailPage() {
                   </Box>
 
                   {project.description && (
-                    <Typography level="body-md" color="neutral">
+                    <Typography
+                      level="body-md"
+                      color="neutral"
+                      sx={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: { xs: 3, sm: 2 },
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                      }}
+                    >
                       {project.description}
                     </Typography>
                   )}
 
-                  <Stack direction="row" spacing={3} flexWrap="wrap">
+                  <Stack
+                    direction="row"
+                    spacing={3}
+                    sx={{
+                      flexWrap: "wrap",
+                      gap: { xs: 2, sm: 3 },
+                    }}
+                  >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
                       <Typography level="body-sm">{project.company.name}</Typography>
@@ -668,32 +684,40 @@ export default function ProjectDetailPage() {
               borderRadius: "lg",
               p: 0.5,
               mb: 3,
+              overflow: "auto",
+              "&::-webkit-scrollbar": {
+                display: "none",
+              },
             }}
           >
-            <Tab sx={{ flex: 1 }}>
+            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
               <Timeline sx={{ mr: 1 }} />
-              Actividad
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>Actividad</Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>Act.</Box>
             </Tab>
-            <Tab sx={{ flex: 1 }}>
+            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
               <Folder sx={{ mr: 1 }} />
-              Materiales
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>Materiales</Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>Mat.</Box>
               <Badge badgeContent={materials.length} color="primary" sx={{ ml: 1 }} />
             </Tab>
-            <Tab sx={{ flex: 1 }}>
+            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
               <People sx={{ mr: 1 }} />
-              Equipo
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>Equipo</Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>Eq.</Box>
               <Badge badgeContent={teamMembers.length} color="primary" sx={{ ml: 1 }} />
             </Tab>
-            <Tab sx={{ flex: 1 }}>
+            <Tab sx={{ flex: { xs: "0 0 auto", sm: 1 }, minWidth: "120px" }}>
               <Settings sx={{ mr: 1 }} />
-              Configuración
+              <Box sx={{ display: { xs: "none", sm: "block" } }}>Configuración</Box>
+              <Box sx={{ display: { xs: "block", sm: "none" } }}>Conf.</Box>
             </Tab>
           </TabList>
 
           {/* Panel de Actividad */}
           <TabPanel value={0} sx={{ p: 0 }}>
             <Card variant="outlined">
-              <CardContent>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography level="title-md" sx={{ mb: 2 }}>
                   Actividad reciente
                 </Typography>
@@ -724,7 +748,7 @@ export default function ProjectDetailPage() {
           {/* Panel de Materiales */}
           <TabPanel value={1} sx={{ p: 0 }}>
             <Card variant="outlined">
-              <CardContent>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                   <Typography level="title-md">Materiales del proyecto</Typography>
                   <Button
@@ -740,7 +764,8 @@ export default function ProjectDetailPage() {
                       },
                     }}
                   >
-                    Subir archivo
+                    <Box sx={{ display: { xs: "none", sm: "block" } }}>Subir archivo</Box>
+                    <Box sx={{ display: { xs: "block", sm: "none" } }}>Subir</Box>
                   </Button>
                 </Box>
                 <Stack spacing={2}>
@@ -760,8 +785,16 @@ export default function ProjectDetailPage() {
                       }}
                     >
                       {getFileTypeIcon(material.type)}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography level="body-sm" fontWeight="md">
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography
+                          level="body-sm"
+                          fontWeight="md"
+                          sx={{
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
                           {material.name}
                         </Typography>
                         <Typography level="body-xs" color="neutral">
@@ -785,7 +818,7 @@ export default function ProjectDetailPage() {
           {/* Panel de Equipo */}
           <TabPanel value={2} sx={{ p: 0 }}>
             <Card variant="outlined">
-              <CardContent>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
                   <Typography level="title-md">Miembros del equipo</Typography>
                   <Button
@@ -801,7 +834,8 @@ export default function ProjectDetailPage() {
                       },
                     }}
                   >
-                    Invitar miembro
+                    <Box sx={{ display: { xs: "none", sm: "block" } }}>Invitar miembro</Box>
+                    <Box sx={{ display: { xs: "block", sm: "none" } }}>Invitar</Box>
                   </Button>
                 </Box>
                 <Grid container spacing={2}>
@@ -852,7 +886,7 @@ export default function ProjectDetailPage() {
           {/* Panel de Configuración */}
           <TabPanel value={3} sx={{ p: 0 }}>
             <Card variant="outlined">
-              <CardContent>
+              <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                 <Typography level="title-md" sx={{ mb: 2 }}>
                   Configuración del proyecto
                 </Typography>
@@ -917,26 +951,13 @@ export default function ProjectDetailPage() {
       </Box>
 
       {/* Modal de confirmación para eliminar */}
-      <Modal open={deleteConfirmOpen} onClose={() => !deleting && setDeleteConfirmOpen(false)}>
-        <ModalDialog variant="outlined" role="alertdialog">
-          <ModalClose />
-          <Typography level="h4" sx={{ mb: 2 }}>
-            Confirmar eliminación
-          </Typography>
-          <Typography sx={{ mb: 3 }}>
-            ¿Estás seguro de que deseas eliminar el proyecto {project.name}? Esta acción no se puede deshacer y se
-            perderán todos los datos asociados.
-          </Typography>
-          <Box sx={{ display: "flex", gap: 1, justifyContent: "flex-end" }}>
-            <Button variant="plain" color="neutral" onClick={() => setDeleteConfirmOpen(false)} disabled={deleting}>
-              Cancelar
-            </Button>
-            <Button variant="solid" color="danger" onClick={handleDeleteProject} loading={deleting}>
-              Eliminar proyecto
-            </Button>
-          </Box>
-        </ModalDialog>
-      </Modal>
+      <DeleteProjectModal
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteProject}
+        projectName={project.name}
+        loading={deleting}
+      />
     </ColumnLayout>
   )
 }
