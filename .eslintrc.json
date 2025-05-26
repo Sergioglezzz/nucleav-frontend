@@ -1,0 +1,118 @@
+{
+  "extends": [
+    "next/core-web-vitals",
+    "plugin:storybook/recommended",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended",
+    "eslint-config-prettier"
+  ],
+  "rules": {
+    // off
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off",
+    // warn
+    "no-warning-comments": "warn",
+    // error
+    "max-len": [
+      "error",
+      {
+        "code": 80,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
+    "no-console": "error",
+    "no-alert": "error",
+    "no-self-compare": "error",
+    "no-unreachable-loop": "error",
+    "no-unused-private-class-members": "error",
+    "camelcase": "error",
+    "class-methods-use-this": "error",
+    "eqeqeq": "error",
+    "multiline-comment-style": "error",
+    "no-bitwise": "error",
+    "no-else-return": "error",
+    "no-floating-decimal": "error",
+    "no-eval": "error",
+    "no-implied-eval": "error",
+    "no-implicit-coercion": "error",
+    "no-invalid-this": "error",
+    "no-label-var": "error",
+    "no-mixed-operators": "error",
+    "no-new": "error",
+    "no-new-object": "error",
+    "no-new-wrappers": "error",
+    "no-octal-escape": "error",
+    "no-return-assign": "error",
+    "no-script-url": "error",
+    "no-shadow": "error",
+    "no-unneeded-ternary": "error",
+    "no-unused-expressions": "error",
+    "no-useless-concat": "error",
+    "no-useless-constructor": "error",
+    "no-useless-rename": "error",
+    "no-useless-return": "error",
+    "no-var": "error",
+    "operator-assignment": "error",
+    "prefer-const": "error",
+    "prefer-promise-reject-errors": "error",
+    "prefer-rest-params": "error",
+    "prefer-spread": "error",
+    "require-await": "error",
+    "spaced-comment": "error",
+    "yoda": "error",
+    "array-bracket-spacing": "error",
+    "block-spacing": "error",
+    "brace-style": "error",
+    "comma-dangle": ["error", "always-multiline"],
+    "comma-spacing": "error",
+    "comma-style": "error",
+    "computed-property-spacing": "error",
+    "eol-last": "error",
+    "no-multiple-empty-lines": [
+      "error",
+      {
+        "max": 2,
+        "maxBOF": 0
+      }
+    ],
+    "no-trailing-spaces": [
+      "error",
+      {
+        "skipBlankLines": true
+      }
+    ],
+    "func-call-spacing": "error",
+    "indent": ["error", 2],
+    "jsx-quotes": "error",
+    "key-spacing": "error",
+    "keyword-spacing": "error",
+    "lines-between-class-members": "error",
+    "no-multi-spaces": "error",
+    "no-whitespace-before-property": "error",
+    "nonblock-statement-body-position": "error",
+    "padded-blocks": ["error", "never"],
+    "quotes": [
+      "error",
+      "double",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "rest-spread-spacing": "error",
+    "semi-spacing": "error",
+    "semi-style": "error",
+    "space-before-blocks": "error",
+    "space-before-function-paren": [
+      "error",
+      { "anonymous": "always", "named": "never", "asyncArrow": "always" }
+    ],
+    "space-in-parens": "error",
+    "space-infix-ops": "error",
+    "switch-colon-spacing": "error",
+    "template-curly-spacing": "error"
+  }
+}
