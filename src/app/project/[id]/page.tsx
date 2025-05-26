@@ -38,7 +38,6 @@ import {
   Settings,
   Timeline,
   People,
-  MoreVert,
   Add,
   Star,
   StarBorder,
@@ -52,6 +51,7 @@ import axios from "axios"
 import ColumnLayout from "@/components/ColumnLayout"
 import DeleteProjectModal from "../components/DeleteProjectModal"
 import CustomTabs from "@/components/CustomTabs"
+import MaterialSelectModal from "../components/MaterialSelectModal"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -100,18 +100,18 @@ interface TeamMember {
   joined_at: string
 }
 
-interface Material {
-  id: number
-  name: string
-  type: string
-  size: number
-  uploaded_at: string
-  uploaded_by: {
-    name: string
-    lastname: string
-  }
-  url?: string
-}
+// interface Material {
+//   id: number
+//   name: string
+//   type: string
+//   size: number
+//   uploaded_at: string
+//   uploaded_by: {
+//     name: string
+//     lastname: string
+//   }
+//   url?: string
+// }
 
 interface Activity {
   id: number
@@ -125,6 +125,27 @@ interface Activity {
   created_at: string
 }
 
+interface ProjectMaterial {
+  id: number
+  material_id: number
+  project_id: number
+  quantity_assigned: number
+  material: {
+    id: number
+    name: string
+    description?: string
+    category?: string
+    location?: string
+    serial_number?: string
+    is_consumable: boolean
+    quantity: number
+  }
+  project: {
+    id: number
+    name: string
+  }
+}
+
 export default function ProjectDetailPage() {
   const router = useRouter()
   const params = useParams()
@@ -136,7 +157,6 @@ export default function ProjectDetailPage() {
   // Estados
   const [project, setProject] = useState<Project | null>(null)
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([])
-  const [materials, setMaterials] = useState<Material[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -144,6 +164,10 @@ export default function ProjectDetailPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
+  const [projectMaterials, setProjectMaterials] = useState<ProjectMaterial[]>([])
+  const [materialSelectOpen, setMaterialSelectOpen] = useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [loadingMaterials, setLoadingMaterials] = useState(false)
 
   // Cargar datos del proyecto
   useEffect(() => {
@@ -160,6 +184,54 @@ export default function ProjectDetailPage() {
 
         const projectData = response.data.data || response.data
         setProject(projectData)
+
+        // Cargar materiales del proyecto usando la tabla intermedia
+        const materialsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-materials`, {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        })
+
+        // Filtrar solo los materiales de este proyecto
+        const allProjectMaterials = materialsResponse.data.data || materialsResponse.data || []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const projectSpecificMaterials = allProjectMaterials.filter((pm: any) => pm.project_id === Number(projectId))
+
+        // Si algunos materiales no tienen datos relacionados, cargarlos
+        const materialsWithCompleteData = await Promise.all(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          projectSpecificMaterials.map(async (pm: any) => {
+            if (!pm.material) {
+              try {
+                const materialResponse = await axios.get(
+                  `${process.env.NEXT_PUBLIC_API_URL}/v1/materials/${pm.material_id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${session.accessToken}`,
+                    },
+                  },
+                )
+
+                const materialData = materialResponse.data.data || materialResponse.data
+
+                return {
+                  ...pm,
+                  material: materialData,
+                  project: {
+                    id: Number(projectId),
+                    name: projectData.name,
+                  },
+                }
+              } catch (materialError) {
+                console.error(`Error al cargar material ${pm.material_id}:`, materialError)
+                return pm // Devolver el original si falla
+              }
+            }
+            return pm
+          }),
+        )
+
+        setProjectMaterials(materialsWithCompleteData.filter((pm) => pm.material)) // Solo incluir los que tienen datos del material
 
         // Simular datos adicionales (en una implementación real vendrían de la API)
         setTeamMembers([
@@ -189,33 +261,6 @@ export default function ProjectDetailPage() {
             email: "maria@example.com",
             role: "Productor",
             joined_at: "2024-01-25",
-          },
-        ])
-
-        setMaterials([
-          {
-            id: 1,
-            name: "Guión_Final_v3.pdf",
-            type: "document",
-            size: 2048000,
-            uploaded_at: "2024-01-20",
-            uploaded_by: { name: "Ana", lastname: "García" },
-          },
-          {
-            id: 2,
-            name: "Escena_01_Take_1.mp4",
-            type: "video",
-            size: 524288000,
-            uploaded_at: "2024-01-22",
-            uploaded_by: { name: "Carlos", lastname: "López" },
-          },
-          {
-            id: 3,
-            name: "Soundtrack_Demo.mp3",
-            type: "audio",
-            size: 8192000,
-            uploaded_at: "2024-01-25",
-            uploaded_by: { name: "María", lastname: "Rodríguez" },
           },
         ])
 
@@ -263,6 +308,104 @@ export default function ProjectDetailPage() {
 
     fetchProjectData()
   }, [session?.accessToken, projectId, showNotification])
+
+  // Función para agregar material al proyecto
+  const handleAddMaterial = async (materialId: number, quantity: number) => {
+    if (!session?.accessToken) return
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/project-materials`,
+        {
+          project_id: Number(projectId),
+          material_id: materialId,
+          quantity_assigned: quantity,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+            "Content-Type": "application/json",
+          },
+        },
+      )
+
+      const newProjectMaterial = response.data.data || response.data
+
+      // Si la respuesta no incluye los datos del material, los obtenemos por separado
+      if (!newProjectMaterial.material) {
+        try {
+          const materialResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/materials/${materialId}`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          })
+
+          const materialData = materialResponse.data.data || materialResponse.data
+
+          // Construir el objeto completo
+          const completeProjectMaterial = {
+            ...newProjectMaterial,
+            material: materialData,
+            project: {
+              id: Number(projectId),
+              name: project?.name || "",
+            },
+          }
+
+          setProjectMaterials((prev) => [...prev, completeProjectMaterial])
+        } catch (materialError) {
+          console.error("Error al obtener datos del material:", materialError)
+          // Fallback: recargar todos los materiales del proyecto
+          const materialsResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-materials`, {
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          })
+
+          const allProjectMaterials = materialsResponse.data.data || materialsResponse.data || []
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const projectSpecificMaterials = allProjectMaterials.filter((pm: any) => pm.project_id === Number(projectId))
+          setProjectMaterials(projectSpecificMaterials)
+        }
+      } else {
+        // Si la respuesta incluye los datos del material, usarla directamente
+        setProjectMaterials((prev) => [...prev, newProjectMaterial])
+      }
+
+      showNotification("Material agregado al proyecto correctamente", "success")
+      setMaterialSelectOpen(false)
+    } catch (error: unknown) {
+      console.error("Error al agregar material:", error)
+      let errorMessage = "Error al agregar el material al proyecto"
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 400) {
+          errorMessage = "El material ya está asignado al proyecto"
+        } else if (error.response?.status === 404) {
+          errorMessage = "Material no encontrado"
+        }
+      }
+      showNotification(errorMessage, "error")
+    }
+  }
+
+  // Función para remover material del proyecto
+  const handleRemoveMaterial = async (projectMaterialId: number) => {
+    if (!session?.accessToken) return
+
+    try {
+      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/project-materials/${projectMaterialId}`, {
+        headers: {
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      })
+
+      setProjectMaterials((prev) => prev.filter((pm) => pm.id !== projectMaterialId))
+      showNotification("Material removido del proyecto", "success")
+    } catch (error: unknown) {
+      console.error("Error al remover material:", error)
+      showNotification("Error al remover el material del proyecto", "error")
+    }
+  }
 
   // Obtener icono según tipo de proyecto
   const getProjectTypeIcon = (type: ProjectType) => {
@@ -354,6 +497,7 @@ export default function ProjectDetailPage() {
   }
 
   // Formatear tamaño de archivo
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
@@ -363,6 +507,7 @@ export default function ProjectDetailPage() {
   }
 
   // Obtener icono según tipo de archivo
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getFileTypeIcon = (type: string) => {
     switch (type) {
       case "video":
@@ -474,7 +619,7 @@ export default function ProjectDetailPage() {
       label: "Materiales",
       shortLabel: "Mat.",
       icon: <Folder />,
-      badge: materials.length,
+      badge: projectMaterials.length,
     },
     {
       value: "2",
@@ -647,7 +792,7 @@ export default function ProjectDetailPage() {
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                       <Folder sx={{ color: "#ffbc62", fontSize: 18 }} />
-                      <Typography level="body-sm">{materials.length} materiales</Typography>
+                      <Typography level="body-sm">{projectMaterials.length} materiales</Typography>
                     </Box>
                   </Stack>
                 </Stack>
@@ -752,6 +897,7 @@ export default function ProjectDetailPage() {
                     variant="outlined"
                     size="sm"
                     startDecorator={<Add />}
+                    onClick={() => setMaterialSelectOpen(true)}
                     sx={{
                       color: "#ffbc62",
                       borderColor: "#ffbc62",
@@ -761,53 +907,130 @@ export default function ProjectDetailPage() {
                       },
                     }}
                   >
-                    <Box sx={{ display: { xs: "none", sm: "block" } }}>Subir archivo</Box>
-                    <Box sx={{ display: { xs: "block", sm: "none" } }}>Subir</Box>
+                    <Box sx={{ display: { xs: "none", sm: "block" } }}>Agregar material</Box>
+                    <Box sx={{ display: { xs: "block", sm: "none" } }}>Agregar</Box>
                   </Button>
                 </Box>
-                <Stack spacing={2}>
-                  {materials.map((material) => (
-                    <Sheet
-                      key={material.id}
+
+                {loadingMaterials ? (
+                  <Box sx={{ display: "flex", justifyContent: "center", py: 4 }}>
+                    <CircularProgress size="sm" />
+                  </Box>
+                ) : projectMaterials.length === 0 ? (
+                  <Sheet
+                    variant="soft"
+                    sx={{
+                      p: 4,
+                      borderRadius: "md",
+                      textAlign: "center",
+                      bgcolor: "background.level1",
+                    }}
+                  >
+                    <Folder sx={{ fontSize: 48, color: "text.tertiary", mb: 2 }} />
+                    <Typography level="title-md" sx={{ mb: 1 }}>
+                      No hay materiales asignados
+                    </Typography>
+                    <Typography level="body-sm" color="neutral" sx={{ mb: 3 }}>
+                      Agrega materiales a este proyecto para comenzar a trabajar
+                    </Typography>
+                    <Button
                       variant="outlined"
+                      startDecorator={<Add />}
+                      onClick={() => setMaterialSelectOpen(true)}
                       sx={{
-                        p: 2,
-                        borderRadius: "md",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 2,
+                        color: "#ffbc62",
+                        borderColor: "#ffbc62",
                         "&:hover": {
-                          bgcolor: "background.level1",
+                          borderColor: "#ff9b44",
+                          bgcolor: "rgba(255, 188, 98, 0.1)",
                         },
                       }}
                     >
-                      {getFileTypeIcon(material.type)}
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          level="body-sm"
-                          fontWeight="md"
+                      Agregar primer material
+                    </Button>
+                  </Sheet>
+                ) : (
+                  <Stack spacing={2}>
+                    {projectMaterials.map((projectMaterial) => (
+                      <Sheet
+                        key={projectMaterial.id}
+                        variant="outlined"
+                        sx={{
+                          p: 2,
+                          borderRadius: "md",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          "&:hover": {
+                            bgcolor: "background.level1",
+                          },
+                        }}
+                      >
+                        <Box
                           sx={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
+                            width: 48,
+                            height: 48,
+                            borderRadius: "md",
+                            bgcolor: "rgba(255, 188, 98, 0.2)",
+                            color: "#ffbc62",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                           }}
                         >
-                          {material.name}
-                        </Typography>
-                        <Typography level="body-xs" color="neutral">
-                          {formatFileSize(material.size)} • Subido por {material.uploaded_by.name}{" "}
-                          {material.uploaded_by.lastname} • {formatRelativeDate(material.uploaded_at)}
-                        </Typography>
-                      </Box>
-                      <IconButton variant="plain" size="sm">
-                        <Download />
-                      </IconButton>
-                      <IconButton variant="plain" size="sm">
-                        <MoreVert />
-                      </IconButton>
-                    </Sheet>
-                  ))}
-                </Stack>
+                          <Folder />
+                        </Box>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography
+                            level="body-sm"
+                            fontWeight="md"
+                            sx={{
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {projectMaterial.material.name}
+                          </Typography>
+                          <Typography level="body-xs" color="neutral">
+                            {projectMaterial.material.category && `${projectMaterial.material.category} • `}
+                            Cantidad asignada: {projectMaterial.quantity_assigned}
+                            {projectMaterial.material.location && ` • ${projectMaterial.material.location}`}
+                          </Typography>
+                          {projectMaterial.material.description && (
+                            <Typography
+                              level="body-xs"
+                              color="neutral"
+                              sx={{
+                                mt: 0.5,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {projectMaterial.material.description}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Chip
+                          variant="soft"
+                          size="sm"
+                          color={projectMaterial.material.is_consumable ? "warning" : "primary"}
+                        >
+                          {projectMaterial.material.is_consumable ? "Consumible" : "Reutilizable"}
+                        </Chip>
+                        <IconButton
+                          variant="plain"
+                          size="sm"
+                          color="danger"
+                          onClick={() => handleRemoveMaterial(projectMaterial.id)}
+                        >
+                          <Delete />
+                        </IconButton>
+                      </Sheet>
+                    ))}
+                  </Stack>
+                )}
               </CardContent>
             </Card>
           )}
@@ -946,6 +1169,14 @@ export default function ProjectDetailPage() {
           )}
         </Box>
       </Box>
+
+      {/* Modal para seleccionar materiales */}
+      <MaterialSelectModal
+        open={materialSelectOpen}
+        onClose={() => setMaterialSelectOpen(false)}
+        onAddMaterial={handleAddMaterial}
+        projectId={Number(projectId)}
+      />
 
       {/* Modal de confirmación para eliminar */}
       <DeleteProjectModal
