@@ -220,9 +220,6 @@ export default function MaterialPage() {
           </Typography>
         </Box>
 
-        {/* Tabs para alternar entre mis materiales y materiales de la empresa */}
-        <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
-
         {/* Barra de búsqueda y filtros */}
         <Sheet
           variant="outlined"
@@ -306,8 +303,25 @@ export default function MaterialPage() {
             >
               <FilterList />
             </IconButton>
+            <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
+              <Button
+                variant="solid"
+                startDecorator={<Add />}
+                onClick={handleCreateMaterial}
+                sx={{
+                  bgcolor: "#ffbc62",
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: "rgba(255, 188, 98, 0.8)",
+                  },
+                }}
+              >
+                Nuevo
+              </Button>
+            </Stack>
           </Stack>
         </Sheet>
+
 
         {/* Filtros adicionales (expandibles) */}
         {showFilters && (
@@ -371,22 +385,9 @@ export default function MaterialPage() {
           </Sheet>
         )}
 
-        <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
-          <Button
-            variant="solid"
-            startDecorator={<Add />}
-            onClick={handleCreateMaterial}
-            sx={{
-              bgcolor: "#ffbc62",
-              color: "white",
-              "&:hover": {
-                bgcolor: "rgba(255, 188, 98, 0.8)",
-              },
-            }}
-          >
-            Nuevo Material
-          </Button>
-        </Stack>
+
+
+        <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Grid de materiales */}
         {isLoading ? (

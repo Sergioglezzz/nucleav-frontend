@@ -3,7 +3,19 @@
 import { useState, useEffect } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { Box, Typography, Button, Grid, Input, IconButton, Sheet, CircularProgress, Alert, Divider, Stack } from "@mui/joy"
+import {
+  Box,
+  Typography,
+  Button,
+  Grid,
+  Input,
+  IconButton,
+  Sheet,
+  CircularProgress,
+  Alert,
+  Stack,
+  useColorScheme,
+} from "@mui/joy"
 import { Add, Search, FilterList, Business, SortByAlpha, Clear } from "@mui/icons-material"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useNotification } from "@/components/context/NotificationContext"
@@ -16,6 +28,7 @@ export default function CompaniesPage() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const { showNotification } = useNotification()
+  const { mode } = useColorScheme()
   const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -137,52 +150,99 @@ export default function CompaniesPage() {
             </Typography>
           </Box>
 
-          <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
-
-          {/* Barra de búsqueda */}
+          {/* Barra de búsqueda mejorada */}
           <Sheet
             variant="outlined"
             sx={{
-              display: "flex",
-              alignItems: "center",
-              p: 1,
-              borderRadius: "md",
+              p: 2,
               mb: 3,
-              gap: 1,
+              borderRadius: "lg",
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: "center",
+              gap: 2,
+              background:
+                mode === "dark"
+                  ? "linear-gradient(145deg, rgba(45,45,45,0.7) 0%, rgba(35,35,35,0.4) 100%)"
+                  : "linear-gradient(145deg, rgba(250,250,250,0.8) 0%, rgba(240,240,240,0.4) 100%)",
+              backdropFilter: "blur(10px)",
+              border: "1px solid",
+              borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
             }}
           >
-            <Search sx={{ color: "text.tertiary" }} />
             <Input
-              variant="plain"
               placeholder="Buscar empresas..."
+              startDecorator={<Search />}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              endDecorator={
+                searchTerm && (
+                  <IconButton variant="plain" color="neutral" onClick={() => setSearchTerm("")} size="sm">
+                    <Clear />
+                  </IconButton>
+                )
+              }
               sx={{
-                flex: 1,
-                border: "none",
-                "&::before": {
-                  display: "none",
+                width: "100%",
+                flexGrow: 1,
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
                 },
               }}
             />
-            {searchTerm && (
+
+            <Stack direction="row" spacing={1} alignItems="center">
               <IconButton
-                variant="plain"
+                variant="outlined"
                 color="neutral"
-                onClick={() => setSearchTerm("")}
-                sx={{ borderRadius: "50%" }}
+                size="sm"
+                sx={{
+                  "&:hover": {
+                    borderColor: "#ffbc62",
+                    color: "#ffbc62",
+                  },
+                }}
               >
-                <Clear />
+                <FilterList />
               </IconButton>
-            )}
-            <Divider orientation="vertical" />
-            <IconButton variant="plain" color="neutral" sx={{ borderRadius: "50%" }}>
-              <FilterList />
-            </IconButton>
-            <IconButton variant="plain" color="neutral" sx={{ borderRadius: "50%" }}>
-              <SortByAlpha />
-            </IconButton>
+
+              <IconButton
+                variant="outlined"
+                color="neutral"
+                size="sm"
+                sx={{
+                  "&:hover": {
+                    borderColor: "#ffbc62",
+                    color: "#ffbc62",
+                  },
+                }}
+              >
+                <SortByAlpha />
+              </IconButton>
+
+              <Button
+                variant="solid"
+                startDecorator={<Add />}
+                onClick={handleCreateCompany}
+                sx={{
+                  bgcolor: "#ffbc62",
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: "rgba(255, 188, 98, 0.8)",
+                  },
+                }}
+              >
+                Nuevo
+              </Button>
+            </Stack>
           </Sheet>
+
+          <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
           {/* Lista de empresas */}
           {loading ? (
@@ -231,36 +291,18 @@ export default function CompaniesPage() {
               </Button>
             </Box>
           ) : (
-            <>
-              <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
-                <Button
-                  variant="solid"
-                  startDecorator={<Add />}
-                  onClick={handleCreateCompany}
-                  sx={{
-                    bgcolor: "#ffbc62",
-                    color: "white",
-                    "&:hover": {
-                      bgcolor: "rgba(255, 188, 98, 0.8)",
-                    },
-                  }}
-                >
-                  Nueva Empresa
-                </Button>
-              </Stack>
-              <Grid container spacing={3}>
-                {filteredCompanies.map((company) => (
-                  <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
-                    <CompanyCard
-                      company={company}
-                      onSelect={handleSelectCompany}
-                      onEdit={() => handleEditCompany(company)}
-                      onDelete={handleDeleteCompany}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            </>
+            <Grid container spacing={3}>
+              {filteredCompanies.map((company) => (
+                <Grid key={company.cif} xs={12} sm={6} md={4} sx={{ display: "flex" }}>
+                  <CompanyCard
+                    company={company}
+                    onSelect={handleSelectCompany}
+                    onEdit={() => handleEditCompany(company)}
+                    onDelete={handleDeleteCompany}
+                  />
+                </Grid>
+              ))}
+            </Grid>
           )}
         </>
       )}

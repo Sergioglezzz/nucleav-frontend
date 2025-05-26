@@ -13,9 +13,6 @@ import {
   IconButton,
   Input,
   Chip,
-  Tabs,
-  TabList,
-  Tab,
   Sheet,
   Divider,
   Stack,
@@ -23,7 +20,6 @@ import {
   CircularProgress,
   Select,
   Option,
-  Badge,
 } from "@mui/joy"
 import {
   Search,
@@ -44,6 +40,7 @@ import Image from "next/image"
 import ColumnLayout from "@/components/ColumnLayout"
 import { useColorScheme } from "@mui/joy/styles"
 import { useNotification } from "@/components/context/NotificationContext"
+import CustomTabs from "@/components/CustomTabs"
 
 // Tipos para usuarios y empresas
 interface User {
@@ -355,11 +352,17 @@ export default function NetworkPage() {
     return "username" in profile
   }
 
+  const tabOptions = [
+    { value: "discover", label: "Descubrir" },
+    { value: "connections", label: "Mis Conexiones" },
+    { value: "pending", label: "Pendientes" },
+  ]
+
   return (
     <>
       <ColumnLayout>
         <Box sx={{ mb: 4 }}>
-          <Typography level="h1" sx={{ mb: 1 }}>
+          <Typography level="h1" sx={{ mb: 1, color: "#ffbc62" }}>
             Tu Red Profesional
           </Typography>
           <Typography level="body-lg" color="neutral">
@@ -392,7 +395,18 @@ export default function NetworkPage() {
             startDecorator={<Search />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ flexGrow: 1 }}
+            sx={{
+              width: "100%",
+              flexGrow: 1,
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }}
           />
 
           <Stack direction="row" spacing={1} alignItems="center">
@@ -424,24 +438,11 @@ export default function NetworkPage() {
         </Sheet>
 
         {/* Tabs para navegar entre secciones */}
-        <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value as string)} sx={{ mb: 3 }}>
-          <TabList>
-            <Tab value="discover">Descubrir</Tab>
-            <Tab value="connections">
-              <Badge
-                badgeContent={users.filter((u) => u.isConnected).length + companies.filter((c) => c.isFollowing).length}
-                color="primary"
-              >
-                Mis Conexiones
-              </Badge>
-            </Tab>
-            <Tab value="pending">
-              <Badge badgeContent={users.filter((u) => u.isPending).length} color="warning">
-                Pendientes
-              </Badge>
-            </Tab>
-          </TabList>
-        </Tabs>
+        <CustomTabs
+          options={tabOptions}
+          defaultValue={activeTab}
+          onChange={(value) => setActiveTab(value)}
+        />
 
         {/* Contenido principal */}
         {loading ? (

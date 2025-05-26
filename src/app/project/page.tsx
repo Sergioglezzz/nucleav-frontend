@@ -105,7 +105,8 @@ export default function ProjectsPage() {
   // Estados
   const [projects, setProjects] = useState<Project[]>([])
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([])
-  const [, setCompanies] = useState<Company[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [companies, setCompanies] = useState<Company[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<string>("all")
   const [searchQuery, setSearchQuery] = useState("")
@@ -328,23 +329,15 @@ export default function ProjectsPage() {
 
       setDeleteConfirmOpen(false)
       setProjectToDelete(null)
-    } catch (error: unknown) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
       console.error("Error al eliminar proyecto:", error)
 
       let errorMessage = "Error al eliminar el proyecto"
-      if (
-        typeof error === "object" &&
-        error !== null &&
-        "response" in error &&
-        typeof (error as { response?: { status?: number } }).response === "object" &&
-        (error as { response?: { status?: number } }).response !== null &&
-        "status" in (error as { response?: { status?: number } }).response!
-      ) {
-        if ((error as { response: { status: number } }).response.status === 401) {
-          errorMessage = "No tienes permisos para eliminar este proyecto"
-        } else if ((error as { response: { status: number } }).response.status === 404) {
-          errorMessage = "El proyecto no existe"
-        }
+      if (error.response?.status === 401) {
+        errorMessage = "No tienes permisos para eliminar este proyecto"
+      } else if (error.response?.status === 404) {
+        errorMessage = "El proyecto no existe"
       }
 
       showNotification(errorMessage, "error")
@@ -364,9 +357,6 @@ export default function ProjectsPage() {
             Gestiona todos los proyectos audiovisuales de tu empresa
           </Typography>
         </Box>
-
-        {/* Tabs para filtrar proyectos */}
-        <CustomTabs options={projectTabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Barra de búsqueda y filtros */}
         <Sheet
@@ -393,7 +383,18 @@ export default function ProjectsPage() {
             startDecorator={<Search />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{ width: "100%" }}
+            sx={{
+              width: "100%",
+              flexGrow: 1,
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }}
           />
 
           {/* Filtros - se adaptan según el tamaño de pantalla */}
@@ -477,26 +478,47 @@ export default function ProjectsPage() {
             >
               <Refresh />
             </IconButton>
+
+            {/* Botón Nuevo Proyecto - responsive */}
+            <Button
+              variant="solid"
+              startDecorator={<Add />}
+              onClick={handleCreateProject}
+              size="sm"
+              sx={{
+                bgcolor: "#ffbc62",
+                color: "white",
+                fontWeight: "600",
+                flex: { xs: "1", sm: "0 0 auto" },
+                minWidth: { xs: "auto", sm: "140px" },
+                minHeight: { xs: "40px", sm: "auto" },
+                fontSize: { xs: "0.875rem", sm: "0.875rem" },
+                "&:hover": {
+                  bgcolor: "#ff9b44",
+                },
+              }}
+            >
+              <Box
+                component="span"
+                sx={{
+                  display: { xs: "none", sm: "inline" },
+                }}
+              >
+                Nuevo
+              </Box>
+              <Box
+                component="span"
+                sx={{
+                  display: { xs: "inline", sm: "none" },
+                }}
+              >
+                Nuevo
+              </Box>
+            </Button>
           </Box>
         </Sheet>
 
-        {/* Botón para crear nuevo proyecto */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 3 }}>
-          <Button
-            variant="solid"
-            color="primary"
-            startDecorator={<Add />}
-            onClick={handleCreateProject}
-            sx={{
-              bgcolor: "#ffbc62",
-              "&:hover": {
-                bgcolor: "#ff9b44",
-              },
-            }}
-          >
-            Nuevo Proyecto
-          </Button>
-        </Box>
+        <CustomTabs options={projectTabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Lista de proyectos */}
         {loading ? (
