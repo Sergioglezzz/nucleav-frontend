@@ -59,8 +59,6 @@ export default function MaterialPage() {
   const [error, setError] = useState<string | null>(null)
   const [materials, setMaterials] = useState<Material[]>([])
   const [showFilters, setShowFilters] = useState(false)
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(true)
   const router = useRouter()
 
   // Función para cargar materiales desde la API
@@ -117,9 +115,6 @@ export default function MaterialPage() {
         setMaterials(formattedMaterials)
       }
 
-      // Determinar si hay más páginas
-      setHasMore(formattedMaterials.length > 0)
-      setPage(pageNum)
     } catch (err) {
       console.error("Error al cargar materiales:", err)
       setError("No se pudieron cargar los materiales. Por favor, intenta de nuevo más tarde.")
@@ -135,13 +130,6 @@ export default function MaterialPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session, selectedType, sortBy, activeTab])
-
-  // Función para cargar más materiales
-  const handleLoadMore = () => {
-    if (!isLoading && hasMore) {
-      fetchMaterials(page + 1, true)
-    }
-  }
 
   // Función para filtrar materiales localmente (para búsqueda en tiempo real)
   const filteredMaterials = materials.filter((material) => {
@@ -385,8 +373,6 @@ export default function MaterialPage() {
           </Sheet>
         )}
 
-
-
         <CustomTabs options={tabOptions} defaultValue={activeTab} onChange={(value) => setActiveTab(value)} />
 
         {/* Grid de materiales */}
@@ -470,34 +456,6 @@ export default function MaterialPage() {
               </Grid>
             ))}
           </Grid>
-        )}
-
-        {/* Botón para cargar más (en lugar de paginación) */}
-        {!isLoading && sortedMaterials.length > 0 && (
-          <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-            <Button
-              variant="outlined"
-              color="neutral"
-              startDecorator={<FilterList />}
-              onClick={handleLoadMore}
-              disabled={!hasMore || isLoading}
-              sx={{
-                color: "#ffbc62",
-                borderColor: "#ffbc62",
-                "&:hover": {
-                  borderColor: "#ff9b44",
-                  bgcolor: "rgba(255, 188, 98, 0.1)",
-                },
-                "&:disabled": {
-                  opacity: 0.5,
-                  color: "text.disabled",
-                  borderColor: "divider",
-                },
-              }}
-            >
-              {isLoading ? "Cargando..." : hasMore ? "Cargar más materiales" : "No hay más materiales"}
-            </Button>
-          </Box>
         )}
 
         {/* Mostrar mensaje de error si existe */}
