@@ -26,6 +26,7 @@ import { signIn } from "next-auth/react"
 import { Email, Lock, Visibility, VisibilityOff } from "@mui/icons-material"
 import ClientOnly from "@/components/ClientOnly"
 import { useNotification } from "@/components/context/NotificationContext"
+import ForgotPasswordModal from "@/components/ForgotPasswordModal"
 
 
 export default function LoginPage() {
@@ -40,6 +41,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
   const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [forgotOpen, setForgotOpen] = useState(false)
 
   const { showNotification } = useNotification()
 
@@ -141,312 +143,316 @@ export default function LoginPage() {
   }
 
   return (
-    <Stack
-      sx={{
-        minHeight: "100vh",
-        px: 2,
-        py: 2,
-        bgcolor: "background.body",
-        color: "text.primary",
-        transition: "background 0.3s ease",
-      }}
-      direction="column"
-    >
-      {/* Botón de cambiar tema arriba a la derecha */}
-      <Stack direction="row" justifyContent="flex-end">
-        <Box>
-          <ClientOnly>
-            <ThemeToggleButton />
-          </ClientOnly>
-        </Box>
-      </Stack>
-
-      {/* Texto principal */}
-      <Typography
-        level="h1"
-        textAlign="center"
-        fontWeight="lg"
+    <>
+      <Stack
         sx={{
-          mt: { xs: 4, md: 4 },
-          mb: { xs: 1, md: 2 },
-          fontSize: { xs: "2xl", md: "3xl" },
-          background:
-            mode === "dark"
-              ? "linear-gradient(90deg, #ffbc62 0%, #ff9b44 100%)"
-              : "linear-gradient(90deg, #ffbc62 0%, #ff9b44 100%)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
+          minHeight: "100vh",
+          px: 2,
+          py: 2,
+          bgcolor: "background.body",
+          color: "text.primary",
+          transition: "background 0.3s ease",
         }}
+        direction="column"
       >
-        ¡Listos para trabajar juntos!
-      </Typography>
-
-      {/* Contenido principal: Card + Imagen */}
-      <Stack direction={{ xs: "column", md: "row" }} alignItems="center" justifyContent="center" mt={4} gap={4}>
-        {/* Login Card */}
-        <Card
-          sx={{
-            p: 4,
-            flexBasis: { xs: "100%", md: "400px" },
-            flexShrink: 0,
-            flexGrow: 0,
-            width: "100%",
-            maxWidth: "400px",
-            position: "relative",
-            boxShadow: "lg",
-            borderRadius: "xl",
-            overflow: "visible",
-          }}
-        >
-          {/* Botón de retroceso - ahora a la izquierda */}
-          <IconButton
-            variant="soft"
-            size="sm"
-            onClick={() => router.push("/")}
-            sx={{
-              position: "absolute",
-              top: 8,
-              left: 8,
-              padding: "6px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: "50%",
-              transition: "transform 0.2s",
-              "&:hover": {
-                transform: "scale(1.1)",
-              },
-            }}
-          >
-            <ArrowBackIosIcon fontSize="small" sx={{ marginRight: -1 }} />
-          </IconButton>
-
-          {/* Logo centrado */}
-          <Stack direction="row" justifyContent="center" sx={{ my: 1 }}>
-            <Image
-              src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
-              alt="NucleAV Logo"
-              width={160}
-              height={50}
-              priority
-              style={{
-                filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
-                transition: "transform 0.3s ease",
-              }}
-              className="logo-hover"
-            />
-          </Stack>
-
-          <Typography level="title-md" textAlign="center" sx={{ mb: 3, color: "text.secondary" }}>
-            Accede a tu cuenta
-          </Typography>
-
-          {/* Formulario */}
-          <Box
-            component="form"
-            noValidate
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
-            {/* Campo de Email */}
-            <Box>
-              <Input
-                type="email"
-                name="email"
-                placeholder="Email"
-                required
-                variant="outlined"
-                value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value)
-                  if (emailError) validateEmail(e.target.value)
-                }}
-                onBlur={() => validateEmail(email)}
-                error={!!emailError}
-                startDecorator={<Email />}
-                sx={{
-                  "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-                  "&:hover": {
-                    borderColor: "primary.solidBg",
-                  },
-                  "&:focus-within": {
-                    borderColor: "primary.solidBg",
-                    boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
-                  },
-                }}
-              />
-              {emailError && (
-                <Typography level="body-xs" color="danger" sx={{ mt: 0.5, ml: 1 }}>
-                  {emailError}
-                </Typography>
-              )}
-            </Box>
-
-            {/* Campo de Contraseña con botón de mostrar/ocultar */}
-            <Box>
-              <Input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                placeholder="Contraseña"
-                required
-                variant="outlined"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value)
-                  if (passwordError) validatePassword(e.target.value)
-                }}
-                onBlur={() => validatePassword(password)}
-                error={!!passwordError}
-                startDecorator={<Lock />}
-                endDecorator={
-                  <IconButton
-                    variant="plain"
-                    color="neutral"
-                    onClick={togglePasswordVisibility}
-                    sx={{ color: "text.tertiary" }}
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                }
-                sx={{
-                  "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-                  "&:hover": {
-                    borderColor: "primary.solidBg",
-                  },
-                  "&:focus-within": {
-                    borderColor: "primary.solidBg",
-                    boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
-                  },
-                }}
-              />
-              {passwordError && (
-                <Typography level="body-xs" color="danger" sx={{ mt: 0.5, ml: 1 }}>
-                  {passwordError}
-                </Typography>
-              )}
-            </Box>
-
-            {/* Botón de Iniciar Sesión con indicador de carga */}
-            <Button
-              type="submit"
-              fullWidth
-              variant="solid"
-              color="primary"
-              disabled={loading}
-              sx={{
-                mt: 1,
-                bgcolor: "#ffbc62",
-                "&:hover": {
-                  bgcolor: "#ff9b44",
-                },
-                height: 40,
-                borderRadius: "md",
-                fontWeight: "bold",
-                boxShadow: "md",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                "&:hover:not(:active)": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "lg",
-                },
-                position: "relative",
-              }}
-            >
-              {loading ? (
-                <>
-                  <span style={{ visibility: "hidden" }}>Iniciar Sesión</span>
-                  <CircularProgress
-                    size="sm"
-                    color="primary"
-                    sx={{
-                      position: "absolute",
-                      top: "50%",
-                      left: "50%",
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  />
-                </>
-              ) : (
-                "Iniciar Sesión"
-              )}
-            </Button>
+        {/* Botón de cambiar tema arriba a la derecha */}
+        <Stack direction="row" justifyContent="flex-end">
+          <Box>
+            <ClientOnly>
+              <ThemeToggleButton />
+            </ClientOnly>
           </Box>
+        </Stack>
 
-          <Divider sx={{ my: 2 }}>o</Divider>
-
-          {/* Links */}
-          <Typography level="body-sm" textAlign="center">
-            ¿No tienes cuenta?{" "}
-            <Link
-              color="primary"
-              fontWeight="lg"
-              onClick={() => router.push("/register")}
-              sx={{
-                color: "#ffbc62",
-                transition: "color 0.2s",
-                "&:hover": {
-                  color: "#ff9b44",
-                  textDecoration: "none",
-                },
-              }}
-            >
-              Regístrate
-            </Link>
-          </Typography>
-
-          <Typography level="body-xs" mt={1} textAlign="center">
-            <Link
-              color="primary"
-              underline="hover"
-              onClick={() => router.push("/forgot-password")}
-              sx={{
-                color: "#ffbc62",
-                transition: "color 0.2s",
-                "&:hover": {
-                  color: "#ff9b44",
-                  bgcolor: "transparent",
-                  textDecoration: "underline",
-                },
-              }}
-            >
-              ¿Olvidaste tu contraseña?
-            </Link>
-          </Typography>
-        </Card>
-
-        {/* Imagen a la derecha */}
-        <Box
+        {/* Texto principal */}
+        <Typography
+          level="h1"
+          textAlign="center"
+          fontWeight="lg"
           sx={{
-            flex: 1,
-            width: "100%",
-            maxWidth: 500,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
+            mt: { xs: 4, md: 4 },
+            mb: { xs: 1, md: 2 },
+            fontSize: { xs: "2xl", md: "3xl" },
+            background:
+              mode === "dark"
+                ? "linear-gradient(90deg, #ffbc62 0%, #ff9b44 100%)"
+                : "linear-gradient(90deg, #ffbc62 0%, #ff9b44 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
           }}
         >
-          <motion.div
-            animate={{ rotate: [0, 3, -3, 0] }}
-            transition={{
-              repeat: Number.POSITIVE_INFINITY,
-              duration: 4,
-              ease: "easeInOut",
+          ¡Listos para trabajar juntos!
+        </Typography>
+
+        {/* Contenido principal: Card + Imagen */}
+        <Stack direction={{ xs: "column", md: "row" }} alignItems="center" justifyContent="center" mt={4} gap={4}>
+          {/* Login Card */}
+          <Card
+            sx={{
+              p: 4,
+              flexBasis: { xs: "100%", md: "400px" },
+              flexShrink: 0,
+              flexGrow: 0,
+              width: "100%",
+              maxWidth: "400px",
+              position: "relative",
+              boxShadow: "lg",
+              borderRadius: "xl",
+              overflow: "visible",
             }}
-            style={{ width: "100%", height: "auto" }}
           >
-            <Image
-              src={heroImage || "/placeholder.svg"}
-              alt="Ilustración de bienvenida"
-              style={{
-                width: "100%",
-                height: "auto",
-                objectFit: "contain",
-                filter: "drop-shadow(0px 10px 15px rgba(0,0,0,0.15))",
+            {/* Botón de retroceso - ahora a la izquierda */}
+            <IconButton
+              variant="soft"
+              size="sm"
+              onClick={() => router.push("/")}
+              sx={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                padding: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "50%",
+                transition: "transform 0.2s",
+                "&:hover": {
+                  transform: "scale(1.1)",
+                },
               }}
-              priority
-            />
-          </motion.div>
-        </Box>
+            >
+              <ArrowBackIosIcon fontSize="small" sx={{ marginRight: -1 }} />
+            </IconButton>
+
+            {/* Logo centrado */}
+            <Stack direction="row" justifyContent="center" sx={{ my: 1 }}>
+              <Image
+                src={mode === "light" ? "/Logo-nucleav-light.png" : "/Logo-nucleav-dark.png"}
+                alt="NucleAV Logo"
+                width={160}
+                height={50}
+                priority
+                style={{
+                  filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
+                  transition: "transform 0.3s ease",
+                }}
+                className="logo-hover"
+              />
+            </Stack>
+
+            <Typography level="title-md" textAlign="center" sx={{ mb: 3, color: "text.secondary" }}>
+              Accede a tu cuenta
+            </Typography>
+
+            {/* Formulario */}
+            <Box
+              component="form"
+              noValidate
+              onSubmit={handleSubmit}
+              sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+            >
+              {/* Campo de Email */}
+              <Box>
+                <Input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  required
+                  variant="outlined"
+                  value={email}
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    if (emailError) validateEmail(e.target.value)
+                  }}
+                  onBlur={() => validateEmail(email)}
+                  error={!!emailError}
+                  startDecorator={<Email />}
+                  sx={{
+                    "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                    "&:hover": {
+                      borderColor: "primary.solidBg",
+                    },
+                    "&:focus-within": {
+                      borderColor: "primary.solidBg",
+                      boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                    },
+                  }}
+                />
+                {emailError && (
+                  <Typography level="body-xs" color="danger" sx={{ mt: 0.5, ml: 1 }}>
+                    {emailError}
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Campo de Contraseña con botón de mostrar/ocultar */}
+              <Box>
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder="Contraseña"
+                  required
+                  variant="outlined"
+                  value={password}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    if (passwordError) validatePassword(e.target.value)
+                  }}
+                  onBlur={() => validatePassword(password)}
+                  error={!!passwordError}
+                  startDecorator={<Lock />}
+                  endDecorator={
+                    <IconButton
+                      variant="plain"
+                      color="neutral"
+                      onClick={togglePasswordVisibility}
+                      sx={{ color: "text.tertiary" }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  }
+                  sx={{
+                    "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                    "&:hover": {
+                      borderColor: "primary.solidBg",
+                    },
+                    "&:focus-within": {
+                      borderColor: "primary.solidBg",
+                      boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                    },
+                  }}
+                />
+                {passwordError && (
+                  <Typography level="body-xs" color="danger" sx={{ mt: 0.5, ml: 1 }}>
+                    {passwordError}
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Botón de Iniciar Sesión con indicador de carga */}
+              <Button
+                type="submit"
+                fullWidth
+                variant="solid"
+                color="primary"
+                disabled={loading}
+                sx={{
+                  mt: 1,
+                  bgcolor: "#ffbc62",
+                  "&:hover": {
+                    bgcolor: "#ff9b44",
+                  },
+                  height: 40,
+                  borderRadius: "md",
+                  fontWeight: "bold",
+                  boxShadow: "md",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  "&:hover:not(:active)": {
+                    transform: "translateY(-2px)",
+                    boxShadow: "lg",
+                  },
+                  position: "relative",
+                }}
+              >
+                {loading ? (
+                  <>
+                    <span style={{ visibility: "hidden" }}>Iniciar Sesión</span>
+                    <CircularProgress
+                      size="sm"
+                      color="primary"
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    />
+                  </>
+                ) : (
+                  "Iniciar Sesión"
+                )}
+              </Button>
+            </Box>
+
+            <Divider sx={{ my: 2 }}>o</Divider>
+
+            {/* Links */}
+            <Typography level="body-sm" textAlign="center">
+              ¿No tienes cuenta?{" "}
+              <Link
+                color="primary"
+                fontWeight="lg"
+                onClick={() => router.push("/register")}
+                sx={{
+                  color: "#ffbc62",
+                  transition: "color 0.2s",
+                  "&:hover": {
+                    color: "#ff9b44",
+                    textDecoration: "none",
+                  },
+                }}
+              >
+                Regístrate
+              </Link>
+            </Typography>
+
+            <Typography level="body-xs" mt={1} textAlign="center">
+              <Link
+                color="primary"
+                underline="hover"
+                onClick={() => setForgotOpen(true)}
+                sx={{
+                  color: "#ffbc62",
+                  transition: "color 0.2s",
+                  "&:hover": {
+                    color: "#ff9b44",
+                    bgcolor: "transparent",
+                    textDecoration: "underline",
+                  },
+                }}
+              >
+                ¿Olvidaste tu contraseña?
+              </Link>
+            </Typography>
+          </Card>
+
+          {/* Imagen a la derecha */}
+          <Box
+            sx={{
+              flex: 1,
+              width: "100%",
+              maxWidth: 500,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <motion.div
+              animate={{ rotate: [0, 3, -3, 0] }}
+              transition={{
+                repeat: Number.POSITIVE_INFINITY,
+                duration: 4,
+                ease: "easeInOut",
+              }}
+              style={{ width: "100%", height: "auto" }}
+            >
+              <Image
+                src={heroImage || "/placeholder.svg"}
+                alt="Ilustración de bienvenida"
+                style={{
+                  width: "100%",
+                  height: "auto",
+                  objectFit: "contain",
+                  filter: "drop-shadow(0px 10px 15px rgba(0,0,0,0.15))",
+                }}
+                priority
+              />
+            </motion.div>
+          </Box>
+        </Stack>
       </Stack>
-    </Stack>
+
+      <ForgotPasswordModal open={forgotOpen} onClose={() => setForgotOpen(false)} />
+    </>
   )
 }
