@@ -180,11 +180,12 @@ export default function ProjectDetailPage() {
   const [teamMemberSelectOpen, setTeamMemberSelectOpen] = useState(false)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
 
   // Cargar datos del proyecto
   useEffect(() => {
     const fetchProjectData = async () => {
-      if (!session?.accessToken) return
+      if (!session?.accessToken || redirecting) return
 
       setLoading(true)
       try {
@@ -325,6 +326,7 @@ export default function ProjectDetailPage() {
     }
 
     fetchProjectData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.accessToken, projectId, showNotification])
 
   // Agregar función para notificar cambios al componente padre
@@ -665,6 +667,16 @@ export default function ProjectDetailPage() {
     }
   }
 
+  if (redirecting) {
+    return (
+      <ColumnLayout>
+        <Box sx={{ py: 10, textAlign: "center" }}>
+          <CircularProgress size="lg" />
+        </Box>
+      </ColumnLayout>
+    )
+  }
+
   // Eliminar proyecto
   const handleDeleteProject = async () => {
     if (!session?.accessToken) return
@@ -678,7 +690,9 @@ export default function ProjectDetailPage() {
       })
 
       showNotification("Proyecto eliminado correctamente", "success")
+      setRedirecting(true)
       router.push("/project")
+      return
     } catch (error: unknown) {
       console.error("Error al eliminar proyecto:", error)
 
@@ -692,6 +706,9 @@ export default function ProjectDetailPage() {
       }
 
       showNotification(errorMessage, "error")
+      setRedirecting(true)
+      router.push("/project")
+      return
     } finally {
       setDeleting(false)
       setDeleteConfirmOpen(false)
