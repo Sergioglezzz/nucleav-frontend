@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import {
@@ -17,6 +18,10 @@ import {
   CircularProgress,
   Alert,
   Sheet,
+  Dropdown,
+  Menu,
+  MenuButton,
+  MenuItem,
 } from "@mui/joy"
 import {
   ArrowBackIos,
@@ -43,6 +48,7 @@ import {
   Star,
   StarBorder,
   PersonRemove,
+  MoreVert,
 } from "@mui/icons-material"
 import { useRouter, useParams } from "next/navigation"
 import { useSession } from "next-auth/react"
@@ -108,7 +114,6 @@ interface ProjectUser {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Material {
   id: number
   name: string
@@ -175,17 +180,14 @@ export default function ProjectDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false)
   const [projectMaterials, setProjectMaterials] = useState<ProjectMaterial[]>([])
   const [materialSelectOpen, setMaterialSelectOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingMaterials, setLoadingMaterials] = useState(false)
   const [teamMemberSelectOpen, setTeamMemberSelectOpen] = useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [loadingTeamMembers, setLoadingTeamMembers] = useState(false)
-  const [redirecting, setRedirecting] = useState(false)
 
   // Cargar datos del proyecto
   useEffect(() => {
     const fetchProjectData = async () => {
-      if (!session?.accessToken || redirecting) return
+      if (!session?.accessToken) return
 
       setLoading(true)
       try {
@@ -326,7 +328,6 @@ export default function ProjectDetailPage() {
     }
 
     fetchProjectData()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.accessToken, projectId, showNotification])
 
   // Agregar función para notificar cambios al componente padre
@@ -624,7 +625,6 @@ export default function ProjectDetailPage() {
   }
 
   // Formatear tamaño de archivo
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
@@ -634,7 +634,6 @@ export default function ProjectDetailPage() {
   }
 
   // Obtener icono según tipo de archivo
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const getFileTypeIcon = (type: string) => {
     switch (type) {
       case "video":
@@ -667,22 +666,13 @@ export default function ProjectDetailPage() {
     }
   }
 
-  if (redirecting) {
-    return (
-      <ColumnLayout>
-        <Box sx={{ py: 10, textAlign: "center" }}>
-          <CircularProgress size="lg" />
-        </Box>
-      </ColumnLayout>
-    )
-  }
-
-  // Eliminar proyecto
+  // Eliminar proyecto con mejor manejo de errores
   const handleDeleteProject = async () => {
     if (!session?.accessToken) return
 
     setDeleting(true)
     try {
+      // Intentar eliminar el proyecto
       await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/v1/projects/${projectId}`, {
         headers: {
           Authorization: `Bearer ${session.accessToken}`,
@@ -690,25 +680,54 @@ export default function ProjectDetailPage() {
       })
 
       showNotification("Proyecto eliminado correctamente", "success")
-      setRedirecting(true)
       router.push("/project")
-      return
     } catch (error: unknown) {
       console.error("Error al eliminar proyecto:", error)
 
       let errorMessage = "Error al eliminar el proyecto"
+
       if (axios.isAxiosError(error)) {
-        if (error.response?.status === 401) {
-          errorMessage = "No tienes permisos para eliminar este proyecto"
-        } else if (error.response?.status === 404) {
-          errorMessage = "El proyecto no existe"
+        const status = error.response?.status
+        const responseData = error.response?.data
+
+        switch (status) {
+          case 401:
+            errorMessage = "No tienes permisos para eliminar este proyecto"
+            break
+          case 403:
+            errorMessage = "No tienes autorización para eliminar este proyecto"
+            break
+          case 404:
+            errorMessage = "El proyecto no existe o ya fue eliminado"
+            break
+          case 409:
+            errorMessage = "No se puede eliminar el proyecto porque tiene dependencias activas"
+            break
+          case 500:
+            // Error del servidor - probablemente problema con eliminación en cascada
+            if (responseData?.message) {
+              errorMessage = `Error del servidor: ${responseData.message}`
+            } else {
+              errorMessage =
+                "Error interno del servidor. El proyecto tiene relaciones que impiden su eliminación. Contacta al administrador."
+            }
+
+            // Log adicional para debugging
+            console.error("Detalles del error 500:", {
+              projectId,
+              materialsCount: projectMaterials.length,
+              usersCount: projectUsers.length,
+              error: responseData,
+            })
+            break
+          default:
+            if (responseData?.message) {
+              errorMessage = responseData.message
+            }
         }
       }
 
       showNotification(errorMessage, "error")
-      setRedirecting(true)
-      router.push("/project")
-      return
     } finally {
       setDeleting(false)
       setDeleteConfirmOpen(false)
@@ -798,84 +817,96 @@ export default function ProjectDetailPage() {
             backdropFilter: "blur(10px)",
             border: "1px solid",
             borderColor: mode === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.05)",
+            position: "relative",
           }}
         >
-          <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
-            {/* Navegación y acciones */}
-            <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 3 }} spacing={2}>
-              <IconButton
-                variant="soft"
-                size="sm"
-                color="neutral"
-                onClick={() => router.push("/project")}
-                sx={{
-                  padding: "6px",
-                  borderRadius: "50%",
-                  backdropFilter: "blur(4px)",
-                  backgroundColor: "rgba(255, 255, 255, 0.12)",
+          {/* Menú móvil - posicionado absolutamente */}
+          <Box
+            sx={{
+              display: { xs: "block", md: "none" },
+              position: "absolute",
+              top: 14,
+              right: 16,
+              zIndex: 10,
+            }}
+          >
+            <Dropdown>
+              <MenuButton
+                slots={{ root: IconButton }}
+                slotProps={{
+                  root: {
+                    variant: "plain",
+                    size: "sm",
+                    color: "neutral",
+                  },
                 }}
               >
-                <ArrowBackIos fontSize="small" sx={{ marginRight: -1 }} />
-              </IconButton>
+                <MoreVert />
+              </MenuButton>
+              <Menu placement="bottom-end">
+                <MenuItem onClick={() => setIsFavorite(!isFavorite)}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {isFavorite ? <Star sx={{ color: "#ffbc62" }} /> : <StarBorder />}
+                    {isFavorite ? "Quitar de favoritos" : "Agregar a favoritos"}
+                  </Box>
+                </MenuItem>
+                <MenuItem>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Share fontSize="small" />
+                    Compartir
+                  </Box>
+                </MenuItem>
+                <MenuItem>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Download fontSize="small" />
+                    Descargar
+                  </Box>
+                </MenuItem>
+                <MenuItem onClick={() => router.push(`/project/edit/${project.id}`)}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Edit fontSize="small" />
+                    Editar
+                  </Box>
+                </MenuItem>
+                <MenuItem onClick={() => setDeleteConfirmOpen(true)}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "danger.500" }}>
+                    <Delete fontSize="small" />
+                    Eliminar
+                  </Box>
+                </MenuItem>
+              </Menu>
+            </Dropdown>
+          </Box>
 
-              <Stack
-                direction="row"
-                spacing={1}
-                sx={{
-                  flexWrap: "wrap",
-                  gap: 1,
-                }}
-              >
-                <IconButton variant="soft" size="sm" color="neutral" onClick={() => setIsFavorite(!isFavorite)}>
-                  {isFavorite ? <Star sx={{ color: "#ffbc62" }} /> : <StarBorder />}
-                </IconButton>
-                <IconButton variant="soft" size="sm" color="neutral">
-                  <Share />
-                </IconButton>
-                <IconButton variant="soft" size="sm" color="neutral">
-                  <Download />
-                </IconButton>
-                <IconButton
-                  variant="soft"
-                  size="sm"
-                  color="neutral"
-                  onClick={() => router.push(`/project/edit/${project.id}`)}
-                >
-                  <Edit />
-                </IconButton>
-                <IconButton variant="soft" size="sm" color="danger" onClick={() => setDeleteConfirmOpen(true)}>
-                  <Delete />
-                </IconButton>
-              </Stack>
-            </Stack>
-
-            {/* Información principal del proyecto */}
-            <Grid container spacing={3} alignItems="center">
+          <CardContent sx={{ p: { xs: 1.5, sm: 1 } }}>
+            <Grid container spacing={3}>
+              {/* Columna izquierda - Información principal */}
               <Grid xs={12} md={8}>
-                <Stack spacing={2}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                    <Box
+                <Stack spacing={3}>
+                  {/* Header con navegación y título */}
+                  <Stack direction="row" alignItems="flex-start" spacing={2}>
+                    <IconButton
+                      variant="soft"
+                      size="sm"
+                      color="neutral"
+                      onClick={() => router.push("/project")}
                       sx={{
-                        width: { xs: 56, sm: 64 },
-                        height: { xs: 56, sm: 64 },
-                        borderRadius: "lg",
-                        bgcolor: "rgba(255, 188, 98, 0.2)",
-                        color: "#ffbc62",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: { xs: "1.75rem", sm: "2rem" },
+                        padding: "6px",
+                        borderRadius: "50%",
+                        backdropFilter: "blur(4px)",
+                        backgroundColor: "rgba(255, 255, 255, 0.12)",
                       }}
                     >
-                      {getProjectTypeIcon(project.type)}
-                    </Box>
-                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                      <ArrowBackIos fontSize="small" sx={{ marginRight: -1 }} />
+                    </IconButton>
+
+                    <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0, pr: { xs: 5, md: 0 } }}>
                       <Typography
-                        level="h2"
+                        level="h3"
                         sx={{
-                          mb: 0.5,
                           color: "#ffbc62",
-                          fontSize: { xs: "1.5rem", sm: "2rem" },
+                          fontSize: { xs: "1.25rem", sm: "1.5rem" },
+                          fontWeight: 600,
                           overflow: "hidden",
                           textOverflow: "ellipsis",
                           whiteSpace: "nowrap",
@@ -883,111 +914,206 @@ export default function ProjectDetailPage() {
                       >
                         {project.name}
                       </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: "wrap", gap: 1 }}>
-                        <Chip
-                          variant="soft"
-                          color={getStatusColor(project.status)}
-                          size="sm"
-                          startDecorator={getStatusIcon(project.status)}
-                        >
-                          {getStatusText(project.status)}
-                        </Chip>
-                        {project.is_collaborative && (
-                          <Chip
-                            variant="soft"
-                            color="primary"
-                            size="sm"
-                            sx={{ bgcolor: "rgba(255, 188, 98, 0.2)", color: "#ffbc62" }}
-                          >
-                            Colaborativo
-                          </Chip>
-                        )}
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Business sx={{ color: "#ffbc62", fontSize: 20 }} />
+                        <Typography level="body-sm" color="neutral">
+                          {project.company.name}
+                        </Typography>
                       </Stack>
-                    </Box>
-                  </Box>
+                    </Stack>
+                  </Stack>
 
-                  {project.description && (
-                    <Typography
-                      level="body-md"
-                      color="neutral"
-                      sx={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: { xs: 3, sm: 2 },
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                    >
-                      {project.description}
-                    </Typography>
-                  )}
-
-                  <Stack
-                    direction="row"
-                    spacing={3}
+                  {/* Sheet con tipo de proyecto y descripción */}
+                  <Sheet
+                    variant="soft"
                     sx={{
-                      flexWrap: "wrap",
-                      gap: { xs: 2, sm: 3 },
+                      p: 2,
+                      borderRadius: "md",
+                      bgcolor: "background.level1",
                     }}
                   >
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Business sx={{ color: "#ffbc62", fontSize: 18 }} />
-                      <Typography level="body-sm">{project.company.name}</Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Group sx={{ color: "#ffbc62", fontSize: 18 }} />
-                      <Typography level="body-sm">{projectUsers.length} miembros</Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Folder sx={{ color: "#ffbc62", fontSize: 18 }} />
-                      <Typography level="body-sm">{projectMaterials.length} materiales</Typography>
-                    </Box>
-                  </Stack>
-                </Stack>
-              </Grid>
+                    <Stack spacing={2}>
+                      {/* Tipo de proyecto */}
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Box
+                          sx={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: "lg",
+                            bgcolor: "rgba(255, 188, 98, 0.2)",
+                            color: "#ffbc62",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "1.5rem",
+                          }}
+                        >
+                          {getProjectTypeIcon(project.type)}
+                        </Box>
+                        <Box>
+                          <Typography level="body-sm" color="neutral">
+                            Tipo de proyecto
+                          </Typography>
+                          <Typography level="body-md" fontWeight="xs">
+                            {project.type === "film"
+                              ? "Cine"
+                              : project.type === "tv"
+                                ? "TV"
+                                : project.type === "advertising"
+                                  ? "Publicidad"
+                                  : "Otro"}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ ml: "auto" }}>
+                          <Stack direction="row" spacing={1} alignItems="center">
+                            <Chip
+                              variant="soft"
+                              color={getStatusColor(project.status)}
+                              size="sm"
+                              startDecorator={getStatusIcon(project.status)}
+                            >
+                              {getStatusText(project.status)}
+                            </Chip>
+                            {project.is_collaborative && (
+                              <Chip
+                                variant="soft"
+                                color="primary"
+                                size="sm"
+                                sx={{ bgcolor: "rgba(255, 188, 98, 0.2)", color: "#ffbc62" }}
+                              >
+                                Colaborativo
+                              </Chip>
+                            )}
+                          </Stack>
+                        </Box>
+                      </Box>
 
-              <Grid xs={12} md={4}>
-                <Stack spacing={2}>
-                  {/* Progreso del proyecto */}
-                  <Box>
-                    <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
-                      Progreso del proyecto
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <LinearProgress
-                        determinate
-                        value={calculateProgress()}
-                        sx={{
-                          flex: 1,
-                          "--LinearProgress-progressColor": "#ffbc62",
-                          "--LinearProgress-trackColor": "rgba(255, 188, 98, 0.2)",
-                        }}
-                      />
-                      <Typography level="body-sm" fontWeight="md">
-                        {calculateProgress()}%
-                      </Typography>
-                    </Box>
-                  </Box>
+                      {/* Divider */}
+                      <Divider />
 
-                  {/* Fechas */}
-                  <Box>
-                    <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
-                      Cronograma
-                    </Typography>
-                    <Stack spacing={1}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography level="body-xs">Inicio:</Typography>
-                        <Typography level="body-xs" fontWeight="md">
-                          {formatDate(project.start_date)}
+                      {/* Descripción */}
+                      {project.description ? (
+                        <Typography level="body-sm" color="neutral">
+                          {project.description}
+                        </Typography>
+                      ) : (
+                        <Typography level="body-sm" color="neutral" sx={{ fontStyle: "italic" }}>
+                          Sin descripción
+                        </Typography>
+                      )}
+
+                      <Divider />
+                    </Stack>
+
+                    {/* Contadores */}
+                    <Stack spacing={1} direction="row" sx={{ mt: 2, gap: 2 }}>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Group sx={{ color: "#ffbc62", fontSize: 20 }} />
+                        <Typography level="body-sm" fontWeight="md">
+                          {projectUsers.length} miembros del equipo
                         </Typography>
                       </Box>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                        <Typography level="body-xs">Fin:</Typography>
-                        <Typography level="body-xs" fontWeight="md">
-                          {formatDate(project.end_date)}
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                        <Folder sx={{ color: "#ffbc62", fontSize: 20 }} />
+                        <Typography level="body-sm" fontWeight="md">
+                          {projectMaterials.length} materiales asignados
                         </Typography>
                       </Box>
                     </Stack>
+                  </Sheet>
+                </Stack>
+              </Grid>
+
+              {/* Columna derecha - Acciones y progreso */}
+              <Grid xs={12} md={4}>
+                <Stack spacing={2}>
+                  {/* Acciones - Solo desktop */}
+                  <Box sx={{ display: { xs: "none", md: "flex" }, justifyContent: "flex-end", gap: 1, mb: 6 }}>
+                    <IconButton variant="plain" size="sm" color="neutral" onClick={() => setIsFavorite(!isFavorite)}>
+                      {isFavorite ? <Star sx={{ color: "#ffbc62" }} /> : <StarBorder />}
+                    </IconButton>
+                    <IconButton variant="plain" size="sm" color="neutral">
+                      <Share />
+                    </IconButton>
+                    <Dropdown>
+                      <MenuButton
+                        slots={{ root: IconButton }}
+                        slotProps={{
+                          root: {
+                            variant: "plain",
+                            size: "sm",
+                            color: "neutral",
+                          },
+                        }}
+                      >
+                        <MoreVert />
+                      </MenuButton>
+                      <Menu placement="bottom-end">
+                        <MenuItem>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Download fontSize="small" />
+                            Descargar
+                          </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => router.push(`/project/edit/${project.id}`)}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                            <Edit fontSize="small" />
+                            Editar
+                          </Box>
+                        </MenuItem>
+                        <MenuItem onClick={() => setDeleteConfirmOpen(true)}>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 1, color: "danger.500" }}>
+                            <Delete fontSize="small" />
+                            Eliminar
+                          </Box>
+                        </MenuItem>
+                      </Menu>
+                    </Dropdown>
                   </Box>
+
+                  {/* Progreso del proyecto - Alineado con el sheet */}
+                  <Stack sx={{ mt: { xs: 0, md: 2 } }}>
+                    <Box>
+                      <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
+                        Progreso del proyecto
+                      </Typography>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <LinearProgress
+                          determinate
+                          value={calculateProgress()}
+                          sx={{
+                            flex: 1,
+                            "--LinearProgress-progressColor": "#ffbc62",
+                            "--LinearProgress-trackColor": "rgba(255, 188, 98, 0.2)",
+                          }}
+                        />
+                        <Typography level="body-sm" fontWeight="md">
+                          {calculateProgress()}%
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    {/* Cronograma */}
+                    <Box sx={{ mt: 2 }}>
+                      <Typography level="body-sm" color="neutral" sx={{ mb: 1 }}>
+                        Cronograma
+                      </Typography>
+                      <Stack spacing={1}>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography level="body-xs">Inicio:</Typography>
+                          <Typography level="body-xs" fontWeight="md">
+                            {formatDate(project.start_date)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                          <Typography level="body-xs">Fin:</Typography>
+                          <Typography level="body-xs" fontWeight="md">
+                            {formatDate(project.end_date)}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Box>
+                  </Stack>
                 </Stack>
               </Grid>
             </Grid>

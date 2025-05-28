@@ -40,7 +40,12 @@ const handler = NextAuth({
   },
   session: {
     strategy: "jwt",
+    maxAge: 60 * 60, // 1 hora
   },
+  jwt: {
+    maxAge: 60 * 60, // 1 hora
+  },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user?.accessToken) {
