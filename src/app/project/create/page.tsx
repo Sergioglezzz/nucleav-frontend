@@ -70,16 +70,27 @@ export default function CreateProjectPage() {
   const [companies, setCompanies] = useState<Company[]>([])
   const [loadingCompanies, setLoadingCompanies] = useState(true)
 
+  const today = new Date()
+  const maxFuture = new Date()
+  maxFuture.setFullYear(today.getFullYear() + 5)
+
   const validationSchema = Yup.object({
     name: Yup.string().required("El nombre es obligatorio"),
     description: Yup.string().nullable(),
     type: Yup.string().required("El tipo de proyecto es obligatorio"),
     company_cif: Yup.string().required("La empresa es obligatoria"),
-    start_date: Yup.string().nullable(),
-    end_date: Yup.string().nullable(),
+    start_date: Yup.date()
+      .min(today, "La fecha de inicio no puede ser anterior a hoy")
+      .max(maxFuture, "La fecha de inicio no puede estar muy lejos en el futuro")
+      .required("La fecha de inicio es obligatoria"),
+    end_date: Yup.date()
+      .min(Yup.ref("start_date"), "La fecha de fin no puede ser anterior a la de inicio")
+      .max(maxFuture, "La fecha de fin no puede estar muy lejos en el futuro")
+      .nullable(),
     status: Yup.string().required("El estado es obligatorio"),
     is_collaborative: Yup.boolean(),
   })
+
 
   const formik = useFormik({
     initialValues: {
@@ -87,7 +98,7 @@ export default function CreateProjectPage() {
       description: "",
       type: ProjectType.OTHER,
       company_cif: "",
-      start_date: "",
+      start_date: new Date().toISOString().split("T")[0],
       end_date: "",
       status: "draft",
       is_collaborative: false,
@@ -497,7 +508,7 @@ export default function CreateProjectPage() {
                       gap: 2,
                     }}
                   >
-                    <FormControl>
+                    <FormControl error={formik.touched.start_date && Boolean(formik.errors.start_date)}>
                       <FormLabel>Fecha de inicio</FormLabel>
                       <Input
                         type="date"
@@ -508,9 +519,7 @@ export default function CreateProjectPage() {
                         startDecorator={<CalendarToday sx={{ color: "text.tertiary" }} />}
                         sx={{
                           "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-                          "&:hover": {
-                            borderColor: "primary.solidBg",
-                          },
+                          "&:hover": { borderColor: "primary.solidBg" },
                           "&:focus-within": {
                             borderColor: "primary.solidBg",
                             boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
@@ -518,10 +527,14 @@ export default function CreateProjectPage() {
                           width: "100%",
                         }}
                       />
-                      <FormHelperText>Fecha prevista de inicio del proyecto</FormHelperText>
+                      <FormHelperText>
+                        {formik.touched.start_date && formik.errors.start_date
+                          ? formik.errors.start_date
+                          : "Selecciona la fecha de inicio"}
+                      </FormHelperText>
                     </FormControl>
 
-                    <FormControl>
+                    <FormControl error={formik.touched.end_date && Boolean(formik.errors.end_date)}>
                       <FormLabel>Fecha de finalización</FormLabel>
                       <Input
                         type="date"
@@ -532,9 +545,7 @@ export default function CreateProjectPage() {
                         startDecorator={<CalendarToday sx={{ color: "text.tertiary" }} />}
                         sx={{
                           "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
-                          "&:hover": {
-                            borderColor: "primary.solidBg",
-                          },
+                          "&:hover": { borderColor: "primary.solidBg" },
                           "&:focus-within": {
                             borderColor: "primary.solidBg",
                             boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
@@ -542,8 +553,13 @@ export default function CreateProjectPage() {
                           width: "100%",
                         }}
                       />
-                      <FormHelperText>Fecha prevista de finalización del proyecto</FormHelperText>
+                      <FormHelperText>
+                        {formik.touched.end_date && formik.errors.end_date
+                          ? formik.errors.end_date
+                          : "Selecciona la fecha de finalización"}
+                      </FormHelperText>
                     </FormControl>
+
                   </Box>
 
                   <Box

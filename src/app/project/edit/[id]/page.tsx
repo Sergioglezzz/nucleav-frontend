@@ -100,16 +100,27 @@ export default function EditProjectPage() {
   const [loadingCompanies, setLoadingCompanies] = useState(true)
   const [project, setProject] = useState<Project | null>(null)
 
+  const today = new Date()
+  const maxFuture = new Date()
+  maxFuture.setFullYear(today.getFullYear() + 5)
+
   const validationSchema = Yup.object({
     name: Yup.string().required("El nombre es obligatorio"),
     description: Yup.string().nullable(),
     type: Yup.string().required("El tipo de proyecto es obligatorio"),
     company_cif: Yup.string().required("La empresa es obligatoria"),
-    start_date: Yup.string().nullable(),
-    end_date: Yup.string().nullable(),
+    start_date: Yup.date()
+      .min(today, "La fecha de inicio no puede ser anterior a hoy")
+      .max(maxFuture, "La fecha de inicio no puede estar muy lejos en el futuro")
+      .required("La fecha de inicio es obligatoria"),
+    end_date: Yup.date()
+      .min(Yup.ref("start_date"), "La fecha de fin no puede ser anterior a la de inicio")
+      .max(maxFuture, "La fecha de fin no puede estar muy lejos en el futuro")
+      .nullable(),
     status: Yup.string().required("El estado es obligatorio"),
     is_collaborative: Yup.boolean(),
   })
+
 
   const formik = useFormik({
     initialValues: {
