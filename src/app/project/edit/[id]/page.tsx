@@ -101,6 +101,8 @@ export default function EditProjectPage() {
   const [project, setProject] = useState<Project | null>(null)
 
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const maxFuture = new Date()
   maxFuture.setFullYear(today.getFullYear() + 5)
 

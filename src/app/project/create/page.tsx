@@ -71,6 +71,8 @@ export default function CreateProjectPage() {
   const [loadingCompanies, setLoadingCompanies] = useState(true)
 
   const today = new Date()
+  today.setHours(0, 0, 0, 0)
+
   const maxFuture = new Date()
   maxFuture.setFullYear(today.getFullYear() + 5)
 
