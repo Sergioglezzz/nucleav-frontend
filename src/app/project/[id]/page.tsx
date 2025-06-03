@@ -61,6 +61,7 @@ import DeleteProjectModal from "../components/DeleteProjectModal"
 import CustomTabs from "@/components/CustomTabs"
 import MaterialSelectModal from "../components/MaterialSelectModal"
 import TeamMemberSelectModal from "../components/TeamMemberSelectModal"
+import jsPDF from "jspdf"
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -739,6 +740,33 @@ export default function ProjectDetailPage() {
     return `${user.name.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase()
   }
 
+  const handleDownloadProject = () => {
+    if (!project) return
+
+    const doc = new jsPDF()
+
+    doc.setFontSize(16)
+    doc.text("Resumen del Proyecto", 20, 20)
+
+    doc.setFontSize(12)
+    doc.text(`Nombre: ${project.name}`, 20, 30)
+    doc.text(`Empresa: ${project.company.name}`, 20, 40)
+    doc.text(`Tipo: ${getStatusText(project.type)}`, 20, 50)
+    doc.text(`Estado: ${getStatusText(project.status)}`, 20, 60)
+    doc.text(`Inicio: ${formatDate(project.start_date)}`, 20, 70)
+    doc.text(`Fin: ${formatDate(project.end_date)}`, 20, 80)
+    doc.text(`Miembros del equipo: ${projectUsers.length}`, 20, 90)
+    doc.text(`Materiales asignados: ${projectMaterials.length}`, 20, 100)
+
+    // Descripción larga
+    const description = project.description || "Sin descripción"
+    const lines = doc.splitTextToSize(`Descripción: ${description}`, 170)
+    doc.text(lines, 20, 110)
+
+    // Guardar
+    doc.save(`proyecto-${project.name}.pdf`)
+  }
+
   // Mostrar loading
   if (loading) {
     return (
@@ -856,7 +884,7 @@ export default function ProjectDetailPage() {
                     Compartir
                   </Box>
                 </MenuItem>
-                <MenuItem>
+                <MenuItem onClick={handleDownloadProject}>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                     <Download fontSize="small" />
                     Descargar
