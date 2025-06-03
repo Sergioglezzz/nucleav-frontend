@@ -62,6 +62,8 @@ import CustomTabs from "@/components/CustomTabs"
 import MaterialSelectModal from "../components/MaterialSelectModal"
 import TeamMemberSelectModal from "../components/TeamMemberSelectModal"
 import jsPDF from "jspdf"
+import autoTable from 'jspdf-autotable'
+
 
 // Enumeración para tipos de proyecto
 enum ProjectType {
@@ -740,31 +742,87 @@ export default function ProjectDetailPage() {
     return `${user.name.charAt(0)}${user.lastname.charAt(0)}`.toUpperCase()
   }
 
-  const handleDownloadProject = () => {
+  const logoPath = "/AV-light.png"
+
+  const handleDownloadProject = async () => {
     if (!project) return
 
     const doc = new jsPDF()
 
-    doc.setFontSize(16)
-    doc.text("Resumen del Proyecto", 20, 20)
+    // Cargar imagen
+    const img = new Image()
+    img.src = logoPath
 
-    doc.setFontSize(12)
-    doc.text(`Nombre: ${project.name}`, 20, 30)
-    doc.text(`Empresa: ${project.company.name}`, 20, 40)
-    doc.text(`Tipo: ${getStatusText(project.type)}`, 20, 50)
-    doc.text(`Estado: ${getStatusText(project.status)}`, 20, 60)
-    doc.text(`Inicio: ${formatDate(project.start_date)}`, 20, 70)
-    doc.text(`Fin: ${formatDate(project.end_date)}`, 20, 80)
-    doc.text(`Miembros del equipo: ${projectUsers.length}`, 20, 90)
-    doc.text(`Materiales asignados: ${projectMaterials.length}`, 20, 100)
+    img.onload = () => {
+      // Logo en la esquina superior derecha
+      const logoWidth = 20
+      const logoAspectRatio = 115 / 85
+      const logoHeight = logoWidth / logoAspectRatio // mantiene proporción
 
-    // Descripción larga
-    const description = project.description || "Sin descripción"
-    const lines = doc.splitTextToSize(`Descripción: ${description}`, 170)
-    doc.text(lines, 20, 110)
+      doc.addImage(img, "PNG", 170, 10, logoWidth, logoHeight)
 
-    // Guardar
-    doc.save(`proyecto-${project.name}.pdf`)
+
+
+      // Título
+      doc.setFontSize(18)
+      doc.setTextColor(40, 40, 40)
+      doc.text("Resumen del Proyecto", 20, 20)
+
+      // Datos generales
+      doc.setFontSize(12)
+      doc.setTextColor(0, 0, 0)
+      doc.text(`Nombre: ${project.name}`, 20, 35)
+      doc.text(`Empresa: ${project.company.name}`, 20, 42)
+      doc.text(`Tipo: ${getStatusText(project.type)}`, 20, 49)
+      doc.text(`Estado: ${getStatusText(project.status)}`, 20, 56)
+      doc.text(`Inicio: ${formatDate(project.start_date)}`, 20, 63)
+      doc.text(`Fin: ${formatDate(project.end_date)}`, 20, 70)
+
+      // Descripción
+      const description = project.description || "Sin descripción"
+      const lines = doc.splitTextToSize(`Descripción: ${description}`, 170)
+      doc.text(lines, 20, 80)
+
+      // Tabla de materiales
+      let lastY = 80 + lines.length * 10
+      if (projectMaterials.length > 0) {
+        autoTable(doc, {
+          startY: lastY + 10,
+          head: [["Nombre", "Categoría", "Cantidad"]],
+          body: projectMaterials.map((mat) => [
+            mat.material.name,
+            mat.material.category || "N/A",
+            mat.quantity_assigned.toString(),
+          ]),
+          theme: "striped",
+          styles: { fillColor: [255, 188, 98], halign: "left" },
+          headStyles: { fillColor: [255, 140, 0] },
+        })
+        lastY = (doc as any).lastAutoTable?.finalY || lastY + 40
+      }
+
+      // Tabla de usuarios
+      if (projectUsers.length > 0) {
+        autoTable(doc, {
+          startY: lastY + 10,
+          head: [["Nombre", "Usuario", "Email"]],
+          body: projectUsers.map((u) => [
+            `${u.user.name} ${u.user.lastname}`,
+            u.user.username,
+            u.user.email,
+          ]),
+          theme: "grid",
+          headStyles: { fillColor: [100, 100, 100] },
+        })
+      }
+
+      // Descargar
+      doc.save(`proyecto-${project.name}.pdf`)
+    }
+
+    img.onerror = () => {
+      showNotification("No se pudo cargar el logo para el PDF", "error")
+    }
   }
 
   // Mostrar loading
