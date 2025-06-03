@@ -1135,7 +1135,7 @@ export default function ProjectDetailPage() {
                         <MoreVert />
                       </MenuButton>
                       <Menu placement="bottom-end">
-                        <MenuItem>
+                        <MenuItem onClick={handleDownloadProject}>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             <Download fontSize="small" />
                             Descargar
@@ -1570,7 +1570,7 @@ export default function ProjectDetailPage() {
                       >
                         Editar proyecto
                       </Button>
-                      <Button variant="outlined" color="neutral" size="sm" startDecorator={<Download />}>
+                      <Button onClick={handleDownloadProject} variant="outlined" color="neutral" size="sm" startDecorator={<Download />}>
                         Exportar datos
                       </Button>
                       <Button
