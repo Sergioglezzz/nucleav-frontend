@@ -1,7 +1,9 @@
 "use client"
 
 import { Box, Typography, Link, Stack, IconButton } from "@mui/joy"
-import { LinkedIn, Twitter, GitHub, Language, Help, Security } from "@mui/icons-material"
+import { LinkedIn, GitHub, Help, Security } from "@mui/icons-material"
+import XIcon from '@mui/icons-material/X';
+import BalanceIcon from '@mui/icons-material/Balance';
 import { useColorScheme } from "@mui/joy/styles"
 
 export default function FooterMini() {
@@ -75,7 +77,7 @@ export default function FooterMini() {
             sx={{ textAlign: { xs: "center", sm: "left" } }}
           >
             <Link
-              href="/help"
+              // href="/help"
               color="neutral"
               level="body-sm"
               underline="none"
@@ -91,7 +93,7 @@ export default function FooterMini() {
               Ayuda
             </Link>
             <Link
-              href="/privacy"
+              // href="/privacy"
               color="neutral"
               level="body-sm"
               underline="none"
@@ -107,10 +109,11 @@ export default function FooterMini() {
               Privacidad
             </Link>
             <Link
-              href="/terms"
+              // href="/terms"
               color="neutral"
               level="body-sm"
               underline="none"
+              startDecorator={<BalanceIcon sx={{ fontSize: 14 }} />}
               sx={{
                 "&:hover": { color: "#ffbc62" },
                 transition: "color 0.2s",
@@ -154,9 +157,13 @@ export default function FooterMini() {
                 transition: "all 0.2s",
               }}
             >
-              <Twitter sx={{ fontSize: 16 }} />
+              <XIcon sx={{ fontSize: 16 }} />
             </IconButton>
             <IconButton
+              component="a"
+              href="https://github.com/Sergioglezzz"
+              target="_blank"
+              rel="sergioglezzz"
               variant="soft"
               size="sm"
               sx={{
@@ -173,7 +180,7 @@ export default function FooterMini() {
             >
               <GitHub sx={{ fontSize: 16 }} />
             </IconButton>
-            <IconButton
+            {/* <IconButton
               variant="soft"
               size="sm"
               sx={{
@@ -189,7 +196,7 @@ export default function FooterMini() {
               }}
             >
               <Language sx={{ fontSize: 16 }} />
-            </IconButton>
+            </IconButton> */}
           </Stack>
         </Stack>
 
@@ -208,7 +215,7 @@ export default function FooterMini() {
           }}
         >
           <Typography level="body-xs" color="neutral" sx={{ textAlign: { xs: "center", sm: "left" } }}>
-            © {currentYear} Nucleav. Todos los derechos reservados.
+            © {currentYear} Nucleav. Todos los derechos reservados.  Desarrollado con ❤️ para la industria audiovisual.
           </Typography>
 
           <Stack
@@ -227,7 +234,7 @@ export default function FooterMini() {
               •
             </Typography>
             <Link
-              href="/status"
+              // href="/status"
               level="body-xs"
               color="neutral"
               underline="none"
@@ -242,7 +249,7 @@ export default function FooterMini() {
               •
             </Typography>
             <Link
-              href="/api"
+              // href="/api"
               level="body-xs"
               color="neutral"
               underline="none"

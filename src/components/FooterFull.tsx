@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Typography, Link, Stack, Divider, IconButton, Grid, Sheet } from "@mui/joy"
+import { Box, Typography, Link, Stack, Divider, IconButton, Grid, } from "@mui/joy"
 import {
   Movie,
   Tv,
@@ -10,9 +10,7 @@ import {
   Phone,
   LocationOn,
   LinkedIn,
-  Twitter,
   GitHub,
-  Language,
   Security,
   Help,
   Info,
@@ -20,6 +18,8 @@ import {
   Group,
   Folder,
 } from "@mui/icons-material"
+import XIcon from '@mui/icons-material/X';
+import BalanceIcon from '@mui/icons-material/Balance';
 import { useColorScheme } from "@mui/joy/styles"
 
 export default function Footer() {
@@ -31,7 +31,7 @@ export default function Footer() {
     <Box
       component="footer"
       sx={{
-        mt: "auto",
+        mt: 2,
         background:
           mode === "dark"
             ? "linear-gradient(145deg, rgba(25,25,25,0.95) 0%, rgba(15,15,15,0.8) 100%)"
@@ -91,7 +91,7 @@ export default function Footer() {
               </Typography>
 
               {/* Estadísticas rápidas */}
-              <Sheet
+              {/* <Sheet
                 variant="soft"
                 sx={{
                   p: 2,
@@ -126,7 +126,7 @@ export default function Footer() {
                     </Typography>
                   </Box>
                 </Stack>
-              </Sheet>
+              </Sheet> */}
             </Stack>
           </Grid>
 
@@ -186,7 +186,7 @@ export default function Footer() {
                   Equipos de Trabajo
                 </Link>
                 <Link
-                  href="/companies"
+                  href="/company"
                   color="neutral"
                   level="body-sm"
                   underline="none"
@@ -248,7 +248,7 @@ export default function Footer() {
               </Typography>
               <Stack spacing={1}>
                 <Link
-                  href="/help"
+                  // href="/help"
                   color="neutral"
                   level="body-sm"
                   underline="none"
@@ -264,7 +264,7 @@ export default function Footer() {
                   Centro de Ayuda
                 </Link>
                 <Link
-                  href="/docs"
+                  // href="/docs"
                   color="neutral"
                   level="body-sm"
                   underline="none"
@@ -280,7 +280,7 @@ export default function Footer() {
                   Documentación
                 </Link>
                 <Link
-                  href="/privacy"
+                  // href="/privacy"
                   color="neutral"
                   level="body-sm"
                   underline="none"
@@ -296,10 +296,11 @@ export default function Footer() {
                   Privacidad
                 </Link>
                 <Link
-                  href="/terms"
+                  // href="/terms"
                   color="neutral"
                   level="body-sm"
                   underline="none"
+                  startDecorator={<BalanceIcon sx={{ fontSize: 16 }} />}
                   sx={{
                     "&:hover": { color: "#ffbc62" },
                     transition: "color 0.2s",
@@ -333,7 +334,7 @@ export default function Footer() {
                 <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
                   <LocationOn sx={{ fontSize: 16, color: "#ffbc62", mt: 0.2 }} />
                   <Typography level="body-sm" color="neutral">
-                    Madrid, España
+                    Sevilla, España
                   </Typography>
                 </Box>
               </Stack>
@@ -372,14 +373,20 @@ export default function Footer() {
                       transition: "all 0.2s",
                     }}
                   >
-                    <Twitter fontSize="small" />
+                    <XIcon fontSize="small" />
                   </IconButton>
                   <IconButton
+                    component="a"
+                    href="https://github.com/Sergioglezzz"
+                    target="_blank"
+                    rel="sergioglezzz"
                     variant="soft"
                     size="sm"
                     sx={{
                       bgcolor: "rgba(255, 188, 98, 0.1)",
                       color: "#ffbc62",
+                      width: 32,
+                      height: 32,
                       "&:hover": {
                         bgcolor: "rgba(255, 188, 98, 0.2)",
                         transform: "translateY(-1px)",
@@ -387,9 +394,9 @@ export default function Footer() {
                       transition: "all 0.2s",
                     }}
                   >
-                    <GitHub fontSize="small" />
+                    <GitHub sx={{ fontSize: 16 }} />
                   </IconButton>
-                  <IconButton
+                  {/* <IconButton
                     variant="soft"
                     size="sm"
                     sx={{
@@ -403,7 +410,7 @@ export default function Footer() {
                     }}
                   >
                     <Language fontSize="small" />
-                  </IconButton>
+                  </IconButton> */}
                 </Stack>
               </Box>
             </Stack>
@@ -443,7 +450,7 @@ export default function Footer() {
               •
             </Typography>
             <Link
-              href="/status"
+              // href="/status"
               level="body-xs"
               color="neutral"
               underline="none"
@@ -458,7 +465,7 @@ export default function Footer() {
               •
             </Typography>
             <Link
-              href="/api"
+              // href="/api"
               level="body-xs"
               color="neutral"
               underline="none"
