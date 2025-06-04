@@ -217,7 +217,7 @@ export default function MaterialPage() {
             borderRadius: "lg",
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
-            alignItems: "center",
+            alignItems: { xs: "stretch", sm: "center" },
             gap: 2,
             background:
               mode === "dark"
@@ -236,6 +236,7 @@ export default function MaterialPage() {
             sx={{
               width: "100%",
               flexGrow: 1,
+              mb: { xs: 1, sm: 0 },
               "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
               "&:hover": {
                 borderColor: "primary.solidBg",
@@ -247,14 +248,22 @@ export default function MaterialPage() {
             }}
           />
 
-          <Stack direction="row" spacing={1} alignItems="center">
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            alignItems={{ xs: "stretch", sm: "center" }}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
+          >
             <Select
               placeholder="Categoría"
               value={selectedType}
               onChange={(_, value) => setSelectedType(value)}
               startDecorator={<FilterList />}
               size="sm"
-              sx={{ minWidth: 120 }}
+              sx={{
+                minWidth: { xs: "100%", sm: 120 },
+                width: { xs: "100%", sm: "auto" },
+              }}
             >
               <Option value="all">Todas</Option>
               <Option value="Cámaras">Cámaras</Option>
@@ -270,7 +279,10 @@ export default function MaterialPage() {
               onChange={(_, value) => setSortBy(value as string)}
               startDecorator={sortBy.startsWith("date") ? <CalendarMonth /> : <SortByAlpha />}
               size="sm"
-              sx={{ minWidth: 140 }}
+              sx={{
+                minWidth: { xs: "100%", sm: 140 },
+                width: { xs: "100%", sm: "auto" },
+              }}
             >
               <Option value="date-desc">Más recientes</Option>
               <Option value="date-asc">Más antiguos</Option>
@@ -284,6 +296,7 @@ export default function MaterialPage() {
               onClick={() => setShowFilters(!showFilters)}
               size="sm"
               sx={{
+                width: { xs: "100%", sm: "auto" },
                 bgcolor: showFilters ? "rgba(255, 188, 98, 0.2)" : undefined,
                 borderColor: showFilters ? "#ffbc62" : undefined,
                 color: showFilters ? "#ffbc62" : undefined,
@@ -291,22 +304,22 @@ export default function MaterialPage() {
             >
               <FilterList />
             </IconButton>
-            <Stack justifyContent={"flex-end"} direction={"row"} mb={3}>
-              <Button
-                variant="solid"
-                startDecorator={<Add />}
-                onClick={handleCreateMaterial}
-                sx={{
-                  bgcolor: "#ffbc62",
-                  color: "white",
-                  "&:hover": {
-                    bgcolor: "rgba(255, 188, 98, 0.8)",
-                  },
-                }}
-              >
-                Nuevo
-              </Button>
-            </Stack>
+
+            <Button
+              variant="solid"
+              startDecorator={<Add />}
+              onClick={handleCreateMaterial}
+              sx={{
+                width: { xs: "100%", sm: "auto" },
+                bgcolor: "#ffbc62",
+                color: "white",
+                "&:hover": {
+                  bgcolor: "rgba(255, 188, 98, 0.8)",
+                },
+              }}
+            >
+              Nuevo
+            </Button>
           </Stack>
         </Sheet>
 
