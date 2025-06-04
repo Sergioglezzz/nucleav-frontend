@@ -348,6 +348,7 @@ export default function Footer() {
                   <IconButton
                     variant="soft"
                     size="sm"
+                    href="https://www.linkedin.com/in/sergio-gonz%C3%A1lez-pe%C3%B1a-1b7450140/"
                     sx={{
                       bgcolor: "rgba(255, 188, 98, 0.1)",
                       color: "#ffbc62",
