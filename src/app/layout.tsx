@@ -6,6 +6,8 @@ import ThemeScript from "@/components/ThemeScript"
 import CustomSessionProvider from "@/components/SessionProvider"
 import { NotificationProvider } from "@/components/context/NotificationContext"
 import ClientLayout from "@/components/ClientLayout"
+import FooterSwitcher from "@/components/FooterSwitcher"
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ThemeProvider>
             <NotificationProvider>
               <ClientLayout>{children}</ClientLayout>
+              <FooterSwitcher />
             </NotificationProvider>
           </ThemeProvider>
         </CustomSessionProvider>
