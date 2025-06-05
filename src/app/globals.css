@@ -6,15 +6,27 @@
 
 /* Estilos base para el modo claro */
 :root {
-  --initial-background: #f5f5f3;
-  --initial-color: #000000;
-}
-
-/* Estilos para el modo oscuro */
-.dark-theme {
   --initial-background: #0f1214;
   --initial-color: #f6f7f8;
 }
+
+html.light-theme {
+  --initial-background: #f5f5f3;
+  --initial-color: #000000;
+  color-scheme: light;
+}
+
+html.dark-theme {
+  --initial-background: #0f1214;
+  --initial-color: #f6f7f8;
+  color-scheme: dark;
+}
+
+/* Estilos para el modo oscuro */
+/* .dark-theme {
+  --initial-background: #0f1214;
+  --initial-color: #f6f7f8;
+} */
 
 /* Aplicar estilos inmediatamente para evitar el flash */
 html {
@@ -22,8 +34,12 @@ html {
   background-color: var(--initial-background);
 }
 
-.dark-theme html {
+/* .dark-theme html {
   color-scheme: dark;
+} */
+
+html.light-theme {
+  color-scheme: light;
 }
 
 html,

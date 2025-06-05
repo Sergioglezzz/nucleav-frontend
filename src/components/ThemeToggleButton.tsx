@@ -13,7 +13,7 @@ export default function ThemeToggleButton() {
     setMode(newMode)
     localStorage.setItem("theme-mode", newMode)
     document.documentElement.classList.toggle("dark-theme", newMode === "dark")
-    document.body.classList.toggle("dark-theme", newMode === "dark")
+    document.documentElement.classList.toggle("light-theme", newMode === "light")
   }
 
   return (
