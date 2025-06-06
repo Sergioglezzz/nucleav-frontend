@@ -36,7 +36,6 @@ import ColumnLayout from "@/components/ColumnLayout"
 import { useDashboardData } from "@/hooks/UseDashboardData"
 import StatsChart from "../../components/charts/StatsCharts"
 import DonutChart from "../../components/charts/DonutChart"
-import QuickActions from "../../components/dashboard/QuickActions"
 import { useRouter } from "next/navigation"
 import { useColorScheme } from "@mui/joy/styles"
 
@@ -294,11 +293,6 @@ export default function DashboardPage() {
           <StatsChart title="Estado de Empresas" data={companyChartData} total={stats?.companies.total || 0} />
         </Grid>
       </Grid>
-
-      {/* Quick Actions */}
-      <Box sx={{ mb: 4 }}>
-        <QuickActions title={""} data={[]} total={0} />
-      </Box>
 
       {/* Recent Activity and Materials */}
       <Grid container spacing={3}>
