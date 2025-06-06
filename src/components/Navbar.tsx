@@ -29,7 +29,7 @@ import ThemeToggleButton from "./ThemeToggleButton"
 import DrawerMenu from "./DrawerMenu";
 import { navigationItems } from "@/utils/Navigation"
 import { usePathname } from "next/navigation"
-
+import PeopleIcon from "@mui/icons-material/People"
 
 
 export default function Navbar() {
@@ -48,9 +48,9 @@ export default function Navbar() {
 
   const { data: session, status } = useSession();
 
-  if (status === "loading") return null;
+  const user = session?.user as { name?: string; email?: string; image?: string; role?: string } | undefined
 
-  const user = session?.user;
+  if (status === "loading") return null;
 
   return (
     <>
@@ -212,6 +212,25 @@ export default function Navbar() {
                 <SettingsIcon fontSize="small" />
                 Configuración
               </MenuItem>
+              {user?.role === "admin" && (
+                <>
+                  <MenuItem
+                    onClick={() => router.push("/ManageUsers")}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 1.5,
+                      py: 0.5,
+                      px: 2,
+                      borderRadius: "md",
+                    }}
+                  >
+                    <PeopleIcon fontSize="small" />
+                    Gestión de Usuarios
+                  </MenuItem>
+                  <ListDivider />
+                </>
+              )}
               <MenuItem onClick={() => alert("Aún no implementado 😅")}>
                 <HelpOutlineIcon fontSize="small" />
                 Ayuda
