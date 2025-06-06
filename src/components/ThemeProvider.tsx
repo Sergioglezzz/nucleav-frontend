@@ -48,23 +48,23 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
       <BodyBackgroundSync />
 
       {!mounted ? (
-        // Mostrar un indicador de carga mientras se monta el componente
         <Box
+          className="theme-loading"
           sx={{
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
             minHeight: "100vh",
-            backgroundColor: "var(--joy-palette-background-body)",
-            color: "var(--joy-palette-text-primary)",
+            backgroundColor: "var(--initial-background)",
+            color: "var(--initial-color)",
           }}
         >
           <CircularProgress size="lg" />
         </Box>
       ) : (
-        // Renderizar los hijos una vez montado
         children
       )}
+
     </CssVarsProvider>
   )
 }
