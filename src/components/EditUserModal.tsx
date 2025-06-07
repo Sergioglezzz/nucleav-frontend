@@ -57,7 +57,15 @@ export default function EditUserModal({
               autoFocus
               size="sm"
               sx={{
-                "&:focus-within": { borderColor: "#ffbc62" },
+                width: "100%",
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                },
               }}
             />
           </FormControl>
@@ -71,7 +79,15 @@ export default function EditUserModal({
               placeholder="correo@ejemplo.com"
               size="sm"
               sx={{
-                "&:focus-within": { borderColor: "#ffbc62" },
+                width: "100%",
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                },
               }}
             />
           </FormControl>
@@ -83,7 +99,15 @@ export default function EditUserModal({
               onChange={(_, value) => setFormData({ ...formData, role: value as "admin" | "user" })}
               size="sm"
               sx={{
-                "&:focus-within": { borderColor: "#ffbc62" },
+                width: "100%",
+                "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+                "&:hover": {
+                  borderColor: "primary.solidBg",
+                },
+                "&:focus-within": {
+                  borderColor: "primary.solidBg",
+                  boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+                },
               }}
             >
               <Option value="user">Usuario</Option>

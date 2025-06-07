@@ -19,6 +19,7 @@ import {
   IconButton,
   Stack,
   LinearProgress,
+  Tooltip,
 } from "@mui/joy"
 import {
   Business,
@@ -242,21 +243,16 @@ export default function DashboardPage() {
             Resumen de tu actividad y recursos audiovisuales
           </Typography>
         </Box>
-        <IconButton
-          variant="outlined"
-          color="neutral"
-          onClick={handleRefresh}
-          sx={{
-            borderColor: "#ffbc62",
-            color: "#ffbc62",
-            "&:hover": {
-              borderColor: "#ff9b44",
-              bgcolor: "rgba(255, 188, 98, 0.1)",
-            },
-          }}
-        >
-          <Refresh />
-        </IconButton>
+        <Tooltip title="Actualizar">
+          <IconButton
+            variant="soft"
+            color="neutral"
+            onClick={handleRefresh}
+            size="sm"
+          >
+            <Refresh />
+          </IconButton>
+        </Tooltip>
       </Box>
 
       {/* Main Stats Cards - Redistribuidos para mejor balance */}
