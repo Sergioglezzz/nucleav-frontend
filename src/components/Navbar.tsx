@@ -192,6 +192,7 @@ export default function Navbar() {
                   mb: 0.3,
                   py: 0.5,
                   px: 2,
+                  pl: -8,
                   borderRadius: 'md',
                 }}
               >
@@ -231,7 +232,7 @@ export default function Navbar() {
                   <ListDivider />
                 </>
               )}
-              <MenuItem onClick={() => alert("Aún no implementado 😅")}>
+              <MenuItem>
                 <HelpOutlineIcon fontSize="small" />
                 Ayuda
               </MenuItem>

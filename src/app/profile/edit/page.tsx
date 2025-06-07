@@ -810,13 +810,40 @@ export default function ProfileEditPage() {
             Cambiar contraseña
           </Typography>
           <Stack gap={2}>
-            <Input type="password" placeholder="Contraseña actual" />
-            <Input type="password" placeholder="Nueva contraseña" />
-            <Input type="password" placeholder="Repetir nueva contraseña" />
+            <Input type="password" placeholder="Contraseña actual" sx={{
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }} />
+            <Input type="password" placeholder="Nueva contraseña" sx={{
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }} />
+            <Input type="password" placeholder="Repetir nueva contraseña" sx={{
+              "--Input-focusedThickness": "var(--joy-palette-primary-solidBg)",
+              "&:hover": {
+                borderColor: "primary.solidBg",
+              },
+              "&:focus-within": {
+                borderColor: "primary.solidBg",
+                boxShadow: "0 0 0 2px var(--joy-palette-primary-outlinedBorder)",
+              },
+            }} />
           </Stack>
           <Stack direction="row" justifyContent="flex-end" gap={1} mt={3}>
             <Button variant="plain" onClick={() => setOpenChangePasswordModal(false)}>Cancelar</Button>
-            <Button variant="solid" color="primary">Guardar</Button>
+            <Button variant="solid" color="primary" onClick={() => setOpenChangePasswordModal(false)}>Guardar</Button>
           </Stack>
         </Sheet>
       </Modal>
