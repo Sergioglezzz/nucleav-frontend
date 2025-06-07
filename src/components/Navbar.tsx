@@ -221,7 +221,7 @@ export default function Navbar() {
                       alignItems: "center",
                       gap: 1.5,
                       py: 0.5,
-                      px: 2,
+                      px: 1.5,
                       borderRadius: "md",
                     }}
                   >
